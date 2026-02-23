@@ -4,10 +4,6 @@ title: "C++ Operators"
 
 # Operators
 
-An **operator** is a special type of function made up of a symbol. Instead of writing
-`operator+(1, 2)`, you write `1 + 2`. Operators make code more natural to read and
-write.
-
 You have already used several operators without thinking much about them. In
 Chapter 1, you used `::` (the scope resolution operator) to call `std::println`. In
 Chapter 2, you used `=` to assign values to variables and `>>` to extract input from
@@ -19,11 +15,16 @@ to the ones you have not seen yet.
 
 ### Assignment: `=`
 
-You have used `=` since Chapter 2 to assign a value to a variable:
+You have used `=` since Chapter 2 to give values to variables:
 
 ```cpp
 int score = 100;
 ```
+
+> **Tip:** Technically, `int score = 100;` is **initialization**, not assignment. You
+> learned about initialization with `{}` in Chapter 2. Assignment happens when you
+> change a variable that already exists, like `score = 200;`. The distinction matters
+> more as you get deeper into C++, but for now just know they are not the same thing.
 
 One useful property of `=` is that it returns the value it assigned. This lets you chain
 assignments together:
