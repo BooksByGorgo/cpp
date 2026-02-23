@@ -11,7 +11,7 @@ Chapter 2, you used `=` to assign values to variables and `>>` to extract input 
 look at all the operators C++ offers, starting with the ones you know and building up
 to the ones you have not seen yet.
 
-## Math Operators
+## 1. Math Operators
 
 ### Assignment: `=`
 
@@ -148,7 +148,7 @@ int clear  = 2 + (3 * 4);    // 14, same thing but obvious
 int other  = (2 + 3) * 4;    // 20
 ```
 
-## Comparison Operators
+## 2. Comparison Operators
 
 You have seen these since Chapter 2. Each comparison returns a `bool` — either
 `true` or `false`:
@@ -172,7 +172,7 @@ least once.
 > so the compiler may not warn you. Always double-check that you used `==` in
 > conditions.
 
-## Logical Operators
+## 3. Logical Operators
 
 Logical operators combine or invert `bool` values. You use them to build more
 complex conditions.
@@ -237,7 +237,7 @@ if (is_vip || age >= 21 && has_id) { ... }
 if (is_vip || (age >= 21 && has_id)) { ... }
 ```
 
-## The Ternary Operator: `?:`
+## 4. The Ternary Operator: `?:`
 
 Sometimes you need a simple either-or value. An `if/else` block works, but the
 ternary operator gives you a compact one-liner:
@@ -264,7 +264,7 @@ std::string greeting = (hora < 12) ? "Buenos dias" : "Buenas tardes";
 > `a ? b : c ? d : e` is hard to read. Use `if/else` when the logic gets more
 > complex than a single condition.
 
-## Bitwise Operators
+## 5. Bitwise Operators
 
 Bitwise operators work on the individual bits of integer values. Before diving in,
 here is a quick refresher on binary.
@@ -371,7 +371,7 @@ flags >>= 1;            // shift right by 1
 > certainly not what you want. Always use parentheses with bitwise operators:
 > `(x & 0xFF) == 0`.
 
-## Other Operators
+## 6. Other Operators
 
 You will encounter a few more operators as you progress through the textbook.
 Here is a brief overview:
@@ -387,7 +387,7 @@ Here is a brief overview:
 
 Each of these will be covered in detail when you reach the relevant chapter.
 
-## Operator Overloading
+## 7. Operator Overloading
 
 Sometimes the same operator does different things depending on the types involved.
 This is called **operator overloading**, and you have been using it since Chapter 1.
@@ -422,7 +422,7 @@ For now, just be aware that an operator's meaning depends on what it is applied 
 > **Tip:** When you see an unfamiliar use of an operator, check what types the
 > operands are. The type determines which version of the operator is called.
 
-## Precedence
+## 8. Precedence
 
 When an expression has multiple operators, C++ uses **precedence** rules to decide
 which operator is evaluated first. Higher precedence means the operator is applied
