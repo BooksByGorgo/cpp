@@ -312,7 +312,8 @@ We haven't been able to convince him that this is not beautiful code!
 ## 5. Bitwise Operators
 
 Bitwise operators work on the individual bits of integer values. Before diving in,
-here is a quick refresher on binary.
+here is a quick refresher on binary. For a deeper look at binary, hexadecimal,
+two's complement, and how numbers are stored, see the Numbers chapter.
 
 ### Binary Numbers
 
@@ -341,7 +342,20 @@ Each bit in the result is `1` only if both corresponding bits are `1`.
 int masked = 42 & 0x0F;  // 10
 ```
 
-**Common use:** masking — extracting specific bits from a value.
+**Common use:** masking — extracting specific bits from a value. You can also
+use `&` to check whether a particular bit is set:
+
+```cpp
+if (flags & 0b00000100) {
+    std::println("Bit 2 is set");
+}
+```
+
+And combined with `~`, you can clear a bit:
+
+```cpp
+flags &= ~0b00000100;  // clear bit 2
+```
 
 ### Bitwise OR: `|`
 
@@ -374,9 +388,12 @@ int toggled = 42 ^ 15;  // 37
 Inverts every bit. A `0` becomes `1` and a `1` becomes `0`.
 
 ```cpp
-// ~0b00000000 = 0b11111111  (for 8 bits)
-unsigned char flipped = ~0;  // 255
+unsigned char mask = 0b00001111;
+unsigned char flipped = ~mask;  // 0b11110000 (240)
 ```
+
+Note that `~` promotes its operand to `int` before flipping the bits. The
+result is then truncated back when stored in an `unsigned char`.
 
 ::: {.tip}
 **Tip:** Be careful with `~` on signed types. The result depends on the size
