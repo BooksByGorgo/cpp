@@ -1,9 +1,31 @@
 ---
-geometry: margin=0.75in
-fontsize: 10pt
+geometry: left=0.25in,right=0.25in,top=0.15in,bottom=0.15in
+fontsize: 11pt
 header-includes:
+  - \usepackage[T1]{fontenc}
+  - \renewcommand{\rmdefault}{qtm}
+  - \renewcommand{\sfdefault}{qtm}
   - \usepackage{longtable}
   - \usepackage{booktabs}
+  - \usepackage{enumitem}
+  - \setlength{\parskip}{2pt plus 1pt minus 1pt}
+  - \setlength{\parindent}{0pt}
+  - \setlength{\abovecaptionskip}{2pt}
+  - \setlength{\belowcaptionskip}{2pt}
+  - \setlength{\abovedisplayskip}{2pt}
+  - \setlength{\belowdisplayskip}{2pt}
+  - \setlist{nosep, topsep=0pt, partopsep=0pt}
+  - \usepackage{titlesec}
+  - \titlespacing*{\section}{0pt}{6pt}{3pt}
+  - \titlespacing*{\subsection}{0pt}{4pt}{2pt}
+  - \titlespacing*{\subsubsection}{0pt}{3pt}{1pt}
+  - \setlength{\floatsep}{2pt}
+  - \setlength{\textfloatsep}{2pt}
+  - \setlength{\intextsep}{2pt}
+  - \usepackage{fancyvrb}
+  - \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\footnotesize,xleftmargin=0pt,formatcom=\vspace{-4pt}}
+  - \setlength{\LTpre}{4pt}
+  - \setlength{\LTpost}{4pt}
 ---
 
 \noindent \textbf{Modern C++ Cheat Sheet}
@@ -36,8 +58,8 @@ header-includes:
 | Prec | Operator | Description | Assoc |
 |:----:|:---------|:------------|:-----:|
 | 1 | `::` | scope resolution | L-R |
-| 2 | `()` `[]` `.` `->` `++` `--` | call, subscript, member access, postfix inc/dec | L-R |
-| 3 | `++` `--` `+` `-` `!` `~` `*` `&` | prefix inc/dec, unary, logical/bitwise NOT, deref, address-of | R-L |
+| 2 | `()` `[]` `.` `->` `++` `--` | call, subscript, member, postfix | L-R |
+| 3 | `++` `--` `+` `-` `!` `~` `*` `&` | prefix, unary, NOT, deref, addr-of | R-L |
 | 5 | `*` `/` `%` | multiply, divide, modulus | L-R |
 | 6 | `+` `-` | add, subtract | L-R |
 | 7 | `<<` `>>` | bitwise shift | L-R |
@@ -49,13 +71,12 @@ header-includes:
 | 13 | `&&` | logical AND (short-circuits) | L-R |
 | 14 | `||` | logical OR (short-circuits) | L-R |
 | 15 | `?:` `=` `+=` `-=` `*=` `/=` `%=` | ternary, assignment, compound assignment | R-L |
-| 16 | `,` | comma | L-R |
 
 ### Quick Reference
 
 | Operator | Example | Notes |
 |:---------|:--------|:------|
-| `%` | `10 % 3` $\rightarrow$ `1` | integers only; remainder after division |
+| `%` | `10 % 3` $\rightarrow$ `1` | integers only; remainder |
 | `++x` / `x++` | prefix returns new value; postfix returns old | prefer prefix in loops |
 | `+=` `-=` `*=` `/=` `%=` | `x += 5` $\equiv$ `x = x + 5` | compound assignment |
 | `?:` | `cond ? a : b` | ternary; avoid nesting |
@@ -118,7 +139,7 @@ std::string greet(std::string_view name);   // returns string
 | return by value | the default; compiler optimizes away copies |
 | return `void` | function has no return value |
 
-**Traps:** default parameters must be at the end; once you default one, all that follow must also be defaulted. A function in a header without `inline` breaks ODR if included in multiple files.
+**Traps:** default parameters must be at the end; once you default one, all that follow must also be defaulted. A function in a header without `inline` breaks the One Definition Rule if included in multiple files.
 
 **Idioms:** pass small types by value, large types by `const &`; if the function needs its own copy, take by value to get an automatic copy.
 
@@ -126,11 +147,34 @@ std::string greet(std::string_view name);   // returns string
 
 `#include <iostream>` for `cin`/`cout`/`cerr`; `#include <fstream>` for file streams; `#include <sstream>` for string streams
 
-| Stream | Description |
-|:-------|:-----------|
-| `std::cin` | standard input (keyboard) |
-| `std::cout` | standard output (buffered) |
-| `std::cerr` | standard error (unbuffered) |
+\begin{minipage}[t]{0.48\linewidth}
+\begingroup\footnotesize
+\begin{tabular}{@{}ll@{}}
+\toprule
+Stream & Description \\
+\midrule
+\texttt{std::cin} & standard input (keyboard) \\
+\texttt{std::cout} & standard output (buffered) \\
+\texttt{std::cerr} & standard error (unbuffered) \\
+\bottomrule
+\end{tabular}
+\endgroup
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\begingroup\footnotesize
+\begin{tabular}{@{}ll@{}}
+\toprule
+File Mode & Description \\
+\midrule
+\texttt{std::ios::in} & input (default for \texttt{ifstream}) \\
+\texttt{std::ios::out} & output (default for \texttt{ofstream}) \\
+\texttt{std::ios::app} & append \\
+\texttt{std::ios::binary} & binary mode \\
+\bottomrule
+\end{tabular}
+\endgroup
+\end{minipage}
 
 | Signature | Description |
 |:----------|:------------|
@@ -146,13 +190,6 @@ std::string greet(std::string_view name);   // returns string
 | `std::ofstream file{name, ios::app}` | open for appending |
 | `std::istringstream iss{str}` | input from a string (useful for testing) |
 | `std::ostringstream oss{}` | build a string via `<<`, extract with `oss.str()` |
-
-| File Mode | Description |
-|:----------|:------------|
-| `std::ios::in` | input (default for `ifstream`) |
-| `std::ios::out` | output (default for `ofstream`) |
-| `std::ios::app` | append |
-| `std::ios::binary` | binary mode |
 
 Full ignore call: `stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n')` (needs `<limits>`)
 
@@ -190,24 +227,21 @@ Full ignore call: `stream.ignore(std::numeric_limits<std::streamsize>::max(), '\
 
 ### Conversions
 
-| Signature | Description |
-|:----------|:------------|
-| `std::stoi(str)` | `int` from string (throws on failure) |
-| `std::stol(str)` | `long` from string |
-| `std::stoll(str)` | `long long` from string |
-| `std::stoul(str)` | `unsigned long` from string |
-| `std::stoull(str)` | `unsigned long long` from string |
-| `std::stof(str)` | `float` from string |
-| `std::stod(str)` | `double` from string |
-| `std::stold(str)` | `long double` from string |
-| `std::to_string(num)` | `string` from numeric value |
+string to int, long, long long, usigned long, unsigned long long, float, double, long double:
+ `std::stoi(str)`
+ `std::stol(str)`
+ `std::stoll(str)`
+ `std::stoul(str)`
+ `std::stoull(str)`
+ `std::stof(str)`
+ `std::stod(str)`
+ `std::stold(str)`
+.
+Use `std::to_string(num)` to make  `string` from numeric value.
 
 ### std::string_view
 
-| Signature | Description |
-|:----------|:------------|
-| `std::string_view sv{str}` | non-owning view of a string |
-| `sv.substr(pos, count)` | returns `string_view` (no copy) |
+`std::string_view sv{str}` creates non-owning view of a string. `sv.substr(pos, count)` returns `string_view` (no copy)
 
 **Traps:** all `sto*` functions throw `std::invalid_argument` if the string is not a number and `std::out_of_range` if the value is too large. Modifying the underlying string invalidates any `string_view` of it (dangling, undefined behavior). String `+` concatenation creates temporaries; prefer `std::format`.
 
@@ -303,20 +337,15 @@ for (auto & elem : container) { ... }         // modifiable
 
 `std::back_inserter(container)` (`<iterator>`) -- output iterator that calls `push_back`; used with `copy`, `copy_if`, `transform`, `generate_n`.
 
-### Classic Algorithms
+### Classic and Erase Algorithms
 
-| Signature | Description |
-|:----------|:------------|
-| `std::count_if(begin, end, pred)` | `size_t` count of matching |
-| `std::accumulate(begin, end, init)` | `T` sum of elements (`<numeric>`) |
-| `std::iota(begin, end, start)` | fill with `start`, `start+1`, ... (`<numeric>`) |
-| `std::remove_if(begin, end, pred)` | iterator to new logical end |
-
-### Erase (C++20)
-
-| Signature | Description |
-|:----------|:------------|
-| `std::erase_if(container, pred)` | `size_t` count of erased elements |
+| Signature | Description | Ver |
+|:----------|:------------|:---:|
+| `std::count_if(begin, end, pred)` | `size_t` count of matching | C++11 |
+| `std::accumulate(begin, end, init)` | `T` sum of elements (`<numeric>`) | C++11 |
+| `std::iota(begin, end, start)` | fill with `start`, `start+1`, ... (`<numeric>`) | C++11 |
+| `std::remove_if(begin, end, pred)` | iterator to new logical end | C++11 |
+| `std::erase_if(container, pred)` | `size_t` count of erased elements | C++20 |
 
 ### Common Predicates and Comparators
 
@@ -375,16 +404,18 @@ std::erase_if(v, [](double x) { return x < 0.0; });
 
 | View | Description |
 |:-----|:------------|
-| `std::views::filter(range, pred)` | keep elements matching predicate |
-| `std::views::transform(range, fn)` | apply `fn` to each element |
-| `std::views::take(range, n)` | first n elements |
-| `std::views::take_while(range, pred)` | take while predicate is true |
-| `std::views::drop(range, n)` | skip first n elements |
-| `std::views::drop_while(range, pred)` | skip while predicate is true |
-| `std::views::reverse` | reverse the range |
-| `std::views::iota(start)` | infinite sequence: `start`, `start+1`, ... |
-| `std::views::iota(start, end)` | bounded sequence: `start` to `end-1` |
-| `std::views::enumerate(range)` | `{index, value}` pairs (C++23) |
+| `views::filter(range, pred)` | keep elements matching predicate |
+| `views::transform(range, fn)` | apply `fn` to each element |
+| `views::take(range, n)` | first n elements |
+| `views::take_while(range, pred)` | take while predicate is true |
+| `views::drop(range, n)` | skip first n elements |
+| `views::drop_while(range, pred)` | skip while predicate is true |
+| `views::reverse` | reverse the range |
+| `views::iota(start)` | infinite: `start`, `start+1`, ... |
+| `views::iota(start, end)` | bounded: `start` to `end-1` |
+| `views::enumerate(range)` | `{index, value}` pairs (C++23) |
+
+All views above are in `std::views::` (or equivalently `std::ranges::views::`).
 
 ### Pipe Syntax
 
@@ -420,9 +451,6 @@ Three components: seed, engine, distribution.
 | `bernoulli_distribution dist{0.5}` | `bool` with given probability |
 | `int roll = dist(gen)` | generate a number |
 
-All types above are in `std::`.
-
-
 **Traps:** same seed $\rightarrow$ same sequence. Without `std::random_device`, you get the same numbers every run. Normal distribution can produce negative values.
 
 **Idioms:** use `std::random_device` for varying seeds; use a fixed seed for reproducible testing; separate generation from usage by passing a `std::function<double()>` or lambda.
@@ -446,28 +474,25 @@ auto [x, y] = p;              // structured bindings (C++17)
 ```
 class Stock {
     std::string name{};
-    double price{};
 public:
+    double price{};
     Stock(const std::string & name, double price)
         : name(name), price(price) {}   // member initializer list
-
     std::string get_name() const { return name; }  // const member function
-    void set_price(double p) { price = p; }
-    ~Stock() = default;
 };
 ```
 
 | Concept | Notes |
 |:--------|:------|
 | `public` / `private` / `protected` | access specifiers |
-| member initializer list | `: name(n), price(p) {}` -- preferred over body assignment |
-| `const` member function | can be called on `const` objects; promises not to modify state |
-| `explicit` constructor | prevents implicit conversions from single-parameter constructors |
-| aggregate initialization | works for structs with all public members and no constructors |
-| `static` member | shared by all instances; accessed via `Class::member` |
-| `friend` function | non-member that can access private members |
-| `bool operator==(const T &) const = default` | compiler-generated equality (C++20) |
-| `auto operator<=>(const T &) const = default` | generates all 6 comparisons (C++20) |
+| member initializer list | `: name(n), price(p) {}` -- preferred |
+| `const` member function | callable on `const` objects; won't modify state |
+| `explicit` constructor | prevents implicit single-param conversions |
+| aggregate initialization | structs with all public members, no constructors |
+| `static` member | shared by all; accessed via `Class::member` |
+| `friend` function | non-member with private access |
+| `operator==(const T &) const = default` | compiler-generated equality (C++20) |
+| `operator<=>(const T &) const = default` | all 6 comparisons (C++20) |
 
 ### enum class
 
@@ -516,7 +541,7 @@ Cannot be copied. Only one `unique_ptr` owns the object at a time.
 - `std::move(obj)` casts to an rvalue reference, transferring ownership
 - moved-from object is in a valid but unspecified state
 
-**Traps:** `std::move` on a `const` object does nothing. `return std::move(local);` pessimizes by preventing NRVO -- just write `return local;`. A class containing a `unique_ptr` member cannot be copied. `release()` gives you a raw pointer you must manually `delete`.
+**Traps:** `std::move` on a `const` object does nothing. `return std::move(local);` pessimizes by preventing NRVO -- just write `return local;`. A class containing a `unique_ptr` member cannot be copied. `release()` gives raw pointer you must `delete`.
 
 **Idioms:** always use `std::make_unique` -- never raw `new`/`delete`.
 
@@ -529,11 +554,9 @@ Cannot be copied. Only one `unique_ptr` owns the object at a time.
 ```
 try {
     throw std::invalid_argument("negative value");
-}
-catch (const std::invalid_argument & ex) {
+} catch (const std::invalid_argument & ex) {
     std::println("{}", ex.what());
-}
-catch (const std::exception & ex) {
+} catch (const std::exception & ex) {
     std::println("error: {}", ex.what());
 }
 ```
@@ -542,20 +565,14 @@ catch (const std::exception & ex) {
 
 | Type | Header | Typical Use |
 |:-----|:-------|:------------|
-| `exception` | `<exception>` | base type; generic catch-all |
-| `invalid_argument` | `<stdexcept>` | bad parameter values |
-| `runtime_error` | `<stdexcept>` | errors detected at runtime (e.g. file I/O) |
-| `out_of_range` | `<stdexcept>` | index/value out of bounds |
-| `bad_expected_access` | `<expected>` | `.value()` on error `expected` |
-| `bad_optional_access` | `<optional>` | `.value()` on empty `optional` |
-
-All types above are in `std::`.
+| `std::exception` | `<exception>` | base type; generic catch-all |
+| `std::invalid_argument` | `<stdexcept>` | bad parameter values |
+| `std::runtime_error` | `<stdexcept>` | errors detected at runtime (e.g. file I/O) |
+| `std::out_of_range` | `<stdexcept>` | index/value out of bounds |
+| `std::bad_expected_access` | `<expected>` | `.value()` on error `expected` |
+| `std::bad_optional_access` | `<optional>` | `.value()` on empty `optional` |
 
 Custom exceptions: derive from `std::exception` and override `what()` if needed.
-
-### noexcept
-
-Mark functions that will never throw: `void f() noexcept;`. Enables compiler optimizations and signals intent to callers.
 
 ### std::expected (C++23)
 
@@ -570,6 +587,6 @@ Returns a value or an error without exceptions.
 | `result.value()` | `T` -- access value (throws if error) |
 | `result.error()` | `E` -- access error |
 
-**Traps:** catch handlers are tried in order -- put specific types (`invalid_argument`) before general types (`exception`), or the specific handler is never reached. An unhandled exception terminates the program. Calling `.value()` on an error `expected` throws `bad_expected_access`. You can throw any type (even `int`), but doing so is unconventional -- always throw types derived from `std::exception`.
+**Traps:** catch handlers are tried in order -- put specific types (`invalid_argument`) before general types (`exception`). Any type can be thrown, but always throw types derived from `std::exception`.
 
-**Idioms:** always catch by `const &`. Wrap the body of `main` in try/catch to prevent exceptions from leaking to the user. Don't use exceptions for flow control. Reserve exceptions for truly exceptional conditions -- for expected errors (e.g. bad user input), prefer `std::expected` or return a `bool`. Check conditions before throwing when possible (e.g. `std::filesystem::exists()` before opening a file).
+**Idioms:** always catch by `const &`. Don't use exceptions for flow control. Reserve exceptions for truly exceptional conditions -- for expected errors (e.g. bad user input), prefer `std::expected` or return a `bool`.
