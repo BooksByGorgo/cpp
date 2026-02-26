@@ -1795,6 +1795,16 @@ int another_function(const char *s);
 The `__cplusplus` macro is only defined when compiling with a C++ compiler, so
 the `extern "C"` wrapper only appears in C++ compilation.
 
+::: {.tip}
+**Tip:** The reason C++ mangles names is to support **function overloading** —
+having multiple functions with the same name but different parameter types. C
+has no function overloading. Every function name must be unique. If you need
+two functions that do the same thing for different types, you give them
+different names — for example, `abs` for `int`, `fabs` for `double`, and
+`labs` for `long`. The upside is that when you see a function call in C, you
+know exactly which function will be invoked — there is only one version.
+:::
+
 ## Pointer Ownership
 
 In C++, smart pointers make ownership clear: a `std::unique_ptr` owns the

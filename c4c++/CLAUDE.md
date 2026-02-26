@@ -17,6 +17,7 @@ Write chapters to help beginning C++ programmers become beginning C programmers.
     - calculation questions to quickly and objectively test comprehension, like `what is the sizeof ilist for int ilist[4] on a system where int is 32-bit?`
     - where is the bug type questions, where you show some code and ask what the problem is
     - propose a short test program they should write to test their knowledge
+- an answer key should be generated as a separate document from the main chapter content, containing each exercise question and its answer
 
 ## Examples
 
