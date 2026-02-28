@@ -1390,6 +1390,39 @@ safer and simpler for line-oriented input. Use scan sets when you need to parse
 structured input where only certain characters are valid.
 :::
 
+## The `%m` Modifier (POSIX)
+
+With `%s` and `%[...]`, you must always provide a buffer that is large enough.
+The POSIX `%m` modifier (called the **assignment-allocation** modifier) tells
+`scanf` to `malloc` the buffer for you. Instead of passing a `char[]`, you pass
+a `char **` and `scanf` allocates exactly enough memory:
+
+```c
+char *line = NULL;
+scanf("%m[^\n]", &line);       // scanf mallocs the buffer
+printf("You said: %s\n", line);
+free(line);                     // you must free it
+```
+
+Notice `&line` — `scanf` needs a pointer to your `char *` so it can fill it in
+with the address of the newly allocated buffer. This eliminates buffer overflow
+risk entirely, since the buffer is always the right size.
+
+`%ms` works the same way for single words:
+
+```c
+char *word = NULL;
+scanf("%ms", &word);   // reads one word, malloc'd to fit
+free(word);
+```
+
+::: {.tip}
+**Tip:** `%m` is a POSIX extension (available on Linux, macOS, and most Unix
+systems) and is not part of the C standard. It will not work with MSVC on
+Windows. When portability is not a concern, `%m` is an excellent way to avoid
+buffer sizing headaches.
+:::
+
 ## `stdin`, `stdout`, and `stderr`
 
 When your C program starts, three streams (of type `FILE *`) are already open:
