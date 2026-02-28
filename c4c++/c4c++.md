@@ -109,6 +109,13 @@ Here are the format specifiers you will use most:
 | `%p` | pointer | `printf("%p", ptr)` | `0x7ffd...` |
 | `%zu` | `size_t` | `printf("%zu", sizeof(int))` | `4` |
 
+::: {.tip}
+**Trap:** The first argument of printf must be a literal! "something".
+Never, never pass a variable.
+It may work, but it is a potential security error.
+If you only want to print a string variable, don't do ~~`printf(str)`~~, do `printf("%s", s)`.
+:::
+
 You can control the width and precision of output by placing numbers between the
 `%` and the specifier letter. A number before the specifier sets the minimum
 field width, and a `.` followed by a number sets the precision (decimal places
