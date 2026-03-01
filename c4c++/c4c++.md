@@ -1460,6 +1460,12 @@ Because strings are really arrays of characters, the text `"1986"` is entirely d
 To translate a string representation into an actual integer, use `strtol` (string to long) from `<stdlib.h>`:
 
 ```c
+long strtol(const char *str, char **endptr, int base);
+```
+
+The first argument is the string to parse. The second argument, `endptr`, is an optional pointer that `strtol` sets to point to the first character after the parsed number (pass `NULL` if you don't need it). The third argument is the numeric base (10 for decimal, 16 for hex, 0 to auto-detect from the prefix).
+
+```c
 #include <stdio.h>
 #include <stdlib.h>
 
