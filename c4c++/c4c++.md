@@ -1598,7 +1598,7 @@ Here is a table of the common sizes, ranges, and literal suffixes of integers on
 | `unsigned long long` | 8 | $0$ to $2^{64}-1$ | `ULL` |
 
 Note that the sizes and ranges specified here can vary.
-The C standard's rules about sizes are so vague they aren't worth quoting here.
+The C standard's rules about sizes are so vague they aren't worth quoting here :'(.
 Notice that the range is 1 number larger for negative numbers than for positive numbers.
 This is because most systems use **two's complement** representation for signed integers.
 The top bit indicates the sign: if it is set, the number is negative.
