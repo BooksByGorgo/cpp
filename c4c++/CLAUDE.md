@@ -86,6 +86,20 @@ do not repeat these in new or modified examples:
     - recommend strtok_r (POSIX) or strtok_s (C11/Windows) over strtok for thread safety
     - review the problems that can arise using strcat()
     - point out that there are convenient ways to manipulate strings with sprintf() and sscanf that will be shown later in I/O
+5. numbers and casting
+    - to the CPU everything is a number. the numbers can be different sizes and can be used for different things
+        - different number bits gives a different range of values
+        - a char is just a number; assigning 'A' is the name as assigning 65
+        - a pointer is just a number as well, its just a number that represents a memory address; when we use a type and * we let the compiler know how to interpret the number
+    - the types we give to numbers indicates how we plan to use the number
+    - a pointer type tell the compiler that you want to use the number as an address
+    - C doesn't know about strings, it only knows about arrays of characters, and libraries allow us to work with them as strings
+    - converting numbers to string and strings to numbers
+    - casts
+        - (type) value
+        - simpler than C++ casts, but no magic happens
+        - you are asserting to the compiler that you know what you are doing
+        - TRAP: casting a char * to an int doesn't convert a string to an integer value, it converts the address to an integer value. use strtol() to convert a string to an integer value
 5. stdio
     - printf for output and scanf for input
     - show examples of reading input explain why & is needed
