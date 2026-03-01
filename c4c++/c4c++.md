@@ -2560,7 +2560,7 @@ reasonably propagate an error code back to `main` and let `main` return, prefer
 that approach. Reserve `exit` for truly fatal errors.
 :::
 
-\index{extern "C"}
+\index{extern ""C""}
 ## `extern "C"` — Calling C from C++
 
 If you are writing C++ code that needs to call functions from a C library, you
