@@ -1685,6 +1685,67 @@ int main(void) {
 // First byte of nums[0]: 0xc0
 ```
 
+## Try It: Numbers Starter
+
+This program exercises the key concepts from this chapter: characters as numbers, string-to-number conversion, integer sizes, and casting.
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+
+int main(void) {
+    // Characters are just numbers
+    char ch = 'A';
+    printf("'%c' is %d\n", ch, ch);
+    printf("'%c' + 3 = '%c' (%d)\n", ch, ch + 3, ch + 3);
+
+    // Strings are arrays of numbers
+    char title[] = "Rio";
+    printf("\"%s\" bytes: ", title);
+    for (int i = 0; i < (int)sizeof(title); i++)
+        printf("%d ", title[i]);
+    printf("\n");
+
+    // String to number conversion
+    char *bpm_str = "120";
+    long bpm = strtol(bpm_str, NULL, 10);
+    printf("\"%s\" as a number: %ld\n", bpm_str, bpm);
+
+    // Hex string to number
+    long color = strtol("FF8000", NULL, 16);
+    printf("0x%lX = %ld\n", color, color);
+
+    // Integer sizes on this machine
+    printf("\nsizeof(char)  = %zu\n", sizeof(char));
+    printf("sizeof(short) = %zu\n", sizeof(short));
+    printf("sizeof(int)   = %zu\n", sizeof(int));
+    printf("sizeof(long)  = %zu\n", sizeof(long));
+    printf("UINT_MAX      = %u\n", UINT_MAX);
+
+    // Casting: float to int truncates
+    double tempo = 120.7;
+    int whole = (int)tempo;
+    printf("\n(int)%.1f = %d\n", tempo, whole);
+
+    // The classic trap: casting a pointer
+    char *year_str = "1982";
+    long bad  = (long)year_str;          // address, not 1982!
+    long good = strtol(year_str, NULL, 10);
+    printf("(long)\"1982\"        = %ld (an address!)\n", bad);
+    printf("strtol(\"1982\", ...) = %ld\n", good);
+
+    // void * round-trip
+    int val = 42;
+    void *vp = &val;
+    int *ip = (int *)vp;
+    printf("\nvoid * round-trip: %d\n", *ip);
+
+    return 0;
+}
+```
+
 ## Key Points
 
 - Under the hood, everything (characters, pointers) is just a number.
