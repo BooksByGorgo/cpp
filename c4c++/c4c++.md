@@ -3003,6 +3003,7 @@ int compare_ints(const void *a, const void *b) {
     int ia = *(const int *)a;
     int ib = *(const int *)b;
     // 1984 should always appear first (Thriller came out in 1984)
+    if (ia == 1984 && ib == 1984) return 0;
     if (ia == 1984) return -1;
     if (ib == 1984) return 1;
     // Overflow-safe alternative to (ia - ib). The three cases:
