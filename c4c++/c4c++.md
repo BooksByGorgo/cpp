@@ -1649,7 +1649,7 @@ Because C trusts you implicitly, casting can be dangerous. Magic *does not* happ
 
 ```c
 char *movie_year = "1985";  // The Goonies
-int bad_year = (int)movie_year; // THIS IS A BUG!
+int bad_year = (int)movie_year; // THIS IS A BUG! not 1985!!
 ```
 
 Casting a `char *` string to an `int` does not convert the text `"1985"` into the number `1985`. It tells the compiler to take the *memory address* where the string is stored and chop or pad it to fit inside an `int`. On a 64-bit system, the pointer is 8 bytes and the `int` is 4 bytes, so compiling this code will actually result in a warning that you are casting a pointer to an integer of different size! Always use functions like `strtol` to parse strings into numbers.
@@ -1741,6 +1741,13 @@ int main(void) {
     void *vp = &val;
     int *ip = (int *)vp;
     printf("\nvoid * round-trip: %d\n", *ip);
+
+    int bad = 0xbadd00d;
+    printf("%d %x\n", bad, bad);
+    // lets look at the bytes of bad (int has 4 bytes)
+    char *bad_bytes = (char *)&bad;
+    printf("little-endian: %x %x %x %x\n",
+           bad_bytes[0], bad_bytes[1], bad_bytes[2], bad_bytes[3]);
 
     return 0;
 }
