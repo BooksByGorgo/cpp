@@ -535,7 +535,7 @@ struct song *p = &track;
 When a structure is stored in memory, all of its members will be stored in the same chunk of memory.
 For example, if you look at the memory where `track` is stored, you will see 40 bytes reserved for the title and four bytes (on most systems) reserved for the year.
 The layout can include padding to make memory access more efficient.
-For example, if title were only 39 bytes there may still be a byte between the `title` and `year` to make `year`'s memory address 4-byte aligned.
+For example, if `title` were only 39 bytes there may still be a byte between the `title` and `year` to make `year`'s memory address 4-byte aligned.
 
 You can access members of a structure directly using the `.` operator:
 
@@ -1658,8 +1658,8 @@ int main(void) {
 ```
 
 ::: {.tip}
-**Trap:** You will notice that most types are signed by default except for `char`.
-Sadly, on different architectures `char` can be either signed or unsigned, and even more sadly, on x86_64 CPUs, `char` is signed by default, and on ARM CPUs, `char` is unsigned by default! Watch out!
+**Trap:** Most integer types are always signed by default, but `char` is different — its signedness is implementation-defined.
+Sadly, on x86_64 CPUs, `char` is signed by default, and on ARM CPUs, `char` is unsigned by default! Watch out!
 :::
 
 \index{integer promotion}
@@ -1730,6 +1730,7 @@ int main(void) {
     float f = 1.2;
     if (f != 1.2) printf("what?!?\n");
     if (f == 1.2f) printf("ok\n");
+    return 0;
 }
 ```
 
@@ -3049,7 +3050,7 @@ returns -1, 0, or 1.
 #include <string.h>
 
 // A comparison function for qsort
-// a normal numeric sort, but we want 1984 to always be first
+// a normal numeric sort, but we want 1982 to always be first
 // because we are big thriller fans!
 int compare_ints(const void *a, const void *b) {
     int ia = *(const int *)a;
