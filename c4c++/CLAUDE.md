@@ -66,7 +66,7 @@ do not repeat these in new or modified examples:
 - Ghostbusters, Livin' on a Prayer, La Isla Bonita, Girls Just Want to Have Fun
 - Maniac, Footloose, Flashdance, Fame
 - Danger Zone, Africa, The Goonies, Rio, Jump
-- Hungry Like the Wolf, Twist of Cain, Master of Puppets, Thriller
+- Hungry Like the Wolf, Come As You Are, Master of Puppets, Thriller
 
 ## Content
 

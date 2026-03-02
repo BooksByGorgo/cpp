@@ -2590,7 +2590,7 @@ int main(void) {
         return 1;
     }
 
-    const char *lines[] = {"Twist of Cain\n", "Year: 1987\n"};
+    const char *lines[] = {"Come As You Are\n", "Year: 1992\n"};
     for (int i = 0; i < 2; i++)
         write(fd, lines[i], strlen(lines[i]));
     close(fd);
