@@ -2,6 +2,7 @@
 title: "C for C++ Programmers"
 toc: true
 toc-depth: 2
+colorlinks: true
 header-includes:
   - \usepackage[most]{tcolorbox}
   - \usepackage{makeidx}
