@@ -191,6 +191,7 @@ It may work, but it is a potential security vulnerability (format string attack)
 If you only want to print a string variable, don't do ~~`printf(str)`~~, do `printf("%s", str)`.
 :::
 
+\index{format specifier!width and precision}
 You can control the width and precision of output by placing numbers between the `%` and the specifier letter.
 A number before the specifier sets the minimum field width, and a `.` followed by a number sets the precision (decimal places for floats, max characters for strings):
 
@@ -201,6 +202,7 @@ printf("Score: %.2f\n", score);    // 98.60      (2 decimal places)
 printf("Score: %e\n", score);      // 9.860000e+01 (scientific notation)
 ```
 
+\index{format specifier!zero-fill}
 **Zero-filled output** is useful for track numbers, timestamps, and hex addresses.
 Place a `0` before the width to pad with zeros instead of spaces:
 
@@ -323,6 +325,8 @@ Here are the types you will use most:
 | `_Bool` | 1 byte | Boolean (C99); use `bool` via `<stdbool.h>` |
 
 \index{unsigned}
+\index{signed}
+\index{\_Bool}
 Each integer type has an `unsigned` variant that stores only non-negative values, giving you twice the positive range.
 For example, a `signed char` holds -128 to 127, while an `unsigned char` holds 0 to 255:
 
@@ -501,6 +505,7 @@ int zeros[100] = {0};          /* all 100 elements are 0 */
 \index{array!multidimensional}
 
 C supports multidimensional arrays.
+\index{array!row-major order}
 A two-dimensional array is really an array of arrays, stored in **row-major** order — all elements of row 0 come first, then all elements of row 1, and so on:
 
 ```c
@@ -678,6 +683,7 @@ struct song copy = original;
 printf("%s (%d)\n", copy.title, copy.year);   // I Love Rock 'n' Roll (1981)
 ```
 
+\index{shallow copy}
 This is a **shallow copy**.
 If the struct contained a pointer, both copies would point to the same memory.
 For structs that contain only arrays and plain values (like `struct song` above), the copy is complete and independent.
@@ -878,6 +884,9 @@ a = b = c = 0;   // all three are now 0
 The chain works right to left: `c` gets `0`, then `b` gets the value of that assignment (also `0`), then `a` gets the same.
 
 Because assignment is an expression, you can (and sometimes will) use it inside other expressions.
+\index{getchar}
+\index{putchar}
+\index{EOF}
 A common pattern is assigning and testing a return value in one step:
 
 ```c
@@ -902,6 +911,7 @@ if (x = 5) {
 ```
 
 Some programmers write the constant on the left — `if (5 == x)` — so that `if (5 = x)` would be a compiler error.
+\index{Yoda condition}
 This is called a **Yoda condition**.
 :::
 
@@ -1361,6 +1371,8 @@ int main(void) {
 Control flow in C will feel very familiar if you are coming from C++.
 The `if`, `while`, `for`, and `switch` statements work essentially the same way.
 The differences are small but worth knowing: C has no range-based `for` loops, no structured bindings, and no `std::optional`.
+\index{C89}
+\index{C99}
 In C89, all variable declarations had to appear at the top of a block before any statements — C99 relaxed this and let you declare variables anywhere, which is how you are used to writing code in C++.
 
 The biggest conceptual difference is that C has no native `bool` type.
@@ -1573,6 +1585,7 @@ for (;;) {
 ## `switch` Statements
 
 \index{switch statement}
+\index{switch statement!default}
 
 A `switch` statement selects among multiple cases based on an integer expression.
 If you have used `switch` in C++, the syntax is identical:
@@ -1936,6 +1949,8 @@ printf("**pp = %d\n", **pp);    // 42
 ```
 
 You dereference `pp` twice: once to get `p`, and again to get `val`.
+\index{argc}
+\index{argv}
 Pointers to pointers show up frequently in C — for example, `main` can be declared as `int main(int argc, char **argv)`, where `argv` is a pointer to an array of string pointers.
 
 ## Visualizing Pointers in Memory
@@ -1991,6 +2006,7 @@ if (p != NULL) {
 }
 ```
 
+\index{segmentation fault}
 Dereferencing a `NULL` pointer is undefined behavior and usually crashes your program with a segmentation fault.
 Always check before dereferencing a pointer you did not initialize yourself.
 
@@ -2257,6 +2273,7 @@ int add(int a, int b) {       // definition
 }
 ```
 
+\index{header file}
 Prototypes typically go in header files (`.h`) so that other `.c` files can call the function.
 The definition lives in exactly one `.c` file.
 
@@ -2823,6 +2840,7 @@ int main(void) {
 ```
 
 Without `static`, `count` would be reset to 0 on every call.
+\index{data segment}
 With `static`, it lives in the data segment (like a global) but is only accessible inside `count_calls`.
 
 ## Dynamic Allocation: `malloc` and `free`
@@ -2836,6 +2854,7 @@ void free(void *ptr);
 ```
 
 Sometimes you need memory that outlives the function that created it, or memory whose size you do not know at compile time.
+\index{stdlib.h}
 For this, C provides `malloc` and `free` from `<stdlib.h>`.
 
 \index{heap}
@@ -2929,6 +2948,7 @@ if (tmp == NULL) {
 \index{memcpy}
 \index{memset}
 
+\index{string.h}
 Two functions from `<string.h>` operate on raw bytes rather than strings.
 You will see them constantly in C code:
 
@@ -3192,6 +3212,7 @@ Think of it as returning the "difference" between the strings — zero means no 
 
 \index{strchr}
 \index{strrchr}
+\index{ptrdiff\_t}
 **`strchr` / `strrchr` — Find a Character**
 
 ```c
@@ -3635,6 +3656,7 @@ Here is a table of the common sizes, ranges, and literal suffixes of integers on
 Note that the sizes and ranges specified here can vary.
 The C standard's rules about sizes are so vague they aren't worth quoting here :'(.
 Notice that the range is 1 number larger for negative numbers than for positive numbers.
+\index{two's complement}
 This is because most systems use **two's complement** representation for signed integers.
 The top bit indicates the sign: if it is set, the number is negative.
 But the remaining bits are not a simple magnitude — two's complement encodes negative values so that addition and subtraction work the same way for signed and unsigned numbers.
@@ -3728,9 +3750,12 @@ Here is a table of the common sizes, ranges, and literal suffixes of floating po
 | `double` | 8 bytes | -1.7e+308 to 1.7e+308 | *(none, default)* |
 | `long double` | 16 bytes | -1.2e+4932 to 1.2e+4932 | `L` |
 
+\index{long double}
 Floating point numbers also have a sign bit, but unlike integers, the sign bit can be set on zero.
 This means floating point numbers have two zeros: positive zero and negative zero.
 (They compare as equal to each other though.)
+\index{NaN}
+\index{floating-point!infinity}
 Floating point numbers can also be used to represent infinity and NaN (Not a Number).
 
 Floating point numbers cannot always exactly represent a value.
@@ -4041,6 +4066,7 @@ Use scan sets when you need to parse structured input where only certain charact
 
 ## The `%m` Modifier (POSIX)
 
+\index{scanf!\%m modifier}
 With `%s` and `%[...]`, you must always provide a buffer that is large enough.
 The POSIX `%m` modifier (called the **assignment-allocation** modifier) tells `scanf` to `malloc` the buffer for you.
 Instead of passing a `char[]`, you pass a `char **` and `scanf` allocates exactly enough memory:
@@ -4169,6 +4195,7 @@ The second argument to `fopen` is the **mode string**:
 | `"w+"` | Read and write (creates or truncates) |
 | `"a+"` | Read and append |
 
+\index{fopen!binary mode}
 To open a file in **binary mode**, add `b` to the mode string: `"rb"`, `"wb"`, `"ab"`, etc. On Unix systems, binary and text modes behave identically.
 On Windows, text mode translates `\r\n` to `\n` on input and vice versa on output — binary mode does not.
 
@@ -4204,6 +4231,7 @@ snprintf(buf, sizeof(buf), "Track %02d: %s", 3, "99 Luftballons");
 `snprintf` guarantees it will not write more than `sizeof(buf)` bytes, including the null terminator.
 :::
 
+\index{asprintf}
 `asprintf` (POSIX) goes one step further — it `malloc`s a buffer that is exactly the right size, so you never have to guess:
 
 ```c
@@ -4435,6 +4463,9 @@ When your program starts, three file descriptors are already open:
 
 | File Descriptor | POSIX Name | Purpose |
 |:---|:---|:---|
+\index{STDIN\_FILENO}
+\index{STDOUT\_FILENO}
+\index{STDERR\_FILENO}
 | 0 | `STDIN_FILENO` | Standard input |
 | 1 | `STDOUT_FILENO` | Standard output |
 | 2 | `STDERR_FILENO` | Standard error |
@@ -4447,6 +4478,7 @@ They correspond to `stdin`, `stdout`, and `stderr` from `<stdio.h>`, but at a lo
 
 \index{read}
 \index{write}
+\index{ssize\_t}
 
 ```c
 ssize_t read(int fd, void *buf, size_t count);
@@ -4503,6 +4535,7 @@ write(1, buf, n);
 close(fd);
 ```
 
+\index{open!flags}
 The second argument to `open` is a set of flags combined with bitwise OR:
 
 | Flag | Purpose |
@@ -4520,9 +4553,11 @@ To **create a new file** (or truncate an existing one), combine flags:
 int fd = open("output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 ```
 
+\index{file permissions}
 The third argument (`0644`) is the **file permissions** — only used with `O_CREAT`.
 The value `0644` means the owner can read and write, and everyone else can only read.
 
+\index{creat}
 There is also `creat`, which is equivalent to `open` with `O_WRONLY | O_CREAT | O_TRUNC`:
 
 ```c
@@ -4574,6 +4609,8 @@ The three `SEEK_` constants control where the offset is relative to:
 `lseek` returns the new offset from the beginning of the file, or -1 on error.
 
 ::: {.tip}
+\index{fseek}
+\index{ftell}
 **Tip:** In `<stdio.h>`, the equivalent functions are `fseek` and `ftell`.
 The low-level `lseek` combines both: calling `lseek(fd, 0, SEEK_CUR)` returns the current position without moving, just like `ftell`.
 :::
@@ -4741,6 +4778,7 @@ Reserve `exit` for truly fatal errors.
 \index{extern ""C""}
 
 If you are writing C++ code that needs to call functions from a C library, you need `extern "C"`.
+\index{name mangling}
 The reason: C++ **mangles** function names to support overloading (so `void foo(int)` and `void foo(double)` have different symbol names), but C does not.
 Without `extern "C"`, the C++ linker looks for the mangled name and cannot find the C function.
 
@@ -4833,6 +4871,7 @@ Getting ownership wrong leads to either memory leaks (never freeing) or double-f
 
 In C++, you can `throw` an exception and let a `catch` block handle it several call levels up.
 C has no exceptions.
+\index{error handling!return codes}
 Error handling is done through return codes, and cleanup is your responsibility.
 
 The simplest pattern is to check return values and bail out:
@@ -4892,6 +4931,7 @@ It is the closest thing C has to RAII — a structured way to ensure resources a
 \index{errno}
 \index{perror}
 The other common strategy is to return an error code (often `-1` or `NULL`) and let the caller decide what to do.
+\index{strerror}
 Many C library functions set the global variable `errno` to indicate what went wrong, and you can use `perror` or `strerror(errno)` to get a human-readable message:
 
 ```c
@@ -5205,6 +5245,7 @@ Words by Claude, the Opus.*
 
 In C++, you have `constexpr` for compile-time constants, templates for generic code, and `inline` functions to avoid call overhead.
 C has none of those.
+\index{preprocessor}
 Instead, C leans heavily on the **preprocessor** — the `#define` macro system that rewrites your source code *before* the compiler sees it.
 
 Macros are pure textual substitution.
@@ -5246,6 +5287,8 @@ Macros also control which code the compiler sees:
 #endif
 ```
 
+\index{\#ifdef}
+\index{\#ifndef}
 `#ifdef` checks whether a macro is defined (regardless of its value).
 Its complement `#ifndef` checks that a macro is *not* defined.
 You can also use `#if`, `#elif`, and `#else` for more complex conditions:
@@ -5284,6 +5327,7 @@ The first time `myheader.h` is included, `MYHEADER_H` is not defined, so the con
 Any subsequent include finds `MYHEADER_H` already defined and skips the entire file.
 
 ::: {.tip}
+\index{\#pragma once}
 **Tip:** Many compilers support `#pragma once` as a non-standard alternative to include guards.
 It is simpler to write but not portable to all compilers.
 When in doubt, use the `#ifndef` guard — it works everywhere.
@@ -5346,6 +5390,7 @@ The expression will be evaluated multiple times, producing unexpected results or
 
 ### Multi-Statement Macros: `do { ... } while (0)`
 
+\index{macro!do-while(0) idiom}
 If a macro needs to execute multiple statements, wrap them in `do { ... } while (0)`:
 
 ```c
@@ -5446,6 +5491,7 @@ C23 standardizes this behavior with `__VA_OPT__`.
 
 ## Multi-Level Expansion
 
+\index{macro!multi-level expansion}
 Macros can expand to other macros, and the preprocessor **rescans** the result to expand again.
 But the `#` and `##` operators are special — they operate on the raw argument text *before* any expansion happens.
 
