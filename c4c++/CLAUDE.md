@@ -71,15 +71,23 @@ do not repeat these in new or modified examples:
 - Joan Jett, I Love Rock 'n' Roll, Crazy Train, Scorpions, Rock You Like a Hurricane
 - Iron Man, Bad Reputation, Big City Nights, Bad Boys Running Wild
 
+## Cross-References Between Chapters
+
+- when a concept is introduced in one chapter and used in a later chapter, reference the earlier chapter rather than re-explaining it
+- Ch 2 (Variables) introduces arrays, const with pointers, and structs; Ch 5 (Pointers) should reference Ch 2 for these basics and focus on pointer-specific details (pointer arithmetic, ->, etc.)
+- Ch 5 (Pointers) introduces pass by value with pointer workaround; Ch 6 (Functions) should reference Ch 5 rather than repeating the explanation
+- Ch 6 (Functions) introduces function pointers; Ch 12 (Odds and Ends) should reference Ch 6 and focus on qsort as a practical example
+- Ch 4 (Control Flow) briefly introduces goto cleanup with a reference forward to Ch 12; Ch 12 covers it in depth
+
 ## Content
 
 DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowercase to match the author's informal writing
 
 0. How to use this book:
     - conventions explained
-    -chapter layout
+    - chapter layout
 1. Introduction:
-    - in the begin know C++ automatically meant you know C, but modern C++ has dramatically different idioms and standard libraries than C, so the modern C++ programmer has some things to learn in order to program in C.
+    - in the beginning know C++ automatically meant you know C, but modern C++ has dramatically different idioms and standard libraries than C, so the modern C++ programmer has some things to learn in order to program in C.
     - `The C Programming Language (Second Edition)` my go to textbook.
     - introduce this intro section quoted verbatim from the book and then quote the section for the first section `the-c-programming-language-intro.txt`
     - cover printf: format specifiers (%d, %x/%X, %f, %e, %c, %s, %p, %zu), width/precision, zero-fill, \n for newlines, %% for literal percent
@@ -90,15 +98,15 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - we can use * to declare a variable that holds addresses for data of the given type
     - we can use [] to declare arrays of types
         - tricks to using multi dimensional arrays
-        - the Pointers section will talk about the relationship between arrays and ponters
+        - the Pointers chapter will talk about the relationship between arrays and pointers
         - the "value" of an array is the address of the first element
     - const is used to mark a variable as unchanging.
-        - const is a bit tricky to use with *, depending where the const is it prevents the pointer from changing or it prevent what the pointer is pointing to from being changed through the pointer
+        - const is a bit tricky to use with *, depending where the const is it prevents the pointer from changing or it prevents what the pointer is pointing to from being changed through the pointer
     - structures allow data to be grouped together
         - unlike C++, only member variables allowed -- no member functions; although, you can use function pointers (described later)
         - members accessed with . operator
         - assignment does a copy
-2. Expressions
+3. Expressions
     - assignment operators
     - math operators
     - logical operators
@@ -106,50 +114,50 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - compound assignment operators
     - ternary operator
     - operator precedence
-2. Control flow
+4. Control flow
     - if statements
     - while loop/do while
-        -break/continue
+        - break/continue
     - for loops
     - switch statements
-    - goto
-2. Pointers
+    - goto (brief intro with reference forward to Ch 12 for full cleanup pattern)
+5. Pointers
     - modern C++ programmers rarely see pointers and thus can get away with not fully understanding them, but C programmers must be very comfortable with pointers
     - a type that ends in * represents a pointer. the type information before the * represents the type of the memory that the pointer points to
     - all pointers are an address to a location in memory
     - you can get the address of a variable using & (including addresses of a pointer variable)
     - create a figure of a small program with a couple of variables and pointers to those variables and one pointer to one of the pointers and then show a memory diagram and label addresses of those variable
     - explain that a pointer can point to a single value stored in memory or the first element of an array of elements
-    - explain that a[i] is much more convenient to write than *(a+i)
-    - show pointers with structures
-    - explain that s->f is much more convenient to write than (*a).f since . has precendence over *
-3. Functions
-    - everything is pass by value
-    - all function parameters are `pass by value` (no `pass by reference`) but we can pass pointers to memory we want to change by value
+    - pointer arithmetic and explain that a[i] is much more convenient to write than *(a+i) — reference Ch 2 for array decay basics
+    - show the -> operator for accessing struct members through pointers — reference Ch 2 for struct basics
+    - pass by value with pointer workaround
+6. Functions
+    - declarations vs definitions, forward declarations, void parameter lists
+    - all function parameters are `pass by value` (no `pass by reference`) — reference Ch 5 rather than re-explaining
     - const parameters. why they are important
     - structures can be problematic to pass by value, why const struct type *var is useful
     - recursive functions
-    - function pointers
-3. Allocating memory
+    - function pointers (basics, typedef, callbacks)
+7. Allocating memory
     - global variables get started at the beginning of a program and stay around until the program finishes
     - local variables are declared inside of functions and go away when the function goes away
     - static local variables have the scope of a local but the lifetime of a global
     - if we want to allocate memory, use it for a while and release it, we can use malloc() and free()
     - memcpy and memset for working with raw memory (memmove for overlapping regions)
-4. Strings
+8. Strings
     - there is no std::string in C++. everything revolves around arrays of characters that end with a null '\0'
     - using strings, you always have to careful have the right amount of memory allocated. (remember to include space for the null!)
     - string manipulation routines: strlen(), strchr(), strrchr(), strstr(), strcat(), strdup(), strtok() (include any additional ones that students should know)
     - recommend strtok_r (POSIX) or strtok_s (C11/Windows) over strtok for thread safety
     - review the problems that can arise using strcat()
     - point out that there are convenient ways to manipulate strings with sprintf() and sscanf that will be shown later in I/O
-5. numbers and casting
+9. Numbers and casting
     - to the CPU everything is a number. the numbers can be different sizes and can be used for different things
         - different number bits gives a different range of values
-        - a char is just a number; assigning 'A' is the name as assigning 65
+        - a char is just a number; assigning 'A' is the same as assigning 65
         - a pointer is just a number as well, its just a number that represents a memory address; when we use a type and * we let the compiler know how to interpret the number
     - the types we give to numbers indicates how we plan to use the number
-    - a pointer type tell the compiler that you want to use the number as an address
+    - a pointer type tells the compiler that you want to use the number as an address
     - C doesn't know about strings, it only knows about arrays of characters, and libraries allow us to work with them as strings
     - converting numbers to string and strings to numbers
     - casts
@@ -157,7 +165,7 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
         - simpler than C++ casts, but no magic happens
         - you are asserting to the compiler that you know what you are doing
         - TRAP: casting a char * to an int doesn't convert a string to an integer value, it converts the address to an integer value. use strtol() to convert a string to an integer value
-5. stdio
+10. Standard I/O
     - printf for output and scanf for input
     - show examples of reading input explain why & is needed
     - explain stdin, stdout, stderr
@@ -167,15 +175,15 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - sprintf, sscanf, and snprintf for string formatting
     - explain buffering and fflush
     - add tip explaining \n and flush behavior when output going to terminal vs file
-6. I/O
+11. Low-Level I/O
     - explain file descriptors starting with 0, 1, and 2
     - show read() and write() with file descriptors
-    - explain open() and create() and how to do create with open()
-    - explain seek() and tell()
+    - explain open() and creat() and how to do creat with open()
+    - explain lseek()
     - explain pread() and pwrite()
-7. Misc
+12. Odds and Ends
     - explain exit() and when it might be more useful than return
     - explain using extern "C" to use c functions from c++
     - explain why they should always wonder about ownership when the receive a pointer from the function they just called (should they free it?)
     - explain error handling without exceptions: return codes, errno/perror, and goto cleanup pattern for releasing multiple resources
-    - explain function pointers and qsort as C's replacement for lambdas and std::sort
+    - qsort as a practical example of function pointers — reference Ch 6 for function pointer basics
