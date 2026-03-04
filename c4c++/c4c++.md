@@ -2069,39 +2069,22 @@ Both `p` and `q` are `int *`. The compiler does not know whether there are more
 `int` values after the one being pointed to. It is up to you, the programmer, to
 keep track of how many elements a pointer refers to and to stay within bounds.
 
-\index{array!decay to pointer}
-In C, arrays and pointers are intimately connected. When you use an array name
-in most expressions, it **decays** to a pointer to the first element. ("Decays" is the technical term — the array loses its size information and becomes a plain pointer.)
-
-```c
-int nums[] = {10, 20, 30, 40, 50};
-int *p = nums;       // p points to nums[0]; no & needed
-
-printf("%d\n", *p);       // 10 (same as nums[0])
-printf("%d\n", *(p + 1)); // 20 (same as nums[1])
-printf("%d\n", p[2]);     // 30 — yes, you can use [] on pointers!
-```
-
-Another way to see the decay in action is to notice that the expressions `nums` and `&nums` produce the same address.
-
-```c
-int nums[] = {10, 20, 30, 40, 50};
-printf("%p %p\n", (void *)nums, (void *)&nums);  // same address printed twice
-```
+You already saw in the Variables chapter that an array name decays to a pointer
+to its first element. Now let's see what that lets you do.
 
 \index{pointer!arithmetic}
 **Pointer arithmetic** works in units of the pointed-to type. If `p` is an
 `int *` and `int` is 4 bytes, then `p + 1` advances the address by 4 bytes to
 the next `int`. You never have to think about byte sizes — the compiler handles
-it.
+it:
 
 ```c
-int nums[] = {10, 20, 30};
+int nums[] = {10, 20, 30, 40, 50};
 int *p = nums;
 
-for (int i = 0; i < 3; i++) {
-    printf("nums[%d] = %d\n", i, *(p + i));
-}
+printf("%d\n", *p);       // 10 (same as nums[0])
+printf("%d\n", *(p + 1)); // 20 (same as nums[1])
+printf("%d\n", p[2]);     // 30 — yes, you can use [] on pointers!
 ```
 
 ::: {.tip}
@@ -2113,11 +2096,10 @@ arrays and pointers relate.
 
 ## Pointers and Structures
 
-\index{struct}
-
-In C, you use `struct` to group related data — much like a class with only
-public data members in C++. Pointers to structures are extremely common; almost
-any non-trivial C program passes struct pointers around.
+You already know how to declare structs and access members with `.` from the
+Variables chapter. Pointers to structures are extremely common in C — almost any
+non-trivial program passes struct pointers around rather than copying entire
+structs.
 
 ```c
 struct song {
@@ -2127,18 +2109,6 @@ struct song {
 
 struct song track = {"Karma Chameleon", 1983};
 struct song *p = &track;
-```
-
-When a structure is stored in memory, all of its members will be stored in the same chunk of memory.
-For example, if you look at the memory where `track` is stored, you will see 40 bytes reserved for the title and four bytes (on most systems) reserved for the year.
-The layout can include padding to make memory access more efficient.
-For example, if `title` were only 39 bytes there may still be a byte between the `title` and `year` to make `year`'s memory address 4-byte aligned.
-
-You can access members of a structure directly using the `.` operator:
-
-```c
-printf("Title: %s\n", track.title);
-printf("Year: %d\n", track.year);
 ```
 
 To access a field through a pointer, you must dereference the pointer first.
@@ -2411,27 +2381,10 @@ greet("Iron Man", 3);   // must pass both arguments
 
 ## Pass by Value
 
-\index{pass by value}
-
 As you saw in the Pointers chapter, all function parameters in C are pass by
-value. The function receives a copy of each argument. To modify a caller's
-variable, you pass a pointer to it:
-
-```c
-void double_it(int *x) {
-    *x *= 2;
-}
-
-int main(void) {
-    int power = 50;
-    double_it(&power);
-    printf("power = %d\n", power);   // power = 100
-    return 0;
-}
-```
-
-There is nothing new here — just remember that C has no `&` reference
-parameters. Every "output" parameter is a pointer.
+value — the function receives a copy of each argument. To modify a caller's
+variable, pass a pointer. There are no `&` reference parameters in C; every
+"output" parameter is a pointer.
 
 ## `const` Parameters
 
@@ -5070,53 +5023,12 @@ if (!f) {
 }
 ```
 
-## Function Pointers and `qsort`
+## `qsort` — Function Pointers in Action
 
-\index{function pointer}
 \index{qsort}
 
-In C++, you pass behavior to functions using lambdas, `std::function`, or
-template parameters. C has none of those — instead, you use **function
-pointers**. A function pointer holds the address of a function, and you can
-call it just like a regular function.
-
-Here is a simple example:
-
-```c
-#include <stdio.h>
-
-int add(int a, int b) { return a + b; }
-int mul(int a, int b) { return a * b; }
-
-int main(void) {
-    int (*op)(int, int);   // declare a function pointer
-
-    op = add;
-    printf("%d\n", op(3, 4));   // 7
-
-    op = mul;
-    printf("%d\n", op(3, 4));   // 12
-    return 0;
-}
-```
-
-The declaration `int (*op)(int, int)` reads: `op` is a pointer to a function
-that takes two `int` parameters and returns an `int`. The parentheses around
-`*op` are required — without them, `int *op(int, int)` would declare a
-function that returns an `int *`.
-
-::: {.tip}
-**Tip:** Function pointer declarations are notoriously hard to read. A
-`typedef` makes them much clearer:
-
-```c
-typedef int (*binop_fn)(int, int);
-binop_fn op = add;
-printf("%d\n", op(3, 4));
-```
-:::
-
-The most common place you will encounter function pointers is the standard
+You learned about function pointers in the Functions chapter. The most common
+place you will encounter them in practice is the standard
 library function `qsort` from `<stdlib.h>`. In C++, you would use
 `std::sort` with a lambda or comparator. In C, `qsort` takes a comparison
 function pointer:
@@ -5284,8 +5196,8 @@ free_buf:
   memory: you, the function, or a library.
 - C has no exceptions. Use return codes for errors and `goto` cleanup for
   releasing resources in the correct order.
-- Function pointers let you pass behavior to functions. `qsort` is the most
-  common example — it takes a comparison function pointer to sort any type.
+- `qsort` is the most common use of function pointers — it takes a comparison
+  callback to sort any type.
 
 ## Exercises
 
