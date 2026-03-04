@@ -1457,9 +1457,9 @@ normal output is redirected. To redirect `stderr` as well, you would use
 
 ---
 
-**7. Write a program** that opens a text file, writes five lines to it, closes
-it, reopens it for reading, reads and prints each line using `fgets`, then
-closes it again.
+**7. Write a program** that opens a text file, writes five lines to it (your
+choice of content), closes it, reopens it for reading, reads and prints each
+line using `fgets`, then closes it again.
 
 **Answer:**
 
