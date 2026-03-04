@@ -71,6 +71,17 @@ do not repeat these in new or modified examples:
 - Joan Jett, I Love Rock 'n' Roll, Crazy Train, Scorpions, Rock You Like a Hurricane
 - Iron Man, Bad Reputation, Big City Nights, Bad Boys Running Wild
 
+# next 80s references
+
+the next 80s songs to use
+
+- living on a prayer
+- i can't drive 55
+- hysteria
+- 2112
+- we got the beat
+- walk like an egyptian
+
 ## Cross-References Between Chapters
 
 - when a concept is introduced in one chapter and used in a later chapter, reference the earlier chapter rather than re-explaining it
