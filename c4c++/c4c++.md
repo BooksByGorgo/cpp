@@ -410,6 +410,9 @@ ulong population = 4000000000UL;
 byte channel = 83;
 ```
 
+To remember the syntax, notice that without the `typedef` above, `byte` would have been a variable named `byte` of type `unsigned char`.
+With the `typedef`, instead of declaring `byte` to be a variable, we are declaring it to be the name of a new type alias.
+
 One of the most common uses of `typedef` is to simplify struct declarations.
 Without `typedef`, you must write `struct` every time you use the type:
 
@@ -3849,6 +3852,7 @@ Casts in C are much simpler than in C++.
 They are also much less magical!
 C has a single unified cast syntax `(type)value`.
 You can only cast between scalar types (integers, floating-point, and pointers).
+Remember that `char` is an integer type.
 The following table summarizes the allowed casts:
 
 | From / To | Integer | Floating-Point | Pointer |
