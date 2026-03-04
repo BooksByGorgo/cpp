@@ -547,24 +547,25 @@ is `dos tres` followed by a newline.
 
 ```c
 int total = 0;
-for (int i = 0; i < 10; i++);
+int i;
+for (i = 0; i < 10; i++);
 {
     total += i;
 }
 printf("Total: %d\n", total);
 ```
 
-**Answer:** There are two bugs. First, there is a stray semicolon after the
-`for` statement: `for (int i = 0; i < 10; i++);`. This semicolon is an empty
-statement, making it the entire body of the loop. The loop runs 10 times doing
-nothing. Second, the variable `i` is declared inside the `for` and goes out of
-scope after the loop ends. The block `{ total += i; }` is a separate block
-where `i` is not defined — this will not compile. The fix is to remove the
+**Answer:** There is a stray semicolon after the `for` statement:
+`for (i = 0; i < 10; i++);`. This semicolon is an empty statement, making it
+the entire body of the loop. The loop runs 10 times doing nothing. Then the
+block `{ total += i; }` executes once with `i` equal to 10 (its value after
+the loop finishes). So `total` is 10, not 45. The fix is to remove the
 semicolon:
 
 ```c
 int total = 0;
-for (int i = 0; i < 10; i++) {
+int i;
+for (i = 0; i < 10; i++) {
     total += i;
 }
 printf("Total: %d\n", total);   /* prints Total: 45 */
@@ -927,31 +928,36 @@ Since `fn` points to `mul`, this computes `6 * 7 = 42`.
 **6. Where is the bug?**
 
 ```c
-int get_length(void);
-int get_length() { return 42; }
+void swap(int a, int b) {
+    int tmp = a;
+    a = b;
+    b = tmp;
+}
 
 int main(void) {
-    printf("%d\n", get_length(1, 2, 3));
+    int x = 10, y = 20;
+    swap(x, y);
+    printf("x=%d y=%d\n", x, y);
     return 0;
 }
 ```
 
-**Answer:** There is a mismatch between the prototype and the definition.
-The prototype `int get_length(void)` declares the function as taking no
-parameters. The definition `int get_length()` uses an empty parameter list,
-which in C means "unspecified parameters" — the compiler will not check the
-argument count or types. The call `get_length(1, 2, 3)` passes three arguments
-to a function that expects none. Because the definition uses `()` instead of
-`(void)`, the compiler may not catch the error.
-
-The fix is to use `(void)` consistently in both the prototype and definition:
+**Answer:** The `swap` function takes its parameters by value, so `a` and `b`
+are local copies. Swapping them has no effect on the caller's `x` and `y`. The
+program prints `x=10 y=20`. In C, you must pass pointers to modify the
+caller's variables:
 
 ```c
-int get_length(void);
-int get_length(void) { return 42; }
+void swap(int *a, int *b) {
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
 
 int main(void) {
-    printf("%d\n", get_length());   /* no arguments */
+    int x = 10, y = 20;
+    swap(&x, &y);
+    printf("x=%d y=%d\n", x, y);   /* x=20 y=10 */
     return 0;
 }
 ```

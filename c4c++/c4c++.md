@@ -972,6 +972,7 @@ a true modulo that always returns a non-negative value, you need to adjust the
 result yourself:
 
 ```c
+/* assumes m > 0 */
 int mod(int a, int m) {
     int r = a % m;
     return r < 0 ? r + m : r;
@@ -1856,7 +1857,8 @@ int main(void) {
 
     ```c
     int total = 0;
-    for (int i = 0; i < 10; i++);
+    int i;
+    for (i = 0; i < 10; i++);
     {
         total += i;
     }
@@ -2547,9 +2549,10 @@ would use an iterative approach or memoization.
 
 Every function call pushes a new frame onto the call stack. Recursive functions
 can exhaust the stack if the recursion goes too deep. There is no built-in
-protection — C will not throw a `std::bad_alloc` or a stack overflow exception.
-The program will simply crash (usually with a segmentation fault). Keep your
-recursion depth reasonable, or convert deep recursion to iteration.
+protection — C has no exception mechanism, so there is no stack overflow
+exception to catch. The program will simply crash (usually with a segmentation
+fault). Keep your recursion depth reasonable, or convert deep recursion to
+iteration.
 
 ## Function Pointers
 
@@ -2782,11 +2785,16 @@ int main(void) {
 6. **Where is the bug?**
 
     ```c
-    int get_length(void);
-    int get_length() { return 42; }
+    void swap(int a, int b) {
+        int tmp = a;
+        a = b;
+        b = tmp;
+    }
 
     int main(void) {
-        printf("%d\n", get_length(1, 2, 3));
+        int x = 10, y = 20;
+        swap(x, y);
+        printf("x=%d y=%d\n", x, y);
         return 0;
     }
     ```
@@ -3840,7 +3848,7 @@ A **cast** is a way of forcing the compiler to treat a value of one type as anot
 Casts in C are much simpler than in C++.
 They are also much less magical!
 C has a single unified cast syntax `(type)value`.
-You can only cast between numeric types (`scalar` type is the term usually used), including pointers.
+You can only cast between scalar types (integers, floating-point, and pointers).
 The following table summarizes the allowed casts:
 
 | From / To | Integer | Floating-Point | Pointer |
