@@ -300,7 +300,1596 @@ int main(void) {
 
 \newpage
 
-# 2. Pointers
+# 2. Variables
+
+In C++, you have `auto` to let the compiler figure out types, `std::string` to
+handle text, and classes to bundle data with behavior. In C, none of that
+exists. Every type is explicit, strings are raw character arrays, and if you
+want to group data together, you use a `struct` with no member functions. This
+chapter covers how C handles variables — from basic types and arrays to
+pointers, `const`, and structures.
+
+## Basic Types
+
+\index{types}
+
+C provides a small set of built-in types. There are no classes, no
+`std::string`, and no `bool` keyword (without a header). Here are the types you
+will use most:
+
+| Type | Typical Size | Description |
+|:---|:---|:---|
+| `char` | 1 byte | A single character (or small integer) |
+| `short` | 2 bytes | Short integer |
+| `int` | 4 bytes | Standard integer |
+| `long` | 4 or 8 bytes | Long integer (platform-dependent) |
+| `long long` | 8 bytes | At least 64-bit integer |
+| `float` | 4 bytes | Single-precision floating point |
+| `double` | 8 bytes | Double-precision floating point |
+| `_Bool` | 1 byte | Boolean (C99); use `bool` via `<stdbool.h>` |
+
+\index{unsigned}
+Each integer type has an `unsigned` variant that stores only non-negative
+values, giving you twice the positive range. For example, a `signed char` holds
+-128 to 127, while an `unsigned char` holds 0 to 255:
+
+```c
+unsigned char brightness = 255;
+unsigned int count = 4000000000U;
+```
+
+::: {.tip}
+**Tip:** C99 added `<stdbool.h>`, which defines `bool`, `true`, and `false`.
+Without it, you must use `_Bool` for the type and integer values `0` and `1`.
+Most modern C code includes `<stdbool.h>` and uses `bool` just like C++.
+:::
+
+\index{stdbool.h}
+
+```c
+#include <stdbool.h>
+
+bool done = false;
+if (!done) {
+    /* keep going */
+}
+```
+
+## Variables as Named Memory
+
+\index{variable}
+
+A variable declaration does two things: it allocates a region of memory large
+enough to hold the declared type, and it gives that region a name. The amount of
+memory allocated depends on the type:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    char letter = 'J';
+    int year = 1981;
+    double rating = 9.5;
+
+    printf("char:   %zu bytes\n", sizeof(letter));   // 1
+    printf("int:    %zu bytes\n", sizeof(year));      // 4
+    printf("double: %zu bytes\n", sizeof(rating));    // 8
+
+    return 0;
+}
+```
+
+\index{sizeof}
+The `sizeof` operator returns the size in bytes of a type or variable. It
+evaluates at compile time, so there is no runtime cost. You can use it with a
+type name or with a variable:
+
+```c
+printf("int is %zu bytes\n", sizeof(int));
+printf("year is %zu bytes\n", sizeof(year));
+```
+
+::: {.tip}
+**Tip:** `sizeof` returns a value of type `size_t`. Always use `%zu` to print
+it. Using `%d` is technically undefined behavior, even though it often appears
+to work.
+:::
+
+## typedef
+
+\index{typedef}
+
+The `typedef` keyword creates an alias for an existing type. It does not create
+a new type — it just gives you a shorter or more descriptive name:
+
+```c
+typedef unsigned long ulong;
+typedef unsigned char byte;
+
+ulong population = 4000000000UL;
+byte channel = 83;
+```
+
+One of the most common uses of `typedef` is to simplify struct declarations.
+Without `typedef`, you must write `struct` every time you use the type:
+
+```c
+struct point {
+    double x;
+    double y;
+};
+
+struct point origin;   /* must say "struct point" every time */
+```
+
+With `typedef`, you can drop the `struct` keyword:
+
+```c
+typedef struct {
+    double x;
+    double y;
+} Point;
+
+Point origin = {0.0, 0.0};   /* much cleaner */
+```
+
+::: {.tip}
+**Tip:** In C++, you can use a struct name directly as a type. In C, you cannot
+— you must either write `struct name` every time or use `typedef` to create an
+alias. Most C codebases use `typedef` for any struct that appears frequently.
+:::
+
+## Pointer Declarations
+
+\index{pointer!declaration}
+
+A pointer variable holds the address of another variable. You declare a pointer
+by placing `*` after the base type:
+
+```c
+int score = 100;
+int *p = &score;   /* p holds the address of score */
+```
+
+The type before the `*` tells the compiler what kind of data lives at that
+address. An `int *` points to an `int`, a `char *` points to a `char`, and so
+on.
+
+We will not go deeper into pointers here. The Pointers chapter covers
+dereferencing, pointer arithmetic, pointers to pointers, and how pointers
+interact with arrays and structures in detail.
+
+## Arrays
+
+\index{array}
+
+An array is a fixed-size sequence of elements of the same type, declared with
+`[]`:
+
+```c
+int scores[5];                          /* 5 uninitialized ints */
+int primes[5] = {2, 3, 5, 7, 11};      /* initialized */
+char greeting[] = "Hola";              /* compiler counts: 5 chars (including '\0') */
+```
+
+When you provide an initializer, the compiler can determine the size for you, so
+you can leave the brackets empty.
+
+### The "Value" of an Array Name
+
+\index{array!decay to pointer}
+
+In most expressions, the name of an array evaluates to the address of its first
+element. This is called **decay** — the array "decays" into a pointer:
+
+```c
+int primes[5] = {2, 3, 5, 7, 11};
+int *p = primes;    /* p points to primes[0]; no & needed */
+```
+
+This is why you can pass an array to a function that expects a pointer. The
+Pointers chapter will explore this relationship thoroughly.
+
+::: {.tip}
+**Wut:** The `sizeof` operator is one of the few contexts where an array does
+*not* decay to a pointer. `sizeof(primes)` gives the total size of the array
+(20 bytes for 5 ints), not the size of a pointer.
+:::
+
+### Initialization
+
+You can partially initialize an array — remaining elements are set to zero:
+
+```c
+int totals[10] = {1, 2, 3};   /* totals[3] through totals[9] are 0 */
+int zeros[100] = {0};          /* all 100 elements are 0 */
+```
+
+### Multidimensional Arrays
+
+\index{array!multidimensional}
+
+C supports multidimensional arrays. A two-dimensional array is really an array
+of arrays, stored in **row-major** order — all elements of row 0 come first,
+then all elements of row 1, and so on:
+
+```c
+int grid[3][4] = {
+    {1,  2,  3,  4},
+    {5,  6,  7,  8},
+    {9, 10, 11, 12}
+};
+```
+
+In memory, this is stored as: `1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12` — twelve
+consecutive integers. The expression `grid[r][c]` accesses row `r`, column `c`.
+
+Iterating through a 2D array:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    int grid[3][4] = {
+        {1,  2,  3,  4},
+        {5,  6,  7,  8},
+        {9, 10, 11, 12}
+    };
+
+    for (int r = 0; r < 3; r++) {
+        for (int c = 0; c < 4; c++) {
+            printf("%3d", grid[r][c]);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+```
+
+::: {.tip}
+**Trap:** When passing a multidimensional array to a function, you must specify
+all dimensions except the first. The compiler needs the column count to
+calculate offsets:
+
+```c
+void print_grid(int grid[][4], int rows);   /* OK — column size specified */
+```
+
+You cannot write `int grid[][]` — the compiler would not know how wide each row
+is.
+:::
+
+## const
+
+\index{const}
+
+The `const` qualifier marks a variable as read-only. Any attempt to modify it is
+a compile-time error:
+
+```c
+const int MAX_TRACKS = 12;
+const double PI = 3.14159265358979;
+```
+
+### const with Pointers
+
+\index{const!with pointers}
+
+Things get interesting when `const` meets pointers. There are three
+combinations, and the **read right-to-left** rule helps you decode them:
+
+**Pointer to const data** — you cannot modify the data through this pointer, but
+you can change where the pointer points:
+
+```c
+const int *p = &x;
+*p = 10;      /* ERROR: cannot modify data through p */
+p = &y;       /* OK: p itself can change */
+```
+
+Read right-to-left: `p` is a pointer (`*`) to `int` that is `const`. The data
+is const, not the pointer.
+
+**const pointer to data** — the pointer itself cannot change, but you can modify
+the data it points to:
+
+```c
+int *const p = &x;
+*p = 10;      /* OK: data can be modified */
+p = &y;       /* ERROR: p itself is const */
+```
+
+Read right-to-left: `p` is a `const` pointer (`*`) to `int`. The pointer is
+const, not the data.
+
+**const pointer to const data** — neither the pointer nor the data can change:
+
+```c
+const int *const p = &x;
+*p = 10;      /* ERROR */
+p = &y;       /* ERROR */
+```
+
+::: {.tip}
+**Tip:** The most common form is `const int *p` — a pointer through which you
+promise not to modify the data. You will see this constantly in function
+parameters, like `const char *msg`, where the function reads the data but does
+not change it.
+:::
+
+## Structures
+
+\index{struct}
+
+A `struct` groups related variables together under one name. If you come from
+C++, think of a struct as a class with only public data members — no member
+functions, no constructors, no destructors, and no access specifiers:
+
+```c
+struct song {
+    char title[40];
+    int year;
+};
+```
+
+### Declaring and Initializing
+
+To declare a variable of a struct type, you write `struct` followed by the tag
+name:
+
+```c
+struct song track;
+track.year = 1981;
+```
+
+You can also initialize at declaration time:
+
+```c
+struct song track = {"I Love Rock 'n' Roll", 1981};
+```
+
+With a `typedef`, you can skip the `struct` keyword:
+
+```c
+typedef struct {
+    char title[40];
+    int year;
+} Song;
+
+Song track = {"I Love Rock 'n' Roll", 1981};
+```
+
+### Accessing Members
+
+\index{struct!member access}
+
+Use the `.` operator to access members:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    struct song {
+        char title[40];
+        int year;
+    };
+
+    struct song track = {"I Love Rock 'n' Roll", 1981};
+
+    printf("Title: %s\n", track.title);   // I Love Rock 'n' Roll
+    printf("Year: %d\n", track.year);     // 1981
+
+    return 0;
+}
+```
+
+### Assignment Copies
+
+\index{struct!assignment}
+
+Assigning one struct to another copies the entire contents — every byte:
+
+```c
+struct song original = {"I Love Rock 'n' Roll", 1981};
+struct song copy = original;
+
+printf("%s (%d)\n", copy.title, copy.year);   // I Love Rock 'n' Roll (1981)
+```
+
+This is a **shallow copy**. If the struct contained a pointer, both copies would
+point to the same memory. For structs that contain only arrays and plain values
+(like `struct song` above), the copy is complete and independent.
+
+::: {.tip}
+**Wut:** Unlike C++, there is no copy constructor or `operator=` to customize
+what happens during assignment. C copies the raw bytes, period. If your struct
+contains a pointer to dynamically allocated memory, the copy will share that
+memory, leading to double-free bugs if you are not careful.
+:::
+
+### No Member Functions
+
+In C++, you might write:
+
+```cpp
+class Song {
+public:
+    void print() { std::cout << title << " (" << year << ")\n"; }
+    // ...
+};
+```
+
+In C, structs cannot have member functions. Instead, you write standalone
+functions that take a pointer to the struct:
+
+```c
+void song_print(const struct song *s) {
+    printf("%s (%d)\n", s->title, s->year);
+}
+```
+
+The `->` operator accesses a member through a pointer — it is shorthand for
+`(*s).title`. We will cover this in detail in the Pointers chapter.
+
+::: {.tip}
+**Tip:** A common C pattern is to prefix functions with the struct name they
+operate on: `song_print`, `song_init`, `song_compare`. This gives you something
+like namespaced methods. Function pointers (covered in a later chapter) can even
+be stored in structs to simulate virtual functions.
+:::
+
+## Try It: Variables Starter
+
+```c
+#include <stdio.h>
+#include <stdbool.h>
+
+struct song {
+    char title[40];
+    int year;
+};
+
+int main(void) {
+    /* Basic types and sizeof */
+    char initial = 'J';
+    int year = 1981;
+    double rating = 9.5;
+    bool classic = true;
+
+    printf("=== Sizes ===\n");
+    printf("char:   %zu byte\n", sizeof(initial));
+    printf("int:    %zu bytes\n", sizeof(year));
+    printf("double: %zu bytes\n", sizeof(rating));
+    printf("bool:   %zu byte\n", sizeof(classic));
+
+    /* Arrays */
+    int scores[] = {95, 87, 92, 78, 100};
+    int n = sizeof(scores) / sizeof(scores[0]);
+    printf("\n=== Array ===\n");
+    for (int i = 0; i < n; i++) {
+        printf("scores[%d] = %d\n", i, scores[i]);
+    }
+    printf("Total array size: %zu bytes (%d elements)\n",
+           sizeof(scores), n);
+
+    /* const */
+    const int MAX = 100;
+    printf("\nMAX = %d\n", MAX);
+
+    /* Struct */
+    struct song track = {"I Love Rock 'n' Roll", 1981};
+    printf("\n=== Struct ===\n");
+    printf("Title: %s\n", track.title);
+    printf("Year:  %d\n", track.year);
+    printf("Size:  %zu bytes\n", sizeof(track));
+
+    /* Struct copy */
+    struct song backup = track;
+    printf("Copy:  %s (%d)\n", backup.title, backup.year);
+
+    /* 2D array */
+    int grid[2][3] = {{1, 2, 3}, {4, 5, 6}};
+    printf("\n=== 2D Array ===\n");
+    for (int r = 0; r < 2; r++) {
+        for (int c = 0; c < 3; c++) {
+            printf("%3d", grid[r][c]);
+        }
+        printf("\n");
+    }
+
+    return 0;
+}
+```
+
+## Key Points
+
+- C has no `auto`, no `std::string`, and no classes. Every type is spelled out
+  explicitly.
+- A variable declaration allocates memory of the type's size and gives it a
+  name. Use `sizeof` to see how many bytes each type occupies.
+- `typedef` creates type aliases — especially useful for structs so you do not
+  have to write `struct` everywhere.
+- Arrays are fixed-size, and the array name decays to a pointer to the first
+  element in most contexts.
+- Multidimensional arrays are stored in row-major order. When passing them to
+  functions, all dimensions except the first must be specified.
+- `const` marks a variable as read-only. With pointers, read right-to-left to
+  determine what is const — the data, the pointer, or both.
+- Structs group data together but have no member functions, constructors, or
+  access specifiers. Assignment copies the raw bytes.
+
+## Exercises
+
+1. **Think about it:** In C++, `auto x = 42;` lets the compiler deduce the
+   type. C has no `auto` type deduction. What advantage does requiring explicit
+   types give to someone reading unfamiliar C code?
+
+2. **What does this print?**
+
+    ```c
+    int a[] = {10, 20, 30, 40};
+    printf("%zu %zu\n", sizeof(a), sizeof(a[0]));
+    ```
+
+3. **Calculation:** Given the following declarations on a system where `int` is
+   4 bytes, what is `sizeof(grid)`?
+
+    ```c
+    int grid[3][5];
+    ```
+
+4. **Where is the bug?**
+
+    ```c
+    const int MAX = 100;
+    int *p = &MAX;
+    *p = 200;
+    printf("MAX = %d\n", MAX);
+    ```
+
+5. **What does this print?**
+
+    ```c
+    struct point { int x; int y; };
+    struct point a = {3, 7};
+    struct point b = a;
+    b.x = 99;
+    printf("%d %d\n", a.x, b.x);
+    ```
+
+6. **Think about it:** In C, assigning one struct to another copies the raw
+   bytes. What problem could this cause if the struct contains a `char *` member
+   that points to dynamically allocated memory (via `malloc`)? How is this
+   different from what C++ does by default?
+
+7. **Write a program** that declares a `struct student` with fields `name`
+   (a `char` array), `id` (an `int`), and `gpa` (a `double`). Create an array
+   of 3 students, initialize them with values, and print each student's
+   information using a loop. Use `%s`, `%d`, and `%.2f` in your `printf`.
+
+\newpage
+
+# 3. Expressions
+
+C and C++ share most of their operators, and if you have been writing C++ you
+will find the syntax immediately familiar. But there are important differences.
+C has no operator overloading — `+` always means arithmetic addition, never
+something a class author decided it should mean. The `<<` and `>>` operators are
+strictly bitwise shifts, not I/O operations. And C uses `int` for boolean
+results — there is no built-in `bool` type (though C99 added `_Bool` and
+`<stdbool.h>`).
+
+This chapter walks through the operators you will use every day in C, highlights
+a few traps, and ends with the precedence table you will want to bookmark.
+
+## Assignment
+
+\index{assignment operator}
+
+The `=` operator assigns a value to a variable. In C, assignment is an
+**expression** — it produces a value, which is the value being assigned. This
+lets you chain assignments:
+
+```c
+int a, b, c;
+a = b = c = 0;   // all three are now 0
+```
+
+The chain works right to left: `c` gets `0`, then `b` gets the value of that
+assignment (also `0`), then `a` gets the same.
+
+Because assignment is an expression, you can (and sometimes will) use it inside
+other expressions. A common pattern is assigning and testing a return value in
+one step:
+
+```c
+int ch;
+while ((ch = getchar()) != EOF) {
+    putchar(ch);
+}
+```
+
+\index{assignment!vs equality}
+
+::: {.tip}
+**Trap:** Because `=` is assignment and `==` is comparison, a common mistake is
+writing `if (x = 5)` when you mean `if (x == 5)`. The first assigns `5` to `x`
+and then evaluates as true (since `5` is nonzero). Modern compilers warn about
+this, but it is still one of the most famous bugs in C:
+
+```c
+int x = 0;
+if (x = 5) {
+    printf("This always runs!\n");  // x is now 5, which is true
+}
+```
+
+Some programmers write the constant on the left — `if (5 == x)` — so that
+`if (5 = x)` would be a compiler error. This is called a **Yoda condition**.
+:::
+
+## Arithmetic Operators
+
+\index{arithmetic operators}
+
+The arithmetic operators work on numeric types just like in C++:
+
+| Operator | Operation | Example | Result |
+|:---:|:---|:---|:---|
+| `+` | addition | `3 + 4` | `7` |
+| `-` | subtraction | `10 - 3` | `7` |
+| `*` | multiplication | `6 * 7` | `42` |
+| `/` | division | `17 / 5` | `3` |
+| `%` | remainder | `17 % 5` | `2` |
+
+\index{integer division}
+**Integer division** truncates toward zero. This means `17 / 5` gives `3`, not
+`3.4`. If you want a floating-point result, at least one operand must be a
+floating-point type:
+
+```c
+printf("%d\n", 17 / 5);       // 3
+printf("%f\n", 17.0 / 5);     // 3.400000
+```
+
+\index{remainder operator (\%)}
+The `%` operator gives the **remainder** after integer division. In C99 and
+later, the result of `%` has the same sign as the dividend (the left operand):
+
+```c
+printf("%d\n",  17 %  5);   //  2
+printf("%d\n", -17 %  5);   // -2
+printf("%d\n",  17 % -5);   //  2
+printf("%d\n", -17 % -5);   // -2
+```
+
+::: {.tip}
+**Wut:** The `%` operator is often called "modulo," but it is technically the
+**remainder** operator. For positive numbers, remainder and modulo are the same.
+For negative numbers, they differ. In mathematics, modulo always returns a
+non-negative result. In C, `%` preserves the sign of the dividend. If you need
+a true modulo that always returns a non-negative value, you need to adjust the
+result yourself:
+
+```c
+int mod(int a, int m) {
+    int r = a % m;
+    return r < 0 ? r + m : r;
+}
+```
+:::
+
+## Comparison and Logical Operators
+
+\index{comparison operators}
+\index{logical operators}
+
+Comparison operators produce `1` for true and `0` for false. The result type is
+`int`, not `bool`:
+
+| Operator | Meaning |
+|:---:|:---|
+| `==` | equal to |
+| `!=` | not equal to |
+| `<` | less than |
+| `>` | greater than |
+| `<=` | less than or equal to |
+| `>=` | greater than or equal to |
+
+Logical operators combine boolean expressions:
+
+| Operator | Meaning |
+|:---:|:---|
+| `&&` | logical AND |
+| `\|\|` | logical OR |
+| `!` | logical NOT |
+
+\index{short-circuit evaluation}
+Both `&&` and `||` use **short-circuit evaluation**, just like C++. With `&&`,
+if the left side is false, the right side is never evaluated. With `||`, if the
+left side is true, the right side is skipped:
+
+```c
+int *p = NULL;
+if (p != NULL && *p > 0) {
+    // safe — *p is only evaluated if p is not NULL
+}
+```
+
+### No Built-in `bool`
+
+\index{stdbool.h}
+\index{bool}
+
+In C++, `bool` is a built-in type. In C89, there is no boolean type at all — you
+use `int` where `0` is false and anything nonzero is true. C99 added `_Bool` as
+a keyword and `<stdbool.h>` as a convenience header that defines `bool`, `true`,
+and `false`:
+
+```c
+#include <stdbool.h>
+
+bool is_valid = true;
+if (is_valid) {
+    printf("All aboard the Crazy Train!\n");
+}
+```
+
+Without `<stdbool.h>`, you will see code like this:
+
+```c
+int done = 0;    // 0 means false
+while (!done) {
+    // ... do work ...
+    done = 1;    // nonzero means true
+}
+```
+
+::: {.tip}
+**Tip:** In C, any nonzero value is true. The number `42`, the character `'A'`,
+and the pointer `0x7fff` are all true. Only `0` (and `NULL` for pointers) is
+false. This is why you can write `if (ptr)` instead of `if (ptr != NULL)` — they
+mean the same thing.
+:::
+
+## Bitwise Operators
+
+\index{bitwise operators}
+
+Bitwise operators work on the individual bits of integer values. In C++, `<<`
+and `>>` are commonly used for stream I/O. In C, they are exclusively bit shift
+operators.
+
+| Operator | Operation | Example | Result |
+|:---:|:---|:---|:---|
+| `&` | bitwise AND | `0xF0 & 0x3C` | `0x30` |
+| `\|` | bitwise OR | `0xF0 \| 0x0F` | `0xFF` |
+| `^` | bitwise XOR | `0xFF ^ 0x0F` | `0xF0` |
+| `~` | bitwise NOT | `~0x00` | `0xFF...FF` |
+| `<<` | left shift | `1 << 3` | `8` |
+| `>>` | right shift | `16 >> 2` | `4` |
+
+### Flag Manipulation
+
+\index{bitwise operators!flags}
+
+One of the most common uses of bitwise operators in C is manipulating **flags**
+— individual bits within an integer that each represent an on/off setting:
+
+```c
+#include <stdio.h>
+
+#define FLAG_READ    (1 << 0)   // bit 0: 0x01
+#define FLAG_WRITE   (1 << 1)   // bit 1: 0x02
+#define FLAG_EXEC    (1 << 2)   // bit 2: 0x04
+
+int main(void) {
+    unsigned int perms = 0;
+
+    // Set bits with |
+    perms |= FLAG_READ;
+    perms |= FLAG_WRITE;
+    printf("perms = 0x%02X\n", perms);   // 0x03
+
+    // Check a bit with &
+    if (perms & FLAG_READ) {
+        printf("Read permission is set\n");
+    }
+    if (!(perms & FLAG_EXEC)) {
+        printf("Execute permission is NOT set\n");
+    }
+
+    // Toggle a bit with ^
+    perms ^= FLAG_WRITE;
+    printf("After toggling write: 0x%02X\n", perms);   // 0x01
+
+    // Clear a bit with & and ~
+    perms &= ~FLAG_READ;
+    printf("After clearing read: 0x%02X\n", perms);    // 0x00
+
+    return 0;
+}
+```
+
+The pattern is straightforward:
+
+- **Set** a bit: `flags |= BIT;`
+- **Clear** a bit: `flags &= ~BIT;`
+- **Toggle** a bit: `flags ^= BIT;`
+- **Check** a bit: `if (flags & BIT)`
+
+::: {.tip}
+**Tip:** Shifting `1` to create bit masks — `(1 << n)` — is a common idiom in
+C for hardware registers, permission flags, and option bitmasks. It is clearer
+than writing raw hex values because you can see exactly which bit position you
+are targeting.
+:::
+
+## Compound Assignment Operators
+
+\index{compound assignment}
+
+Compound assignment operators combine an arithmetic or bitwise operation with
+assignment. They work exactly as in C++:
+
+| Operator | Equivalent to |
+|:---:|:---|
+| `a += b` | `a = a + b` |
+| `a -= b` | `a = a - b` |
+| `a *= b` | `a = a * b` |
+| `a /= b` | `a = a / b` |
+| `a %= b` | `a = a % b` |
+| `a &= b` | `a = a & b` |
+| `a \|= b` | `a = a \| b` |
+| `a ^= b` | `a = a ^ b` |
+| `a <<= b` | `a = a << b` |
+| `a >>= b` | `a = a >> b` |
+
+These are not just shortcuts — they express intent more clearly. When you write
+`count += 1`, the reader knows you are incrementing `count`. When you write
+`count = count + 1`, the reader has to verify that the same variable appears on
+both sides.
+
+## Increment and Decrement
+
+\index{increment operator}
+\index{decrement operator}
+
+The `++` and `--` operators increment or decrement a variable by one. They come
+in prefix and postfix forms:
+
+```c
+int x = 5;
+int a = ++x;   // prefix: x becomes 6, then a gets 6
+int b = x++;   // postfix: b gets 6 (current value), then x becomes 7
+```
+
+In a standalone statement, `x++` and `++x` do the same thing — increment `x`.
+The difference only matters when the result is used in a larger expression.
+
+::: {.tip}
+**Trap:** Do not modify a variable more than once in the same expression. The
+result is **undefined behavior**:
+
+```c
+int i = 3;
+int result = i++ + ++i;   // UNDEFINED BEHAVIOR — do not do this
+```
+
+The compiler is free to evaluate the sub-expressions in any order, and different
+compilers (or even the same compiler with different optimization levels) may
+produce different results. If you need multiple modifications, use separate
+statements.
+:::
+
+## The Ternary Operator
+
+\index{ternary operator}
+
+The ternary operator `? :` is a compact alternative to `if`/`else` for simple
+value selection:
+
+```c
+int volume = 11;
+const char *verdict = (volume > 10) ? "Loco" : "Tranquilo";
+printf("Volume %d: %s\n", volume, verdict);   // Volume 11: Loco
+```
+
+The syntax is `condition ? value_if_true : value_if_false`. The ternary operator
+is an expression, so it produces a value that can be used in assignments,
+function arguments, or anywhere a value is expected:
+
+```c
+printf("Track %d is %s\n", track,
+       (track % 2 == 0) ? "even" : "odd");
+```
+
+::: {.tip}
+**Tip:** The ternary operator is great for simple one-line decisions. If your
+condition or either branch is complex, use a regular `if`/`else` instead.
+Readability matters more than cleverness.
+:::
+
+## Operator Precedence
+
+\index{operator precedence}
+
+When multiple operators appear in an expression, C evaluates them according to a
+precedence table. Here are the most important levels, from highest (evaluated
+first) to lowest:
+
+| Precedence | Operators | Description |
+|:---:|:---|:---|
+| 1 | `()` `[]` `->` `.` | grouping, subscript, member access |
+| 2 | `!` `~` `++` `--` `+` `-` `*` `&` `(type)` `sizeof` | unary operators |
+| 3 | `*` `/` `%` | multiplication, division, remainder |
+| 4 | `+` `-` | addition, subtraction |
+| 5 | `<<` `>>` | bitwise shifts |
+| 6 | `<` `<=` `>` `>=` | relational |
+| 7 | `==` `!=` | equality |
+| 8 | `&` | bitwise AND |
+| 9 | `^` | bitwise XOR |
+| 10 | `\|` | bitwise OR |
+| 11 | `&&` | logical AND |
+| 12 | `\|\|` | logical OR |
+| 13 | `? :` | ternary |
+| 14 | `=` `+=` `-=` etc. | assignment |
+| 15 | `,` | comma |
+
+### Common Precedence Traps
+
+\index{operator precedence!traps}
+
+The most dangerous precedence surprise is that **bitwise operators bind more
+loosely than comparison operators**:
+
+```c
+// WRONG — this checks (x) & (0x04 == 0x04), which is (x) & (1)
+if (x & 0x04 == 0x04) { ... }
+
+// RIGHT — parentheses fix the precedence
+if ((x & 0x04) == 0x04) { ... }
+```
+
+Similarly, `||` has lower precedence than `&&`, which matches mathematical
+convention (AND before OR) but can surprise you:
+
+```c
+// This evaluates as: a || (b && c)  — not (a || b) && c
+if (a || b && c) { ... }
+```
+
+::: {.tip}
+**Tip:** When in doubt, use parentheses. No one will fault you for writing
+`(a & b) == c` instead of relying on precedence rules. The few extra characters
+make your intent unmistakable and save the next reader (who might be you)
+from having to look up the precedence table.
+:::
+
+## Try It: Expressions Starter
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    // Assignment chaining
+    int a, b, c;
+    a = b = c = 1980;
+    printf("a=%d b=%d c=%d\n", a, b, c);
+
+    // Integer division and remainder
+    printf("17 / 5 = %d\n", 17 / 5);
+    printf("17 %% 5 = %d\n", 17 % 5);
+    printf("-17 %% 5 = %d\n", -17 % 5);
+
+    // Boolean values are just ints
+    printf("(10 > 5) = %d\n", 10 > 5);
+    printf("(10 < 5) = %d\n", 10 < 5);
+
+    // Bitwise flag manipulation
+    unsigned int flags = 0;
+    flags |= (1 << 0);   // set bit 0
+    flags |= (1 << 2);   // set bit 2
+    printf("flags = 0x%02X\n", flags);        // 0x05
+    printf("bit 1 set? %d\n", (flags & (1 << 1)) != 0);  // 0
+    printf("bit 2 set? %d\n", (flags & (1 << 2)) != 0);  // 1
+
+    // Ternary operator
+    int vol = 11;
+    printf("Volume: %s\n", (vol > 10) ? "Muy alto" : "Normal");
+
+    // Compound assignment
+    int total = 100;
+    total += 50;
+    total -= 20;
+    total *= 2;
+    printf("total = %d\n", total);   // 260
+
+    return 0;
+}
+```
+
+## Key Points
+
+- Assignment is an expression in C — it produces a value, enabling chaining
+  (`a = b = c = 0`) and assignment within conditions.
+- Integer division truncates toward zero. The `%` operator gives the remainder,
+  which preserves the sign of the dividend.
+- C uses `int` for boolean results: `0` is false, nonzero is true. Include
+  `<stdbool.h>` for `bool`, `true`, and `false`.
+- Bitwise `<<` and `>>` are shifts only — they are not overloaded for I/O as
+  in C++.
+- Use `|` to set bits, `&` to check bits, `^` to toggle bits, and `& ~` to
+  clear bits.
+- Bitwise operators have lower precedence than comparison operators. Always use
+  parentheses when mixing them.
+- Never modify a variable more than once in the same expression — the result is
+  undefined behavior.
+
+## Exercises
+
+1. **Think about it:** In C++, you can overload operators to give `+`, `<<`,
+   `==`, and others custom meanings for your classes. C does not allow operator
+   overloading. What advantage does this give you when reading unfamiliar C
+   code? Can you think of a situation where operator overloading would have been
+   genuinely useful in C?
+
+2. **What does this print?**
+
+    ```c
+    int x = 10;
+    int y = x++ + ++x;
+    printf("%d %d\n", x, y);
+    ```
+
+    (Be careful — is the answer even defined?)
+
+3. **Calculation:** What is the result of each of these expressions?
+
+    ```c
+    25 / 4
+    25 % 4
+    -25 % 4
+    (1 << 4) | (1 << 1)
+    0xFF & 0x0F
+    ```
+
+4. **Where is the bug?**
+
+    ```c
+    int status = 0x07;
+    if (status & 0x04 == 0x04) {
+        printf("Bit 2 is set\n");
+    }
+    ```
+
+5. **What does this print?**
+
+    ```c
+    int a = 5, b = 10;
+    a ^= b;
+    b ^= a;
+    a ^= b;
+    printf("a=%d b=%d\n", a, b);
+    ```
+
+6. **Where is the bug?**
+
+    ```c
+    int count = 0;
+    if (count = 0) {
+        printf("El contador es cero\n");
+    } else {
+        printf("El contador no es cero\n");
+    }
+    ```
+
+7. **Write a program** that takes an `unsigned int` and prints its value in
+   binary (most significant bit first). Use bitwise operators to test each bit.
+   Test it with the values `0`, `1`, `255`, and `1024`.
+
+\newpage
+
+# 4. Control Flow
+
+Control flow in C will feel very familiar if you are coming from C++. The `if`,
+`while`, `for`, and `switch` statements work essentially the same way. The
+differences are small but worth knowing: C has no range-based `for` loops, no
+structured bindings, and no `std::optional`. In C89, all variable declarations
+had to appear at the top of a block before any statements — C99 relaxed this
+and let you declare variables anywhere, which is how you are used to writing
+code in C++.
+
+The biggest conceptual difference is that C has no native `bool` type.
+Conditions are just integers: zero is false, and any nonzero value is true.
+
+## `if` / `else`
+
+\index{if statement}
+
+The `if` statement in C is identical to C++:
+
+```c
+int score = 85;
+
+if (score >= 90) {
+    printf("Excelente!\n");
+} else if (score >= 70) {
+    printf("Passing\n");
+} else {
+    printf("Try again\n");
+}
+```
+
+The condition in an `if` is an integer expression. Zero means false, nonzero
+means true. There is no built-in `bool` type in C89. C99 added `_Bool` and
+the convenience header `<stdbool.h>`, which defines `bool`, `true`, and
+`false`:
+
+```c
+#include <stdbool.h>
+
+bool is_hurricane = true;
+if (is_hurricane) {
+    printf("Here I am\n");
+}
+```
+
+\index{stdbool.h}
+
+Without `<stdbool.h>`, C programmers traditionally use `int` for boolean values
+and `0`/`1` for false/true, or define their own macros.
+
+::: {.tip}
+**Trap:** Because conditions are just integers, assignments inside `if` are
+legal and a common source of bugs:
+
+```c
+int x = 0;
+if (x = 5) {            // BUG: assigns 5 to x, then tests 5 (nonzero = true)
+    printf("oops\n");    // always prints
+}
+```
+
+The compiler may warn you about this, but it will not stop you. If you mean
+to compare, use `==`. Compiling with `-Wall` helps catch these.
+:::
+
+## `while` and `do-while`
+
+\index{while loop}
+\index{do-while loop}
+
+A `while` loop tests the condition *before* executing the body. If the
+condition is false from the start, the body never executes:
+
+```c
+int countdown = 5;
+while (countdown > 0) {
+    printf("%d... ", countdown);
+    countdown--;
+}
+printf("Vamos!\n");
+// 5... 4... 3... 2... 1... Vamos!
+```
+
+A `do-while` loop tests *after* the body, guaranteeing at least one iteration.
+This is useful when you need to perform an action before you can check whether
+to continue:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    int choice;
+    do {
+        printf("1) Rock  2) Paper  3) Scissors  0) Quit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        printf("You picked %d\n", choice);
+    } while (choice != 0);
+
+    printf("Adios!\n");
+    return 0;
+}
+```
+
+The semicolon after `while (choice != 0)` is required — forgetting it is a
+syntax error.
+
+::: {.tip}
+**Tip:** Use `do-while` when the loop body must execute at least once. Menu
+loops and input validation loops are classic use cases. If you find yourself
+duplicating code before a `while` loop just to set up the first test, a
+`do-while` is probably cleaner.
+:::
+
+## `break` and `continue`
+
+\index{break}
+\index{continue}
+
+`break` exits the nearest enclosing loop (or `switch`) immediately. `continue`
+skips the rest of the current iteration and jumps to the next one.
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    /* break example: stop at the first multiple of 7 */
+    for (int i = 1; i <= 20; i++) {
+        if (i % 7 == 0) {
+            printf("Found it: %d\n", i);
+            break;
+        }
+    }
+
+    /* continue example: skip odd numbers */
+    for (int i = 0; i < 10; i++) {
+        if (i % 2 != 0)
+            continue;
+        printf("%d ", i);
+    }
+    printf("\n");
+    // 0 2 4 6 8
+
+    return 0;
+}
+```
+
+`break` and `continue` only affect the innermost loop. If you have nested
+loops and need to break out of an outer loop, you either use a flag variable
+or, in some cases, `goto` (discussed later in this chapter).
+
+## `for` Loops
+
+\index{for loop}
+
+The `for` loop has the same structure as in C++:
+
+```c
+for (init; condition; update) {
+    /* body */
+}
+```
+
+Here is a classic example iterating over an array:
+
+```c
+int scores[] = {90, 84, 77, 95, 88};
+int n = sizeof(scores) / sizeof(scores[0]);
+
+for (int i = 0; i < n; i++) {
+    printf("Score %d: %d\n", i + 1, scores[i]);
+}
+```
+
+\index{for loop!C89 vs C99}
+C99 allows you to declare the loop variable inside the `for` statement, just
+like modern C++. In C89, you had to declare it before the loop:
+
+```c
+/* C89 style */
+int i;
+for (i = 0; i < n; i++) {
+    printf("%d\n", scores[i]);
+}
+
+/* C99 style — preferred */
+for (int i = 0; i < n; i++) {
+    printf("%d\n", scores[i]);
+}
+```
+
+::: {.tip}
+**Tip:** C has no range-based `for` loop. There is no `for (auto x : vec)`.
+You always iterate with an index or a pointer. The `sizeof(arr) / sizeof(arr[0])`
+idiom gives you the element count of a stack-allocated array, but it does not
+work on pointers — a pointer does not carry size information. This is why C
+functions that take arrays almost always take a separate `size` parameter.
+:::
+
+You can iterate over an array with a pointer instead of an index. This is
+idiomatic C and worth getting comfortable with:
+
+```c
+int nums[] = {10, 20, 30, 40, 50};
+int *end = nums + sizeof(nums) / sizeof(nums[0]);
+
+for (int *p = nums; p < end; p++) {
+    printf("%d ", *p);
+}
+printf("\n");
+// 10 20 30 40 50
+```
+
+Any part of the `for` header can be omitted. Omitting all three creates an
+infinite loop:
+
+```c
+for (;;) {
+    /* runs forever — use break to exit */
+}
+```
+
+## `switch` Statements
+
+\index{switch statement}
+
+A `switch` statement selects among multiple cases based on an integer
+expression. If you have used `switch` in C++, the syntax is identical:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    int wind = 5;   /* Beaufort scale */
+
+    switch (wind) {
+    case 0:
+        printf("Calm\n");
+        break;
+    case 5:
+        printf("Fresh breeze\n");
+        break;
+    case 12:
+        printf("Huracan!\n");
+        break;
+    default:
+        printf("Wind level: %d\n", wind);
+        break;
+    }
+
+    return 0;
+}
+```
+
+Each `case` must be an integer constant expression. You cannot use strings,
+floats, or variables as case labels — only values the compiler can evaluate at
+compile time.
+
+\index{switch statement!fall-through}
+**Fall-through** is the most important thing to understand about `switch` in C.
+If you forget a `break`, execution falls through to the next case. This is
+sometimes intentional:
+
+```c
+char grade = 'B';
+
+switch (grade) {
+case 'A':
+case 'B':
+case 'C':
+    printf("Passing\n");
+    break;
+case 'D':
+case 'F':
+    printf("Not passing\n");
+    break;
+default:
+    printf("Invalid grade\n");
+    break;
+}
+```
+
+Here, cases `'A'`, `'B'`, and `'C'` all fall through to the same `printf`.
+This is deliberate and a common pattern. But accidental fall-through is a
+frequent bug:
+
+```c
+switch (x) {
+case 1:
+    printf("one\n");
+    /* oops, forgot break — falls into case 2 */
+case 2:
+    printf("two\n");
+    break;
+}
+```
+
+If `x` is `1`, this prints both "one" and "two."
+
+::: {.tip}
+**Trap:** Every `case` should end with `break` unless you intentionally want
+fall-through. When you do use fall-through on purpose, add a comment like
+`/* fall through */` so the next person reading the code knows it is
+deliberate. Some compilers recognize this comment and suppress warnings.
+:::
+
+## `goto`
+
+\index{goto}
+
+In C++, you were probably taught to never use `goto`. In C, `goto` has a
+legitimate and widely used role: the **cleanup pattern**. When a function
+acquires multiple resources (files, memory, locks), and something goes wrong
+partway through, `goto` provides a clean way to release everything in the
+correct order.
+
+Here is a brief example:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int process(const char *path) {
+    int status = -1;
+
+    FILE *f = fopen(path, "r");
+    if (!f) return -1;
+
+    char *buf = malloc(1024);
+    if (!buf) goto close_file;
+
+    /* ... do work with f and buf ... */
+    status = 0;
+
+    free(buf);
+close_file:
+    fclose(f);
+    return status;
+}
+```
+
+If `malloc` fails, control jumps to `close_file`, which closes the file that
+was already opened. Without `goto`, you would need deeply nested `if`
+statements or duplicated cleanup code. The `goto` cleanup pattern is used
+extensively in production C code, including the Linux kernel.
+
+::: {.tip}
+**Tip:** The `goto` cleanup pattern is covered in more detail in the Odds and
+Ends chapter. For now, just know that `goto` in C is not the taboo it is in
+C++. When used strictly for forward jumps to cleanup labels at the end of a
+function, it makes resource management clearer, not messier.
+:::
+
+`goto` has two restrictions: you can only jump within the same function, and
+you cannot jump over a variable declaration that has an initializer (in C99+).
+
+## Try It: Control Flow Starter
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    /* if / else */
+    int wind = 74;   /* mph */
+    if (wind >= 74) {
+        printf("Rock you like a hurricane!\n");
+    } else if (wind >= 39) {
+        printf("Tropical storm\n");
+    } else {
+        printf("Calm seas\n");
+    }
+
+    /* while */
+    int n = 1;
+    while (n <= 5) {
+        printf("%d ", n);
+        n++;
+    }
+    printf("\n");
+
+    /* do-while: repeat until valid input */
+    int guess;
+    do {
+        printf("Guess (1-10): ");
+        scanf("%d", &guess);
+    } while (guess < 1 || guess > 10);
+    printf("You guessed %d\n", guess);
+
+    /* for with break and continue */
+    printf("Even numbers up to 20: ");
+    for (int i = 1; i <= 100; i++) {
+        if (i > 20)
+            break;
+        if (i % 2 != 0)
+            continue;
+        printf("%d ", i);
+    }
+    printf("\n");
+
+    /* switch */
+    int track = 3;
+    printf("Side B, Track %d: ", track);
+    switch (track) {
+    case 1:  printf("Big City Nights\n");   break;
+    case 2:  printf("Bad Boys Running Wild\n"); break;
+    case 3:  printf("Rock You Like a Hurricane\n"); break;
+    default: printf("Unknown track\n");     break;
+    }
+
+    return 0;
+}
+```
+
+## Key Points
+
+- C's control flow statements (`if`, `while`, `do-while`, `for`, `switch`)
+  are syntactically identical to C++.
+- C uses integers for boolean conditions: 0 is false, nonzero is true.
+  Include `<stdbool.h>` for `bool`, `true`, and `false` (C99+).
+- `break` exits the nearest loop or `switch`. `continue` skips to the next
+  iteration.
+- C has no range-based `for` loop. Use index or pointer iteration.
+- `switch` cases must be integer constants. Watch for accidental fall-through.
+- `goto` is legitimate in C for the cleanup pattern — forward jumps to
+  release resources in reverse order.
+
+## Exercises
+
+1. **Think about it:** C uses `0` for false and nonzero for true, while C++
+   has a built-in `bool` type. What practical problems can arise from using
+   integers as booleans? Can you think of a case where a nonzero value that
+   is not `1` might cause a subtle bug?
+
+2. **What does this print?**
+
+    ```c
+    for (int i = 0; i < 5; i++) {
+        if (i == 3)
+            continue;
+        printf("%d ", i);
+    }
+    printf("\n");
+    ```
+
+3. **What does this print?**
+
+    ```c
+    int x = 2;
+    switch (x) {
+    case 1:
+        printf("uno ");
+    case 2:
+        printf("dos ");
+    case 3:
+        printf("tres ");
+        break;
+    default:
+        printf("other ");
+    }
+    printf("\n");
+    ```
+
+4. **Where is the bug?**
+
+    ```c
+    int total = 0;
+    for (int i = 0; i < 10; i++);
+    {
+        total += i;
+    }
+    printf("Total: %d\n", total);
+    ```
+
+5. **Calculation:** How many times does the body of this loop execute?
+
+    ```c
+    int count = 0;
+    int i = 10;
+    do {
+        count++;
+        i--;
+    } while (i > 10);
+    ```
+
+6. **Where is the bug?**
+
+    ```c
+    int level = 5;
+    if (level = 10) {
+        printf("Max level!\n");
+    }
+    ```
+
+7. **Write a program** that reads integers from the user (using `scanf`) until
+   the user enters `0`. Print the sum and average of all numbers entered
+   (not counting the `0`). Use a `do-while` or `while` loop.
+
+\newpage
+
+# 5. Pointers
 
 If you have been writing modern C++, you may have rarely (or never) used raw
 pointers. Smart pointers like `std::unique_ptr` and `std::shared_ptr` manage
@@ -725,7 +2314,538 @@ int main(void) {
 
 \newpage
 
-# 3. Allocating Memory
+# 6. Functions
+
+C functions look a lot like C++ functions — same return types, same curly braces,
+same `return` statement. But several features you rely on in C++ are simply not
+available in C. There is no function overloading, no default arguments, no
+references, and no `auto` return type deduction. Every parameter is pass by
+value. If you want a function to modify a caller's variable, you pass a pointer.
+
+Despite these restrictions, C functions are straightforward. Once you understand
+the handful of differences from C++, you will find them easy to work with.
+
+## Function Declarations and Definitions
+
+\index{function!declaration}
+\index{function!definition}
+\index{prototype}
+
+In C++, you can often define a function before it is called and skip the
+separate declaration. In C, you should always declare a function (provide its
+**prototype**) before you call it. A prototype tells the compiler the function's
+return type, name, and parameter types — without the body:
+
+```c
+int add(int a, int b);        // declaration (prototype)
+```
+
+The **definition** provides the body:
+
+```c
+int add(int a, int b) {       // definition
+    return a + b;
+}
+```
+
+Prototypes typically go in header files (`.h`) so that other `.c` files can call
+the function. The definition lives in exactly one `.c` file.
+
+::: {.tip}
+**Tip:** In C++, `int foo()` means "takes no parameters." In C, `int foo()`
+means "takes an *unspecified* number of parameters" — the compiler will not
+check your arguments at all. To declare a function that truly takes no
+parameters in C, write `int foo(void)`. Always use `void` in empty parameter
+lists.
+:::
+
+\index{void parameter list}
+
+Here is the difference in action:
+
+```c
+int get_score(void);    // takes no parameters — compiler enforces this
+int get_score();        // unspecified parameters — compiler won't check
+```
+
+You will see `int main(void)` throughout this book for exactly this reason.
+
+### No Overloading
+
+\index{function!overloading}
+
+In C++, you can have multiple functions with the same name but different
+parameter types:
+
+```cpp
+int max(int a, int b);
+double max(double a, double b);   // C++ overload — fine
+```
+
+C does not support this. Every function must have a unique name. If you need a
+`max` for both `int` and `double`, you name them differently:
+
+```c
+int max_int(int a, int b);
+double max_double(double a, double b);
+```
+
+### No Default Arguments
+
+\index{function!default arguments}
+
+C++ lets you provide default values for parameters:
+
+```cpp
+void greet(const char *name, int times = 1);   // C++ — valid
+```
+
+C does not support default arguments. Every argument must be provided at every
+call site:
+
+```c
+void greet(const char *name, int times);   // C — no defaults allowed
+
+greet("Iron Man", 3);   // must pass both arguments
+```
+
+## Pass by Value
+
+\index{pass by value}
+
+As you saw in the Pointers chapter, all function parameters in C are pass by
+value. The function receives a copy of each argument. To modify a caller's
+variable, you pass a pointer to it:
+
+```c
+void double_it(int *x) {
+    *x *= 2;
+}
+
+int main(void) {
+    int power = 50;
+    double_it(&power);
+    printf("power = %d\n", power);   // power = 100
+    return 0;
+}
+```
+
+There is nothing new here — just remember that C has no `&` reference
+parameters. Every "output" parameter is a pointer.
+
+## `const` Parameters
+
+\index{const!parameter}
+
+When a function takes a pointer parameter, the caller cannot tell from the
+call site whether the function will modify the data. The `const` keyword solves
+this by making a promise: "I will not modify what this pointer points to."
+
+```c
+#include <stdio.h>
+
+void print_name(const char *name) {
+    printf("I am %s\n", name);
+    // name[0] = 'X';   // ERROR — name points to const data
+}
+
+int main(void) {
+    print_name("Iron Man");
+    return 0;
+}
+```
+
+\index{const!documentation}
+
+Using `const` serves two purposes. First, it documents intent — anyone reading
+the prototype knows the function will not modify the data. Second, it catches
+bugs at compile time. If you accidentally try to write through a `const`
+pointer, the compiler will stop you.
+
+::: {.tip}
+**Tip:** Make every pointer parameter `const` unless the function genuinely
+needs to modify the pointed-to data. This is one of the cheapest and most
+effective ways to prevent bugs in C.
+:::
+
+You will see `const char *` everywhere in C — it is the standard way to accept
+a string that the function will read but not modify. Functions like `printf`,
+`strlen`, and `strcmp` all take `const char *` parameters.
+
+## Passing Structures
+
+\index{struct!passing}
+
+Structures can be passed by value just like any other type. The function
+receives a complete copy of the struct:
+
+```c
+#include <stdio.h>
+
+struct hero {
+    char name[40];
+    int power;
+};
+
+void print_hero(struct hero h) {
+    printf("%s (power: %d)\n", h.name, h.power);
+}
+
+int main(void) {
+    struct hero tony = {"Iron Man", 100};
+    print_hero(tony);   // passes a COPY of tony
+    return 0;
+}
+```
+
+This works, but copying a large struct every time you call a function is
+wasteful. If `struct hero` had thousands of bytes of data, every call to
+`print_hero` would copy all of it onto the stack.
+
+The solution is to pass a pointer to the struct instead. Since the function only
+needs to read the data, use `const`:
+
+```c
+void print_hero(const struct hero *h) {
+    printf("%s (power: %d)\n", h->name, h->power);
+}
+
+int main(void) {
+    struct hero tony = {"Iron Man", 100};
+    print_hero(&tony);   // passes only an 8-byte pointer
+    return 0;
+}
+```
+
+::: {.tip}
+**Tip:** For small structs (a few bytes), passing by value is fine and
+sometimes clearer. For anything larger, prefer `const struct type *param`.
+When the function needs to modify the struct, drop the `const`.
+:::
+
+If the function needs to modify the struct, you pass a non-`const` pointer:
+
+```c
+void level_up(struct hero *h) {
+    h->power += 10;
+}
+```
+
+This pattern — `const` pointer for read-only access, non-`const` pointer for
+modification — is the C equivalent of const references and non-const references
+in C++.
+
+## Recursive Functions
+
+\index{recursion}
+
+C supports recursion just like C++. A function can call itself, and each call
+gets its own set of local variables on the stack.
+
+### Factorial
+
+```c
+#include <stdio.h>
+
+long factorial(int n) {
+    if (n <= 1)
+        return 1;
+    return n * factorial(n - 1);
+}
+
+int main(void) {
+    printf("5! = %ld\n", factorial(5));    // 5! = 120
+    printf("10! = %ld\n", factorial(10));  // 10! = 3628800
+    return 0;
+}
+```
+
+### Fibonacci
+
+```c
+#include <stdio.h>
+
+int fibonacci(int n) {
+    if (n <= 0) return 0;
+    if (n == 1) return 1;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+int main(void) {
+    for (int i = 0; i < 10; i++) {
+        printf("%d ", fibonacci(i));
+    }
+    printf("\n");
+    // 0 1 1 2 3 5 8 13 21 34
+    return 0;
+}
+```
+
+::: {.tip}
+**Trap:** This Fibonacci implementation has exponential time complexity because
+it recomputes the same values over and over. It works for small inputs, but
+try `fibonacci(50)` and you will be waiting a long time. In practice, you
+would use an iterative approach or memoization.
+:::
+
+### Stack Depth
+
+\index{stack overflow}
+
+Every function call pushes a new frame onto the call stack. Recursive functions
+can exhaust the stack if the recursion goes too deep. There is no built-in
+protection — C will not throw a `std::bad_alloc` or a stack overflow exception.
+The program will simply crash (usually with a segmentation fault). Keep your
+recursion depth reasonable, or convert deep recursion to iteration.
+
+## Function Pointers
+
+\index{function pointer}
+
+In C++, you might use `std::function`, lambdas, or template parameters to pass
+behavior around. C has none of those — but it does have **function pointers**.
+A function pointer is a variable that holds the address of a function.
+
+### Declaring Function Pointers
+
+The syntax takes some getting used to. A pointer to a function that takes two
+`int` parameters and returns an `int` looks like this:
+
+```c
+int (*fp)(int, int);
+```
+
+Read it from the inside out: `fp` is a pointer (`*fp`) to a function that takes
+`(int, int)` and returns `int`.
+
+::: {.tip}
+**Wut:** The parentheses around `*fp` are critical. Without them, `int *fp(int,
+int)` declares a *function* that returns an `int *` — a completely different
+thing. The parentheses force `fp` to be a pointer first.
+:::
+
+### Using Function Pointers
+
+You can assign a function's name to a function pointer (the function name
+decays to a pointer, just like array names do) and then call the function
+through the pointer:
+
+```c
+#include <stdio.h>
+
+int add(int a, int b) { return a + b; }
+int multiply(int a, int b) { return a * b; }
+
+int main(void) {
+    int (*op)(int, int);
+
+    op = add;
+    printf("3 + 4 = %d\n", op(3, 4));       // 7
+
+    op = multiply;
+    printf("3 * 4 = %d\n", op(3, 4));       // 12
+
+    return 0;
+}
+```
+
+### Simplifying with `typedef`
+
+\index{typedef!function pointer}
+
+The raw function pointer syntax is noisy. A `typedef` gives it a clean name:
+
+```c
+#include <stdio.h>
+
+typedef int (*binop_fn)(int, int);
+
+int add(int a, int b) { return a + b; }
+int subtract(int a, int b) { return a - b; }
+
+void apply(binop_fn fn, int x, int y) {
+    printf("result = %d\n", fn(x, y));
+}
+
+int main(void) {
+    apply(add, 10, 3);        // result = 13
+    apply(subtract, 10, 3);   // result = 7
+    return 0;
+}
+```
+
+Now `binop_fn` is a type that means "pointer to a function taking two `int`
+parameters and returning `int`." You can use it for parameters, local
+variables, struct members, and arrays of function pointers.
+
+### Callbacks
+
+\index{callback}
+
+Function pointers are often used as **callbacks** — you pass a function pointer
+to another function, which calls it at the right moment. This is the C
+equivalent of passing a lambda or functor in C++. The Odds and Ends chapter
+shows a practical example using `qsort`, the standard library's sorting
+function that takes a comparison callback.
+
+## Try It: Functions Starter
+
+```c
+#include <stdio.h>
+
+// Prototype with const pointer parameter
+void shout(const char *msg);
+
+// Struct and a function that takes a const pointer to it
+struct song {
+    char title[50];
+    int year;
+};
+
+void print_song(const struct song *s) {
+    printf("\"%s\" (%d)\n", s->title, s->year);
+}
+
+// Recursive factorial
+long factorial(int n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+// Function pointer demo
+int sumar(int a, int b) { return a + b; }
+int restar(int a, int b) { return a - b; }
+
+typedef int (*math_fn)(int, int);
+
+void compute(math_fn fn, int x, int y) {
+    printf("  result = %d\n", fn(x, y));
+}
+
+// shout definition
+void shout(const char *msg) {
+    printf(">>> %s <<<\n", msg);
+}
+
+int main(void) {
+    // const parameter
+    shout("I Am Iron Man");
+
+    // Passing a struct by pointer
+    struct song fav = {"Iron Man", 1970};
+    print_song(&fav);
+
+    // Recursion
+    printf("7! = %ld\n", factorial(7));   // 5040
+
+    // Function pointers
+    printf("sumar:\n");
+    compute(sumar, 8, 3);     // result = 11
+    printf("restar:\n");
+    compute(restar, 8, 3);    // result = 5
+
+    return 0;
+}
+```
+
+## Key Points
+
+- C functions have no overloading, no default arguments, and no references.
+  Every parameter is pass by value.
+- Use `void` in empty parameter lists: `int foo(void)`. In C, `int foo()`
+  means "unspecified parameters," not "no parameters."
+- Use `const` on pointer parameters when the function does not modify the
+  pointed-to data. It documents intent and catches bugs.
+- For large structs, prefer `const struct type *param` over pass by value to
+  avoid expensive copies.
+- Function pointers let you store and pass functions as values — C's
+  replacement for lambdas and `std::function`.
+- Use `typedef` to make function pointer types readable.
+
+## Exercises
+
+1. **Think about it:** C does not have function overloading. How does the C
+   standard library handle providing similar functionality for different types?
+   Look at `abs` (for `int`) and `fabs` (for `double`) as examples. What
+   naming convention do you see?
+
+2. **What does this print?**
+
+    ```c
+    void mystery(int x) {
+        x = x * 2;
+        printf("inside: %d\n", x);
+    }
+
+    int main(void) {
+        int val = 5;
+        mystery(val);
+        printf("outside: %d\n", val);
+        return 0;
+    }
+    ```
+
+3. **Where is the bug?**
+
+    ```c
+    int count_chars(const char *s) {
+        int count;
+        while (*s != '\0') {
+            count++;
+            s++;
+        }
+        return count;
+    }
+    ```
+
+4. **Calculation:** Given the struct below, approximately how many bytes are
+   copied each time `process_data` is called with pass by value? Assume `int`
+   is 4 bytes.
+
+    ```c
+    struct data {
+        int values[1000];
+        int count;
+    };
+
+    void process_data(struct data d) { /* ... */ }
+    ```
+
+5. **What does this print?**
+
+    ```c
+    int apply(int (*fn)(int, int), int a, int b) {
+        return fn(a, b);
+    }
+
+    int mul(int a, int b) { return a * b; }
+
+    int main(void) {
+        printf("%d\n", apply(mul, 6, 7));
+        return 0;
+    }
+    ```
+
+6. **Where is the bug?**
+
+    ```c
+    int get_length(void);
+    int get_length() { return 42; }
+
+    int main(void) {
+        printf("%d\n", get_length(1, 2, 3));
+        return 0;
+    }
+    ```
+
+7. **Write a program** that defines a function `void transform(int *arr, int n,
+   int (*fn)(int))` which applies the function `fn` to each element of `arr`,
+   modifying the array in place. Test it with a function that doubles each
+   element and another that negates each element.
+
+\newpage
+
+# 7. Allocating Memory
 
 Every variable in your program lives somewhere in memory, but not all memory is
 created equal. Understanding where variables live — and how long they last — is
@@ -1078,7 +3198,7 @@ int main(void) {
 \newpage
 
 \index{string}
-# 4. Strings
+# 8. Strings
 
 In C++, you use `std::string` and barely think about what is happening under the
 hood. In C, there is no string type at all. \index{null terminator}A "string" in C is just an array of
@@ -1517,7 +3637,7 @@ int main(void) {
 
 \newpage
 
-# 5. Numbers and Casting
+# 9. Numbers and Casting
 
 To the CPU, everything is just a number.
 It has no concept of characters, strings, pointers, or objects.
@@ -1939,7 +4059,7 @@ int main(void) {
 
 \newpage
 
-# 6. Standard I/O
+# 10. Standard I/O
 
 C's `<stdio.h>` library is your replacement for C++ `iostream`. It provides
 `printf` and `scanf` for formatted output and input, file operations with
@@ -2438,7 +4558,7 @@ int main(void) {
 
 \newpage
 
-# 7. Low-Level I/O
+# 11. Low-Level I/O
 
 The `<stdio.h>` functions you learned in the previous chapter are built on top
 of a lower-level I/O interface provided by the operating system. These system
@@ -2718,7 +4838,7 @@ int main(void) {
 
 \newpage
 
-# 8. Odds and Ends
+# 12. Odds and Ends
 
 This chapter covers a few remaining topics that do not fit neatly into the
 previous chapters but are important for writing real C programs and for working
@@ -3252,11 +5372,17 @@ descriptors to pointer ownership. Here are the key takeaways:
   Knowing one does not mean you automatically know the other.
 - **`printf` and `scanf` replace `iostream`.** Format specifiers must match
   argument types. `scanf` needs `&` for scalar variables.
+- **C types are explicit.** No `auto`, no `std::string`, no classes. You have
+  basic types, `typedef`, arrays, and `struct`.
+- **C shares most operators with C++** but there is no operator overloading,
+  `<<` and `>>` are strictly bitwise, and boolean results are plain `int`.
+- **Control flow is nearly identical to C++** except there are no range-based
+  `for` loops and `goto` is an accepted idiom for cleanup.
 - **Pointers hold memory addresses.** Use `&` to get an address, `*` to follow
   one, and `->` to access struct fields through a pointer. Arrays decay to
   pointers, and pointer arithmetic moves in units of the pointed-to type.
 - **All function arguments are pass by value.** To modify a caller's variable,
-  pass a pointer to it.
+  pass a pointer to it. Use `const` parameters to document read-only intent.
 - **Know where your memory lives.** Global variables last the whole program,
   local variables live on the stack, and dynamic memory from `malloc` lives on
   the heap until you `free` it.
