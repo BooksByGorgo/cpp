@@ -81,6 +81,36 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - `The C Programming Language (Second Edition)` my go to textbook.
     - introduce this intro section quoted verbatim from the book and then quote the section for the first section `the-c-programming-language-intro.txt`
     - cover printf: format specifiers (%d, %x/%X, %f, %e, %c, %s, %p, %zu), width/precision, zero-fill, \n for newlines, %% for literal percent
+2. Variables
+    - basic types in C: char, int, float, ...
+    - variables give a name to memory allocated to store the declared type
+    - we can make new types with typedef
+    - we can use * to declare a variable that holds addresses for data of the given type
+    - we can use [] to declare arrays of types
+        - tricks to using multi dimensional arrays
+        - the Pointers section will talk about the relationship between arrays and ponters
+        - the "value" of an array is the address of the first element
+    - const is used to mark a variable as unchanging.
+        - const is a bit tricky to use with *, depending where the const is it prevents the pointer from changing or it prevent what the pointer is pointing to from being changed through the pointer
+    - structures allow data to be grouped together
+        - unlike C++, only member variables allowed -- no member functions; although, you can use function pointers (described later)
+        - members accessed with . operator
+        - assignment does a copy
+2. Expressions
+    - assignment operators
+    - math operators
+    - logical operators
+    - bit operators
+    - compound assignment operators
+    - ternary operator
+    - operator precedence
+2. Control flow
+    - if statements
+    - while loop/do while
+        -break/continue
+    - for loops
+    - switch statements
+    - goto
 2. Pointers
     - modern C++ programmers rarely see pointers and thus can get away with not fully understanding them, but C programmers must be very comfortable with pointers
     - a type that ends in * represents a pointer. the type information before the * represents the type of the memory that the pointer points to
@@ -91,7 +121,13 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - explain that a[i] is much more convenient to write than *(a+i)
     - show pointers with structures
     - explain that s->f is much more convenient to write than (*a).f since . has precendence over *
+3. Functions
+    - everything is pass by value
     - all function parameters are `pass by value` (no `pass by reference`) but we can pass pointers to memory we want to change by value
+    - const parameters. why they are important
+    - structures can be problematic to pass by value, why const struct type *var is useful
+    - recursive functions
+    - function pointers
 3. Allocating memory
     - global variables get started at the beginning of a program and stay around until the program finishes
     - local variables are declared inside of functions and go away when the function goes away
