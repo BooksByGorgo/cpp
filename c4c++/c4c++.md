@@ -391,53 +391,6 @@ Always use `%zu` to print it.
 Using `%d` is technically undefined behavior, even though it often appears to work.
 :::
 
-## typedef
-
-\index{typedef}
-
-The `typedef` keyword creates an alias for an existing type.
-It does not create a new type — it just gives you a shorter or more descriptive name:
-
-```c
-typedef unsigned long ulong;
-typedef unsigned char byte;
-
-ulong population = 4000000000UL;
-byte channel = 83;
-```
-
-To remember the syntax, notice that without the `typedef` above, `byte` would have been a variable named `byte` of type `unsigned char`.
-With the `typedef`, instead of declaring `byte` to be a variable, we are declaring it to be the name of a new type alias.
-
-One of the most common uses of `typedef` is to simplify struct declarations.
-Without `typedef`, you must write `struct` every time you use the type:
-
-```c
-struct point {
-    double x;
-    double y;
-};
-
-struct point origin;   /* must say "struct point" every time */
-```
-
-With `typedef`, you can drop the `struct` keyword:
-
-```c
-typedef struct {
-    double x;
-    double y;
-} Point;
-
-Point origin = {0.0, 0.0};   /* much cleaner */
-```
-
-::: {.tip}
-**Tip:** In C++, you can use a struct name directly as a type.
-In C, you cannot — you must either write `struct name` every time or use `typedef` to create an alias.
-Most C codebases use `typedef` for any struct that appears frequently.
-:::
-
 ## Pointer Declarations
 
 \index{pointer!declaration}
@@ -635,17 +588,6 @@ You can also initialize at declaration time:
 struct song track = {"I Love Rock 'n' Roll", 1981};
 ```
 
-With a `typedef`, you can skip the `struct` keyword:
-
-```c
-typedef struct {
-    char title[40];
-    int year;
-} Song;
-
-Song track = {"I Love Rock 'n' Roll", 1981};
-```
-
 ### Accessing Members
 
 \index{struct!member access}
@@ -722,6 +664,53 @@ We will cover this in detail in the Pointers chapter.
 **Tip:** A common C pattern is to prefix functions with the struct name they operate on: `song_print`, `song_init`, `song_compare`.
 This gives you something like namespaced methods.
 Function pointers (covered in a later chapter) can even be stored in structs to simulate virtual functions.
+:::
+
+## typedef
+
+\index{typedef}
+
+The `typedef` keyword creates an alias for an existing type.
+It does not create a new type — it just gives you a shorter or more descriptive name:
+
+```c
+typedef unsigned long ulong;
+typedef unsigned char byte;
+
+ulong population = 4000000000UL;
+byte channel = 83;
+```
+
+To remember the syntax, notice that without the `typedef` above, `byte` would have been a variable named `byte` of type `unsigned char`.
+With the `typedef`, instead of declaring `byte` to be a variable, we are declaring it to be the name of a new type alias.
+
+One of the most common uses of `typedef` is to simplify struct declarations.
+Without `typedef`, you must write `struct` every time you use the type:
+
+```c
+struct point {
+    double x;
+    double y;
+};
+
+struct point origin;   /* must say "struct point" every time */
+```
+
+With `typedef`, you can drop the `struct` keyword:
+
+```c
+typedef struct {
+    double x;
+    double y;
+} Point;
+
+Point origin = {0.0, 0.0};   /* much cleaner */
+```
+
+::: {.tip}
+**Tip:** In C++, you can use a struct name directly as a type.
+In C, you cannot — you must either write `struct name` every time or use `typedef` to create an alias.
+Most C codebases use `typedef` for any struct that appears frequently.
 :::
 
 ## Try It: Variables Starter
