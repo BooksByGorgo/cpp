@@ -614,19 +614,22 @@ specific reason (like bit manipulation or interfacing with APIs that require
 it).
 :::
 
-### What Happens When You Overflow?
+### What Happens When You Overflow and Underflow?
 
 If you try to store a value that does not fit, the behavior depends on whether
 the type is signed or unsigned:
 
-- **Unsigned overflow** wraps around. Adding 1 to the maximum value gives 0:
+- **Unsigned overflow/underflow** wraps around. Adding 1 to the maximum value gives 0:
 
 ```cpp
 unsigned char x = 255;
 x = x + 1;  // x is now 0 (wraps around)
+x = x - 2;  // x is now 254 (wraps around)
 ```
 
-- **Signed overflow** is undefined behavior. The compiler can do anything:
+    
+
+- **Signed overflow/underflow** is undefined behavior. The compiler can do anything:
 
 ```cpp
 int y = 2'147'483'647;  // INT_MAX
