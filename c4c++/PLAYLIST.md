@@ -6,6 +6,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - I Love Rock 'n' Roll — Joan Jett & the Blackhearts
 
 ## Chapter 3: Strings
+- I Can't Drive 55 — Sammy Hagar
 - Livin' on a Prayer — Bon Jovi
 - Depeche Mode (band)
 - Take On Me — a-ha
@@ -20,6 +21,11 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Sweet Dreams (Are Made of This) — Eurythmics
 - Never Gonna Give You Up — Rick Astley
 - Ghostbusters — Ray Parker Jr.
+- Walk Like an Egyptian — The Bangles
+- Hysteria — Def Leppard
+- 2112 — Rush
+- We Got the Beat — The Go-Go's
+- Final Countdown — Europe
 
 ## Chapter 4: Expressions
 - Crazy Train — Ozzy Osbourne

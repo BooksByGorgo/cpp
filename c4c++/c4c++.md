@@ -874,6 +874,41 @@ The string `"hello"` needs 6 bytes, not 5.
 Off-by-one errors with null terminators are one of the most common bugs in C.
 :::
 
+## String Literals vs. Arrays
+
+\index{string literal}
+
+There is an important difference between these two declarations:
+
+```c
+char arr[] = "I Can't Drive 55";    /* modifiable copy on the stack */
+const char *ptr = "I Can't Drive 55"; /* pointer to read-only memory */
+```
+
+With `char arr[]`, the compiler creates a local array and copies the string into it.
+You can modify the contents freely.
+
+With a string literal like `"I Can't Drive 55"`, the compiler stores the text in read-only memory.
+A pointer to a literal should be declared `const char *` because modifying the literal is undefined behavior:
+
+```c
+arr[0] = 'i';   /* fine — arr is a modifiable array */
+ptr[0] = 'i';   /* COMPILE ERROR — ptr is const char * */
+```
+
+If you forget the `const`, the compiler will not prevent the mistake:
+
+```c
+char *bad = "I Can't Drive 55";  /* compiles, but dangerous */
+bad[0] = 'i';                    /* UNDEFINED BEHAVIOR — likely a crash */
+```
+
+::: {.tip}
+**Trap:** Modifying a string literal is one of the most common mistakes C++ programmers make when moving to C.
+The compiler may not warn you (unless you use `-Wwrite-strings`), and the program might even appear to work — until it crashes on a different platform or optimization level.
+Always use `const char *` when pointing to a string literal.
+:::
+
 ## String Functions
 
 C provides a library of string manipulation functions in `<string.h>`.
@@ -964,6 +999,25 @@ if (strcmp(a, b) == 0) {
 It is a common source of confusion.
 Think of it as returning the "difference" between the strings — zero means no difference.
 :::
+
+\index{strncmp}
+**`strncmp` — Compare a Prefix**
+
+```c
+int strncmp(const char *s1, const char *s2, size_t n);
+```
+
+`strncmp` works like `strcmp` but compares at most `n` characters.
+It is useful for checking whether a string starts with a particular prefix:
+
+```c
+char cmd[] = "walk like an Egyptian";
+if (strncmp(cmd, "walk", 4) == 0) {
+    printf("Walking!\n");
+}
+```
+
+Unlike `strncpy`, there are no gotchas — `strncmp` simply stops comparing after `n` characters or a null terminator, whichever comes first.
 
 \index{strchr}
 \index{strrchr}
@@ -1153,6 +1207,61 @@ The buffer is 12 bytes, `"Buenas "` uses 8 (including the `'\0'`), and `"noches"
 That is 14 bytes total in a 12-byte buffer.
 The extra bytes overwrite whatever happens to be next to the buffer in memory, which can corrupt other variables, crash the program, or — worst of all — create a security exploit.
 
+## Character Classification: `<ctype.h>`
+
+\index{ctype.h}
+\index{isalpha}
+\index{isdigit}
+\index{toupper}
+\index{tolower}
+
+The `<ctype.h>` header provides functions for classifying and converting individual characters.
+These are essential when processing strings character by character:
+
+| Function      | Returns non-zero if                              |
+|---------------|--------------------------------------------------|
+| `isalpha(c)`  | `c` is a letter (A–Z, a–z)                      |
+| `isdigit(c)`  | `c` is a digit (0–9)                             |
+| `isalnum(c)`  | `c` is a letter or digit                         |
+| `isspace(c)`  | `c` is whitespace (space, tab, newline, etc.)    |
+| `isupper(c)`  | `c` is an uppercase letter                       |
+| `islower(c)`  | `c` is a lowercase letter                        |
+
+`toupper` and `tolower` convert a character's case:
+
+```c
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    char title[] = "hysteria";
+    for (size_t i = 0; i < strlen(title); i++) {
+        title[i] = toupper((unsigned char)title[i]);
+    }
+    printf("%s\n", title);  /* HYSTERIA */
+    return 0;
+}
+```
+
+Here is a handy function that checks whether a string is entirely digits:
+
+```c
+int all_digits(const char *s) {
+    for (; *s; s++) {
+        if (!isdigit((unsigned char)*s))
+            return 0;
+    }
+    return 1;
+}
+```
+
+::: {.tip}
+**Wut:** The `<ctype.h>` functions take an `int`, not a `char`.
+On platforms where `char` is signed, a character with a value above 127 would be passed as a negative `int`, which is undefined behavior.
+Always cast to `unsigned char` first: `toupper((unsigned char)c)`.
+:::
+
 ## A Preview: `sprintf` and `sscanf`
 
 \index{sprintf}
@@ -1172,6 +1281,18 @@ int year = 1985;
 sprintf(result, "The year is %d. Que bueno!", year);
 // result is now "The year is 1985. Que bueno!"
 ```
+
+\index{snprintf}
+Just as `strncpy` is the safer sibling of `strcpy`, `snprintf` is the safer sibling of `sprintf`:
+
+```c
+char buf[20];
+snprintf(buf, sizeof(buf), "The year is %d", 2112);
+/* buf is "The year is 2112" — safely truncated if it were longer */
+```
+
+`snprintf` guarantees it will not write more than the specified number of bytes, preventing buffer overflows.
+We will cover `sprintf`, `snprintf`, and `sscanf` in detail in the Standard I/O chapter.
 
 ## Try It: String Starter
 
@@ -1221,14 +1342,22 @@ int main(void) {
 
 - C strings are `char` arrays terminated by `'\0'`. There is no `std::string`.
 - Always account for the null terminator when sizing buffers.
+- String literals like `"hello"` live in read-only memory.
+  Use `char s[] = "..."` for a mutable copy and `const char *p = "..."` for a read-only pointer.
 - Use `strcmp` to compare strings — the `==` operator compares addresses, not
   content.
+  `strncmp` compares at most `n` characters — useful for prefix matching.
 - `strcpy` and `strcat` do not check buffer bounds. Prefer `strncpy` and
   `strncat`.
 - `strdup` allocates memory with `malloc` — you must `free` the result.
 - `strtok` splits strings into tokens but modifies the original string and is
   not thread-safe.
   Use `strtok_r` or `strtok_s` instead.
+- `<ctype.h>` provides character classification (`isalpha`, `isdigit`, etc.)
+  and conversion (`toupper`, `tolower`).
+  Cast `char` to `unsigned char` before passing.
+- `snprintf` is the safe alternative to `sprintf` — it limits output to a
+  maximum buffer size.
 - `strlen` returns the number of characters *before* the `'\0'`, not the buffer
   size.
 
@@ -1272,6 +1401,31 @@ int main(void) {
 
 6. **Write a program** that reads a string from the user, reverses it in place
    using pointer arithmetic, and prints the result.
+
+7. **Where is the bug?**
+
+    ```c
+    char *greeting = "We Got the Beat";
+    greeting[0] = 'w';
+    printf("%s\n", greeting);
+    ```
+
+8. **What does this print?**
+
+    ```c
+    printf("%d\n", strncmp("Final Countdown", "Final Fantasy", 5));
+    ```
+
+9. **What does this print?**
+
+    ```c
+    char c = '7';
+    printf("%d %d %d\n", isdigit(c) != 0, isalpha(c) != 0, isalnum(c) != 0);
+    ```
+
+10. **Write a program** that takes a string and counts how many uppercase letters,
+    lowercase letters, digits, and other characters it contains.
+    Use `<ctype.h>` functions.
 
 \newpage
 

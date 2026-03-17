@@ -370,6 +370,103 @@ Enter a string: Hola
 Reversed: aloH
 ```
 
+---
+
+**7. Where is the bug?**
+
+```c
+char *greeting = "We Got the Beat";
+greeting[0] = 'w';
+printf("%s\n", greeting);
+```
+
+**Answer:** `greeting` is a pointer to a string literal, which is stored in read-only memory.
+Writing to `greeting[0]` is undefined behavior — it will likely crash with a segmentation fault.
+Fix: declare it as `char greeting[] = "We Got the Beat";` to create a modifiable copy on the stack, or use `const char *greeting` to make the read-only intent explicit.
+
+---
+
+**8. What does this print?**
+
+```c
+printf("%d\n", strncmp("Final Countdown", "Final Fantasy", 5));
+```
+
+**Answer:**
+
+```
+0
+```
+
+`strncmp` only compares the first 5 characters.
+Both strings start with `"Final"`, so the first 5 characters are identical and the result is 0 (equal).
+
+---
+
+**9. What does this print?**
+
+```c
+char c = '7';
+printf("%d %d %d\n", isdigit(c) != 0, isalpha(c) != 0, isalnum(c) != 0);
+```
+
+**Answer:**
+
+```
+1 0 1
+```
+
+The character `'7'` is a digit, so `isdigit` returns non-zero.
+It is not alphabetic, so `isalpha` returns 0.
+It is alphanumeric (digits count), so `isalnum` returns non-zero.
+The `!= 0` normalizes each result to 1 or 0.
+
+---
+
+**10. Write a program** that takes a string and counts how many uppercase letters,
+lowercase letters, digits, and other characters it contains.
+
+**Answer:**
+
+```c
+#include <stdio.h>
+#include <ctype.h>
+
+int main(void) {
+    char str[] = "Rush 2112!";
+    int upper = 0, lower = 0, digits = 0, other = 0;
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        unsigned char c = str[i];
+        if (isupper(c))
+            upper++;
+        else if (islower(c))
+            lower++;
+        else if (isdigit(c))
+            digits++;
+        else
+            other++;
+    }
+
+    printf("'%s':\n", str);
+    printf("  Uppercase: %d\n", upper);
+    printf("  Lowercase: %d\n", lower);
+    printf("  Digits:    %d\n", digits);
+    printf("  Other:     %d\n", other);
+    return 0;
+}
+```
+
+Example output:
+
+```
+'Rush 2112!':
+  Uppercase: 1
+  Lowercase: 3
+  Digits:    4
+  Other:     2
+```
+
 # 4. Expressions
 
 **1. Think about it:** In C++, you can overload operators to give `+`, `<<`,

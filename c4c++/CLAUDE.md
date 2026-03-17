@@ -66,13 +66,7 @@ Write chapters to help beginning C++ programmers become beginning C programmers.
 
 the next 80s songs to use
 
-- living on a prayer
-- i can't drive 55
-- hysteria
-- 2112
-- we got the beat
-- walk like an egyptian
-- final countdown
+(all used — add more here)
 
 ## Cross-References Between Chapters
 
