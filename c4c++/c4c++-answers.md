@@ -245,7 +245,132 @@ Name: Carlos, ID: 1002, GPA: 3.42
 Name: Elena, ID: 1003, GPA: 3.97
 ```
 
-# 3. Expressions
+# 3. Strings
+
+**1. Think about it:** Why does `strcmp` return 0 for equal strings rather than
+1?
+How does this relate to the function's actual purpose?
+
+**Answer:** `strcmp` computes the difference between two strings, not a boolean "are they equal?" check.
+It returns a negative value if the first string comes before the second lexicographically, a positive value if it comes after, and zero if there is no difference.
+Zero means "no difference," which is the natural result for equal strings.
+This three-way return value is useful for sorting (e.g., with `qsort`).
+If it returned 1 for equal, you would lose the ability to determine ordering in a single call.
+
+---
+
+**2. What does this print?**
+
+```c
+char s[] = "Ghostbusters";
+printf("%zu %zu\n", strlen(s), sizeof(s));
+```
+
+**Answer:**
+
+```
+12 13
+```
+
+`strlen(s)` returns 12 — the number of characters before the null terminator.
+`sizeof(s)` returns 13 — the total size of the array in bytes, including the null terminator.
+
+---
+
+**3. Calculation:** What is `sizeof(buf)` for `char buf[20] = "Hola";`?
+
+**Answer:** **20.** `sizeof` returns the size of the declared array, not the length of the string stored in it.
+The array is declared as 20 bytes, so `sizeof(buf)` is 20 regardless of the string's content.
+
+---
+
+**4. Where is the bug?**
+
+```c
+char buf[10] = "Livin'";
+strcat(buf, " on a Prayer");
+printf("%s\n", buf);
+```
+
+**Answer:** **Buffer overflow.** `buf` is 10 bytes.
+`"Livin'"` uses 7 bytes (6 characters + `'\0'`), leaving 3 bytes free.
+`" on a Prayer"` is 12 characters, so the combined string needs 19 bytes (6 + 12 + `'\0'`), which far exceeds the 10-byte buffer.
+`strcat` writes past the end of `buf`, causing undefined behavior.
+
+---
+
+**5. Where is the bug?**
+
+```c
+char *a = "Hello";
+char *b = "Hello";
+if (a == b) {
+    printf("Equal\n");
+} else {
+    printf("Not equal\n");
+}
+```
+
+**Answer:** The `==` operator compares the **addresses** of the two string literals, not their contents.
+The output is **not guaranteed**.
+Some compilers merge identical string literals (so `a == b` would be true), but others store them separately (so `a == b` would be false).
+To correctly compare string content, use `strcmp`:
+
+```c
+if (strcmp(a, b) == 0) {
+    printf("Equal\n");
+}
+```
+
+---
+
+**6. Write a program** that reads a string from the user, reverses it in place
+using pointer arithmetic, and prints the result.
+
+**Answer:**
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    char buf[100];
+    printf("Enter a string: ");
+    if (fgets(buf, sizeof(buf), stdin) == NULL) {
+        return 1;
+    }
+
+    /* Remove trailing newline from fgets */
+    size_t len = strlen(buf);
+    if (len > 0 && buf[len - 1] == '\n') {
+        buf[len - 1] = '\0';
+        len--;
+    }
+
+    /* Reverse in place using two pointers */
+    char *left = buf;
+    char *right = buf + len - 1;
+    while (left < right) {
+        char tmp = *left;
+        *left = *right;
+        *right = tmp;
+        left++;
+        right--;
+    }
+
+    printf("Reversed: %s\n", buf);
+    return 0;
+}
+```
+
+Example:
+
+```
+Enter a string: Hola
+Reversed: aloH
+```
+
+# 4. Expressions
 
 **1. Think about it:** In C++, you can overload operators to give `+`, `<<`,
 `==`, and others custom meanings for your classes.
@@ -435,7 +560,7 @@ Output:
 10000000000
 ```
 
-# 4. Control Flow
+# 5. Control Flow
 
 **1. Think about it:** C uses `0` for false and nonzero for true, while C++
 has a built-in `bool` type.
@@ -643,7 +768,7 @@ Sum: 60
 Average: 20.00
 ```
 
-# 5. Pointers
+# 6. Pointers
 
 **1. Think about it:** In C++, you can pass by reference to modify a caller's
 variable.
@@ -778,7 +903,7 @@ arr[3] = 40 at address 0x7ffd...
 arr[4] = 50 at address 0x7ffd...
 ```
 
-# 6. Functions
+# 7. Functions
 
 **1. Think about it:** C does not have function overloading. How does the C
 standard library handle providing similar functionality for different types?
@@ -987,7 +1112,7 @@ Doubled:  2 4 6 8 10
 Negated:  -2 -4 -6 -8 -10
 ```
 
-# 7. Allocating Memory
+# 8. Allocating Memory
 
 **1. Think about it:** Why would you choose `calloc` over `malloc` followed by
 `memset` to zero?
@@ -1113,131 +1238,6 @@ Example output for `n = 5`:
 
 ```
 0 1 4 9 16
-```
-
-# 8. Strings
-
-**1. Think about it:** Why does `strcmp` return 0 for equal strings rather than
-1?
-How does this relate to the function's actual purpose?
-
-**Answer:** `strcmp` computes the difference between two strings, not a boolean "are they equal?" check.
-It returns a negative value if the first string comes before the second lexicographically, a positive value if it comes after, and zero if there is no difference.
-Zero means "no difference," which is the natural result for equal strings.
-This three-way return value is useful for sorting (e.g., with `qsort`).
-If it returned 1 for equal, you would lose the ability to determine ordering in a single call.
-
----
-
-**2. What does this print?**
-
-```c
-char s[] = "Ghostbusters";
-printf("%zu %zu\n", strlen(s), sizeof(s));
-```
-
-**Answer:**
-
-```
-12 13
-```
-
-`strlen(s)` returns 12 — the number of characters before the null terminator.
-`sizeof(s)` returns 13 — the total size of the array in bytes, including the null terminator.
-
----
-
-**3. Calculation:** What is `sizeof(buf)` for `char buf[20] = "Hola";`?
-
-**Answer:** **20.** `sizeof` returns the size of the declared array, not the length of the string stored in it.
-The array is declared as 20 bytes, so `sizeof(buf)` is 20 regardless of the string's content.
-
----
-
-**4. Where is the bug?**
-
-```c
-char buf[10] = "Livin'";
-strcat(buf, " on a Prayer");
-printf("%s\n", buf);
-```
-
-**Answer:** **Buffer overflow.** `buf` is 10 bytes.
-`"Livin'"` uses 7 bytes (6 characters + `'\0'`), leaving 3 bytes free.
-`" on a Prayer"` is 12 characters, so the combined string needs 19 bytes (6 + 12 + `'\0'`), which far exceeds the 10-byte buffer.
-`strcat` writes past the end of `buf`, causing undefined behavior.
-
----
-
-**5. Where is the bug?**
-
-```c
-char *a = "Hello";
-char *b = "Hello";
-if (a == b) {
-    printf("Equal\n");
-} else {
-    printf("Not equal\n");
-}
-```
-
-**Answer:** The `==` operator compares the **addresses** of the two string literals, not their contents.
-The output is **not guaranteed**.
-Some compilers merge identical string literals (so `a == b` would be true), but others store them separately (so `a == b` would be false).
-To correctly compare string content, use `strcmp`:
-
-```c
-if (strcmp(a, b) == 0) {
-    printf("Equal\n");
-}
-```
-
----
-
-**6. Write a program** that reads a string from the user, reverses it in place
-using pointer arithmetic, and prints the result.
-
-**Answer:**
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main(void) {
-    char buf[100];
-    printf("Enter a string: ");
-    if (fgets(buf, sizeof(buf), stdin) == NULL) {
-        return 1;
-    }
-
-    /* Remove trailing newline from fgets */
-    size_t len = strlen(buf);
-    if (len > 0 && buf[len - 1] == '\n') {
-        buf[len - 1] = '\0';
-        len--;
-    }
-
-    /* Reverse in place using two pointers */
-    char *left = buf;
-    char *right = buf + len - 1;
-    while (left < right) {
-        char tmp = *left;
-        *left = *right;
-        *right = tmp;
-        left++;
-        right--;
-    }
-
-    printf("Reversed: %s\n", buf);
-    return 0;
-}
-```
-
-Example:
-
-```
-Enter a string: Hola
-Reversed: aloH
 ```
 
 # 9. Numbers and Casting

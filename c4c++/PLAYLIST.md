@@ -5,22 +5,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 ## Chapter 2: Variables
 - I Love Rock 'n' Roll — Joan Jett & the Blackhearts
 
-## Chapter 3: Expressions
-- Crazy Train — Ozzy Osbourne
-
-## Chapter 4: Control Flow
-- Rock You Like a Hurricane — Scorpions
-- Big City Nights — Scorpions
-- Wind of Change — Scorpions
-
-## Chapter 5: Pointers
-- Karma Chameleon — Culture Club
-- Totally, Radical, Tubular (80s slang)
-
-## Chapter 6: Functions
-- Iron Man — Black Sabbath
-
-## Chapter 8: Strings
+## Chapter 3: Strings
 - Livin' on a Prayer — Bon Jovi
 - Depeche Mode (band)
 - Take On Me — a-ha
@@ -35,6 +20,21 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Sweet Dreams (Are Made of This) — Eurythmics
 - Never Gonna Give You Up — Rick Astley
 - Ghostbusters — Ray Parker Jr.
+
+## Chapter 4: Expressions
+- Crazy Train — Ozzy Osbourne
+
+## Chapter 5: Control Flow
+- Rock You Like a Hurricane — Scorpions
+- Big City Nights — Scorpions
+- Wind of Change — Scorpions
+
+## Chapter 6: Pointers
+- Karma Chameleon — Culture Club
+- Totally, Radical, Tubular (80s slang)
+
+## Chapter 7: Functions
+- Iron Man — Black Sabbath
 
 ## Chapter 9: Numbers and Casting
 - Danger Zone — Kenny Loggins

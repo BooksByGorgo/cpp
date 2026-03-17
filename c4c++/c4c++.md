@@ -847,7 +847,7 @@ int main(void) {
 
 \newpage
 
-# 8. Strings
+# 3. Strings
 
 \index{string}
 
@@ -1275,7 +1275,7 @@ int main(void) {
 
 \newpage
 
-# 3. Expressions
+# 4. Expressions
 
 C and C++ share most of their operators, and if you have been writing C++ you will find the syntax immediately familiar.
 But there are important differences.
@@ -1783,7 +1783,7 @@ int main(void) {
 
 \newpage
 
-# 4. Control Flow
+# 5. Control Flow
 
 Control flow in C will feel very familiar if you are coming from C++.
 The `if`, `while`, `for`, and `switch` statements work essentially the same way.
@@ -2272,7 +2272,7 @@ int main(void) {
 
 \newpage
 
-# 5. Pointers
+# 6. Pointers
 
 If you have been writing modern C++, you may have rarely (or never) used raw pointers.
 Smart pointers like `std::unique_ptr` and `std::shared_ptr` manage memory for you.
@@ -2657,7 +2657,7 @@ int main(void) {
 
 \newpage
 
-# 6. Functions
+# 7. Functions
 
 C functions look a lot like C++ functions — same return types, same curly braces, same `return` statement.
 But several features you rely on in C++ are simply not available in C.
@@ -3161,7 +3161,7 @@ int main(void) {
 
 \newpage
 
-# 7. Allocating Memory
+# 8. Allocating Memory
 
 Every variable in your program lives somewhere in memory, but not all memory is created equal.
 Understanding where variables live — and how long they last — is essential for writing correct C programs.

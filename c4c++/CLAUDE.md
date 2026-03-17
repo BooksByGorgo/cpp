@@ -77,10 +77,10 @@ the next 80s songs to use
 ## Cross-References Between Chapters
 
 - when a concept is introduced in one chapter and used in a later chapter, reference the earlier chapter rather than re-explaining it
-- Ch 2 (Variables) introduces arrays, const with pointers, and structs; Ch 5 (Pointers) should reference Ch 2 for these basics and focus on pointer-specific details (pointer arithmetic, ->, etc.)
-- Ch 5 (Pointers) introduces pass by value with pointer workaround; Ch 6 (Functions) should reference Ch 5 rather than repeating the explanation
-- Ch 6 (Functions) introduces function pointers; Ch 12 (Odds and Ends) should reference Ch 6 and focus on qsort as a practical example
-- Ch 4 (Control Flow) briefly introduces goto cleanup with a reference forward to Ch 12; Ch 12 covers it in depth
+- Ch 2 (Variables) introduces arrays, const with pointers, and structs; Ch 6 (Pointers) should reference Ch 2 for these basics and focus on pointer-specific details (pointer arithmetic, ->, etc.)
+- Ch 6 (Pointers) introduces pass by value with pointer workaround; Ch 7 (Functions) should reference Ch 6 rather than repeating the explanation
+- Ch 7 (Functions) introduces function pointers; Ch 12 (Odds and Ends) should reference Ch 7 and focus on qsort as a practical example
+- Ch 5 (Control Flow) briefly introduces goto cleanup with a reference forward to Ch 12; Ch 12 covers it in depth
 
 ## Content
 
@@ -109,14 +109,14 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
         - unlike C++, only member variables allowed -- no member functions; although, you can use function pointers (described later)
         - members accessed with . operator
         - assignment does a copy
-8. Strings
+3. Strings
     - there is no std::string in C++. everything revolves around arrays of characters that end with a null '\0'
     - using strings, you always have to careful have the right amount of memory allocated. (remember to include space for the null!)
     - string manipulation routines: strlen(), strchr(), strrchr(), strstr(), strcat(), strdup(), strtok() (include any additional ones that students should know)
     - recommend strtok_r (POSIX) or strtok_s (C11/Windows) over strtok for thread safety
     - review the problems that can arise using strcat()
     - point out that there are convenient ways to manipulate strings with sprintf() and sscanf that will be shown later in I/O
-3. Expressions
+4. Expressions
     - assignment operators
     - math operators
     - logical operators
@@ -124,14 +124,14 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - compound assignment operators
     - ternary operator
     - operator precedence
-4. Control flow
+5. Control flow
     - if statements
     - while loop/do while
         - break/continue
     - for loops
     - switch statements
     - goto (brief intro with reference forward to Ch 12 for full cleanup pattern)
-5. Pointers
+6. Pointers
     - modern C++ programmers rarely see pointers and thus can get away with not fully understanding them, but C programmers must be very comfortable with pointers
     - a type that ends in * represents a pointer. the type information before the * represents the type of the memory that the pointer points to
     - all pointers are an address to a location in memory
@@ -141,14 +141,14 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - pointer arithmetic and explain that a[i] is much more convenient to write than *(a+i) — reference Ch 2 for array decay basics
     - show the -> operator for accessing struct members through pointers — reference Ch 2 for struct basics
     - pass by value with pointer workaround
-6. Functions
+7. Functions
     - declarations vs definitions, forward declarations, void parameter lists
-    - all function parameters are `pass by value` (no `pass by reference`) — reference Ch 5 rather than re-explaining
+    - all function parameters are `pass by value` (no `pass by reference`) — reference Ch 6 rather than re-explaining
     - const parameters. why they are important
     - structures can be problematic to pass by value, why const struct type *var is useful
     - recursive functions
     - function pointers (basics, typedef, callbacks)
-7. Allocating memory
+8. Allocating memory
     - global variables get started at the beginning of a program and stay around until the program finishes
     - local variables are declared inside of functions and go away when the function goes away
     - static local variables have the scope of a local but the lifetime of a global
@@ -189,4 +189,4 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - explain using extern "C" to use c functions from c++
     - explain why they should always wonder about ownership when the receive a pointer from the function they just called (should they free it?)
     - explain error handling without exceptions: return codes, errno/perror, and goto cleanup pattern for releasing multiple resources
-    - qsort as a practical example of function pointers — reference Ch 6 for function pointer basics
+    - qsort as a practical example of function pointers — reference Ch 7 for function pointer basics
