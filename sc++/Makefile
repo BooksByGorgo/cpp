@@ -2,7 +2,7 @@ DATE := $(shell git log -1 --format="%ad" --date=format:"%B %d, %Y")
 FILTER := --lua-filter=callout.lua
 PANDOC_OPTS := $(FILTER) --pdf-engine=latexmk -M subtitle="$(DATE)" -V geometry:margin=1in
 
-PDFS := c4c++.pdf c4c++-answers.pdf
+PDFS := sc++.pdf sc++-answers.pdf
 
 CHAPTERS := frontmatter.yaml author-intro.md \
 	ch00.md ch01.md ch02.md ch03.md ch04.md ch05.md ch06.md \
@@ -15,10 +15,10 @@ all: $(PDFS)
 
 chapters: $(CH_PDFS)
 
-c4c++.pdf: $(CHAPTERS) callout.lua
+sc++.pdf: $(CHAPTERS) callout.lua
 	pandoc $(CHAPTERS) -o $@ $(PANDOC_OPTS)
 
-c4c++-answers.pdf: c4c++-answers.md callout.lua
+sc++-answers.pdf: sc++-answers.md callout.lua
 	pandoc $< -o $@ $(PANDOC_OPTS)
 
 ch%.pdf: frontmatter.yaml ch%.md callout.lua
