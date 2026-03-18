@@ -1,10 +1,6 @@
 # Project Description
 
-Write chapters to help beginning C++ programmers become beginning C programmers.
-
-## Textbook
-
-- These chapter augments the book text found in ../s26/text/
+Chapters to help beginning C++ programmers become beginning C programmers.
 
 ## Chapters
 
@@ -34,6 +30,9 @@ Write chapters to help beginning C++ programmers become beginning C programmers.
 - Use Pandoc markdown
 - Use correct grammar and capitalizations
 - Use tip callouts (`::: {.tip}` divs) to highlight idioms, best practices, or warn of bad practices
+    - `Tip` for highlight idioms, best practices
+    - `Trap` for common mistakes
+    - `Wut` unexpected or counterintuitive rules
 - Callouts are rendered as full-width `tcolorbox` boxes via `callout.lua` — do not use `wrapfigure`
 - Keep the tone professional but light
 - Preserve emojis and text emojis (e.g., `:'(`) in the text — do not remove them
