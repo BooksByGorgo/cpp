@@ -157,3 +157,5 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - explain exit() and when it might be more useful than return
     - explain using extern "C" to use c functions from c++
     - numbers and casting (chars as numbers, bit widths, static_cast, dynamic_cast, const_cast, reinterpret_cast)
+    - time
+    - random numbers
