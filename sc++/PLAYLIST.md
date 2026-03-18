@@ -3,6 +3,7 @@
 Songs, movies, and cultural references appearing in the text, organized by chapter.
 
 ## Chapter 1: Introduction
+- Come As You Are — Nirvana
 - Smells Like Teen Spirit — Nirvana
 - Macarena — Los Del Rio
 
