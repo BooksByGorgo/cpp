@@ -55,7 +55,7 @@ No previous programming experience is assumed.
 - place `\index{term}` at the primary introduction/definition of a term, not inside code blocks
 - use `\index{parent!child}` for sub-entries (e.g., `\index{pointer!arithmetic}`)
 - in `\index{}`, escape double quotes by doubling them (e.g., `\index{extern ""C""}`)
-- `\printindex` goes only in ch12.md (the last chapter) — do not add it to other chapters
+- `\printindex` goes only in ch13.md (the last chapter) — do not add it to other chapters
 
 ## 90s References
 
@@ -122,20 +122,38 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - std::vector
     - iterating through containers
 8. Ranges, algorithms, and lambdas
-9. Classes
+9. I/O streams
+    - string streams
+    - file streams
+10. std::format and std::print
+    - formatted I/O with std::format and std::print
+    - Header: `#include <format>` or `#include <print>`
+    - Implicit: `std::format("{},{}", 1, "hi")` -> `1,hi`
+    - Indexed: `std::format("{1},{0}", 1, "hi")` -> `hi,1`
+    - YOU CANNOT MIX IMPLICIT AND INDEXED!
+        - `std::format("{},{1}", 1, "hi")` ->❌
+    - `{arg-identifier:format-spec}`
+    - `format-spec` after the `:` in a format string: `{:.2}` or `{1:.2}`
+        - `[[fill]align][sign][#][0][width][.prec][type]`
+        - `fill`: any character (default: space) except {}
+        - `align`: `<` (left), `>` (right), `^` (center)
+        - `sign`: `+` (on all #s), `-` (only neg), or space (for positive #s) 
+        - `#`: alternate form (e.g., 0x for hex)
+        - `0`: zero-padding (implies right align)
+        - `width`: minimum field width
+        - `prec`: fixed floats: # of digits after . else precision; strings: max len 
+        - `type`: `d` (decimal), `x` (hex), `f` (fixed-point), `s` (string), `p` pointer, etc.
+11. Classes
     - constructors/destructors
     - member methods
-10. Memory Management
+12. Memory Management
     - new/delete
     - don't use new/delete use std::unique_ptr
     - std::shared_ptr
     - move
     - special members
-11. I/O streams
-    - string streams
-    - file streams
-    - formatted I/O with std::format and std::print
-12. Odds and Ends
+
+13. Odds and Ends
     - explain exit() and when it might be more useful than return
     - explain using extern "C" to use c functions from c++
     - numbers and casting (chars as numbers, bit widths, static_cast, dynamic_cast, const_cast, reinterpret_cast)

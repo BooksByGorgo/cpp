@@ -43,22 +43,27 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Wonderwall — Oasis
 - Everybody (Backstreet's Back) — Backstreet Boys
 
-## Chapter 9: Classes
-- Enter Sandman — Metallica
-- Black Hole Sun — Soundgarden
-- All Star — Smash Mouth
-
-## Chapter 10: Memory Management
-- Under the Bridge — Red Hot Chili Peppers
-- Nothing Compares 2 U — Sinead O'Connor
-- Don't Speak — No Doubt
-
-## Chapter 11: I/O
+## Chapter 9: I/O Streams
 - Closing Time — Semisonic
 - Smooth — Santana ft. Rob Thomas
 - Tubthumping — Chumbawamba
 
-## Chapter 12: Odds and Ends
+## Chapter 10: std::format and std::print
+- Smooth — Santana ft. Rob Thomas
+- Closing Time — Semisonic
+- Tubthumping — Chumbawamba
+
+## Chapter 11: Classes
+- Enter Sandman — Metallica
+- Black Hole Sun — Soundgarden
+- All Star — Smash Mouth
+
+## Chapter 12: Memory Management
+- Under the Bridge — Red Hot Chili Peppers
+- Nothing Compares 2 U — Sinead O'Connor
+- Don't Speak — No Doubt
+
+## Chapter 13: Odds and Ends
 - The Matrix (1999 film)
 - La Copa de la Vida — Ricky Martin
 - Believe — Cher

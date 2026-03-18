@@ -1234,7 +1234,263 @@ int main()
 }
 ```
 
-# Chapter 9: Classes
+# Chapter 9: I/O Streams
+
+**1. What does the following program print?**
+
+```cpp
+#include <sstream>
+#include <iostream>
+
+int main()
+{
+    std::ostringstream oss;
+    oss << 10 << " + " << 20 << " = " << 10 + 20;
+    std::cout << oss.str() << std::endl;
+    return 0;
+}
+```
+
+It prints:
+
+```
+10 + 20 = 30
+```
+
+The `ostringstream` builds the string piece by piece.
+The expression `10 + 20` is evaluated to 30 before being streamed.
+
+**2. What does this program print?**
+
+```cpp
+#include <sstream>
+#include <iostream>
+#include <string>
+
+int main()
+{
+    std::istringstream iss("100 hola 3.14");
+    int n;
+    std::string s;
+    double d;
+
+    iss >> n >> s >> d;
+    std::cout << d << " " << n << " " << s << std::endl;
+    return 0;
+}
+```
+
+It prints:
+
+```
+3.14 100 hola
+```
+
+The `>>` operator extracts values in order from the string: `n` gets 100, `s` gets "hola", `d` gets 3.14.
+The `cout` statement prints them in a different order: `d`, `n`, `s`.
+
+**3. What is wrong with this code?**
+
+```cpp
+#include <fstream>
+#include <iostream>
+
+int main()
+{
+    std::ifstream infile("data.txt");
+    std::string line;
+
+    while (std::getline(infile, line)) {
+        std::cout << line << std::endl;
+    }
+
+    return 0;
+}
+```
+
+The code does not check whether the file opened successfully before reading from it.
+If `data.txt` does not exist, `infile` will be in a failed state, `std::getline` will immediately return false, and the program will silently produce no output with no error message.
+The fix is to check the stream after opening:
+
+```cpp
+std::ifstream infile("data.txt");
+if (!infile) {
+    std::cerr << "Could not open data.txt" << std::endl;
+    return 1;
+}
+```
+
+**4. What is wrong with this file-writing code?**
+
+```cpp
+#include <fstream>
+
+int main()
+{
+    std::ofstream out;
+    out << "Yo me la paso bien" << std::endl;
+    out.close();
+    return 0;
+}
+```
+
+The `std::ofstream` is declared but never given a filename.
+The stream is not connected to any file, so writing to it does nothing.
+The fix is to pass a filename to the constructor or call `.open()`:
+
+```cpp
+std::ofstream out("output.txt");
+```
+
+**5. Why is it useful that string streams, file streams, and `std::cout`/`std::cin` all share the same `<<` and `>>` interface?**
+
+Because they share the same interface, code written to work with one type of stream can work with any type of stream.
+For example, a function that writes data using `<<` on an `std::ostream&` reference can write to the screen (`std::cout`), to a file (`std::ofstream`), or to a string (`std::ostringstream`) without any changes.
+This makes code more flexible and reusable.
+
+**6. Write a program that reads three song names from the user, builds a single string with them separated by ` / ` using an `std::ostringstream`, writes it to `favorites.txt`, then reads the file back and prints its contents.**
+
+```cpp
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+int main()
+{
+    std::ostringstream oss;
+
+    for (int i = 0; i < 3; i++) {
+        std::string song;
+        std::cout << "Song name: ";
+        std::getline(std::cin, song);
+        if (i > 0) {
+            oss << " / ";
+        }
+        oss << song;
+    }
+
+    std::ofstream outfile("favorites.txt");
+    if (!outfile) {
+        std::cerr << "Could not open favorites.txt" << std::endl;
+        return 1;
+    }
+    outfile << oss.str() << std::endl;
+    outfile.close();
+
+    std::ifstream infile("favorites.txt");
+    if (!infile) {
+        std::cerr << "Could not read favorites.txt" << std::endl;
+        return 1;
+    }
+
+    std::string line;
+    while (std::getline(infile, line)) {
+        std::cout << line << std::endl;
+    }
+    infile.close();
+
+    return 0;
+}
+```
+
+# Chapter 10: std::format and std::print
+
+**1. What does `std::format("{:>8.2f}", 3.1)` produce? How many characters wide is the result?**
+
+It produces `"    3.10"`.
+The format specifier `>8.2f` means: right-align in a field 8 characters wide, with 2 decimal places.
+`3.1` formatted with 2 decimal places becomes `3.10`, which is 4 characters.
+Right-aligned in 8 characters, it is padded with 4 spaces on the left.
+The result is **8 characters wide**.
+
+**2. Why might you prefer `std::format` over chaining `<<` operators with `std::cout`?**
+
+1. **Readability:** A format string like `std::format("{} scored {} points", name, score)` is much easier to read than `std::cout << name << " scored " << score << " points"`. The format string shows the complete output pattern in one place.
+
+2. **Formatting control:** Width, alignment, and precision are specified concisely inside `{}` placeholders (e.g., `{:>10.2f}`), rather than using verbose manipulators like `std::setw`, `std::setprecision`, and `std::setfill`.
+
+**3. What is the difference between `std::print` and `std::println`?**
+
+`std::print` prints formatted output without a trailing newline.
+`std::println` prints formatted output followed by a newline.
+They both use the same format string syntax as `std::format`.
+
+**4. What does `std::format("{:*^20}", "Hola")` produce?**
+
+It produces `"********Hola********"`.
+The format specifier `*^20` means: center-align in a field 20 characters wide, filling with `*` characters.
+"Hola" is 4 characters, so it gets 8 `*` characters on each side.
+
+**5. What is wrong with this code?**
+
+```cpp
+std::string result = std::format("{} scored {1} points", name, score);
+```
+
+You cannot mix implicit (`{}`) and indexed (`{1}`) argument references in the same format string.
+The fix is to use either all implicit or all indexed:
+
+```cpp
+std::string result = std::format("{} scored {} points", name, score);
+// or
+std::string result = std::format("{0} scored {1} points", name, score);
+```
+
+**6. Write a program that asks for three song names and scores, writes them to a file, reads the file back, and prints a formatted table.**
+
+```cpp
+#include <fstream>
+#include <format>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+int main()
+{
+    std::ofstream outfile("rankings.txt");
+    if (!outfile) {
+        std::cerr << "Could not open rankings.txt for writing" << std::endl;
+        return 1;
+    }
+
+    for (int i = 0; i < 3; i++) {
+        std::string song;
+        double score;
+
+        std::cout << "Song name: ";
+        std::getline(std::cin, song);
+        std::cout << "Score: ";
+        std::cin >> score;
+        std::cin.ignore();
+
+        outfile << song << "|" << score << std::endl;
+    }
+    outfile.close();
+
+    std::ifstream infile("rankings.txt");
+    if (!infile) {
+        std::cerr << "Could not open rankings.txt for reading" << std::endl;
+        return 1;
+    }
+
+    std::cout << std::format("{:<25} {:>6}", "Song", "Score") << std::endl;
+    std::cout << std::string(32, '-') << std::endl;
+
+    std::string line;
+    while (std::getline(infile, line)) {
+        size_t sep = line.find('|');
+        std::string song = line.substr(0, sep);
+        double score = std::stod(line.substr(sep + 1));
+        std::cout << std::format("{:<25} {:>6.1f}", song, score) << std::endl;
+    }
+
+    infile.close();
+    return 0;
+}
+```
+
+# Chapter 11: Classes
 
 **1. What is the difference between a `struct` and a `class` in C++? Why would you choose one over the other?**
 
@@ -1444,7 +1700,7 @@ int main()
 }
 ```
 
-# Chapter 10: Memory Management
+# Chapter 12: Memory Management
 
 **1. What is the difference between stack and heap memory? Give one situation where you would need to use the heap.**
 
@@ -1605,187 +1861,7 @@ second: Wannabe
 first is empty (nullptr)
 ```
 
-# Chapter 11: I/O Streams and Formatted Output
-
-**1. What does the following program print?**
-
-```cpp
-#include <sstream>
-#include <iostream>
-
-int main()
-{
-    std::ostringstream oss;
-    oss << 10 << " + " << 20 << " = " << 10 + 20;
-    std::cout << oss.str() << std::endl;
-    return 0;
-}
-```
-
-It prints:
-
-```
-10 + 20 = 30
-```
-
-The `ostringstream` builds the string piece by piece.
-The expression `10 + 20` is evaluated to 30 before being streamed.
-
-**2. What does this program print?**
-
-```cpp
-#include <sstream>
-#include <iostream>
-
-int main()
-{
-    std::istringstream iss("100 hola 3.14");
-    int n;
-    std::string s;
-    double d;
-
-    iss >> n >> s >> d;
-    std::cout << d << " " << n << " " << s << std::endl;
-    return 0;
-}
-```
-
-It prints:
-
-```
-3.14 100 hola
-```
-
-The `>>` operator extracts values in order from the string: `n` gets 100, `s` gets "hola", `d` gets 3.14.
-The `cout` statement prints them in a different order: `d`, `n`, `s`.
-
-**3. What is wrong with this code?**
-
-```cpp
-#include <fstream>
-#include <iostream>
-
-int main()
-{
-    std::ifstream infile("data.txt");
-    std::string line;
-
-    while (std::getline(infile, line)) {
-        std::cout << line << std::endl;
-    }
-
-    return 0;
-}
-```
-
-The code does not check whether the file opened successfully before reading from it.
-If `data.txt` does not exist, `infile` will be in a failed state, `std::getline` will immediately return false, and the program will silently produce no output with no error message.
-The fix is to check the stream after opening:
-
-```cpp
-std::ifstream infile("data.txt");
-if (!infile) {
-    std::cerr << "Could not open data.txt" << std::endl;
-    return 1;
-}
-```
-
-**4. What does `std::format("{:>8.2f}", 3.1)` produce? How many characters wide is the result?**
-
-It produces `"    3.10"`.
-The format specifier `>8.2f` means: right-align in a field 8 characters wide, with 2 decimal places.
-`3.1` formatted with 2 decimal places becomes `3.10`, which is 4 characters.
-Right-aligned in 8 characters, it is padded with 4 spaces on the left.
-The result is **8 characters wide**.
-
-**5. Why might you prefer `std::format` over chaining `<<` operators with `std::cout`?**
-
-1. **Readability:** A format string like `std::format("{} scored {} points", name, score)` is much easier to read than `std::cout << name << " scored " << score << " points"`. The format string shows the complete output pattern in one place.
-
-2. **Formatting control:** Width, alignment, and precision are specified concisely inside `{}` placeholders (e.g., `{:>10.2f}`), rather than using verbose manipulators like `std::setw`, `std::setprecision`, and `std::setfill`.
-
-**6. What is the difference between `std::print` and `std::println`?**
-
-`std::print` prints formatted output without a trailing newline.
-`std::println` prints formatted output followed by a newline.
-They both use the same format string syntax as `std::format`.
-
-**7. What is wrong with this file-writing code?**
-
-```cpp
-#include <fstream>
-
-int main()
-{
-    std::ofstream out;
-    out << "Yo me la paso bien" << std::endl;
-    out.close();
-    return 0;
-}
-```
-
-The `std::ofstream` is declared but never given a filename.
-The stream is not connected to any file, so writing to it does nothing.
-The fix is to pass a filename to the constructor or call `.open()`:
-
-```cpp
-std::ofstream out("output.txt");
-```
-
-**8. Write a program that asks for three song names and scores, writes them to a file, reads the file back, and prints a formatted table.**
-
-```cpp
-#include <fstream>
-#include <format>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-int main()
-{
-    std::ofstream outfile("rankings.txt");
-    if (!outfile) {
-        std::cerr << "Could not open rankings.txt for writing" << std::endl;
-        return 1;
-    }
-
-    for (int i = 0; i < 3; i++) {
-        std::string song;
-        double score;
-
-        std::cout << "Song name: ";
-        std::getline(std::cin, song);
-        std::cout << "Score: ";
-        std::cin >> score;
-        std::cin.ignore();
-
-        outfile << song << "|" << score << std::endl;
-    }
-    outfile.close();
-
-    std::ifstream infile("rankings.txt");
-    if (!infile) {
-        std::cerr << "Could not open rankings.txt for reading" << std::endl;
-        return 1;
-    }
-
-    std::cout << std::format("{:<25} {:>6}", "Song", "Score") << std::endl;
-    std::cout << std::string(32, '-') << std::endl;
-
-    std::string line;
-    while (std::getline(infile, line)) {
-        size_t sep = line.find('|');
-        std::string song = line.substr(0, sep);
-        double score = std::stod(line.substr(sep + 1));
-        std::cout << std::format("{:<25} {:>6.1f}", song, score) << std::endl;
-    }
-
-    infile.close();
-    return 0;
-}
-```
-
-# Chapter 12: Odds and Ends
+# Chapter 13: Odds and Ends
 
 **1. What does the following program print if the file `data.txt` does not exist?**
 
