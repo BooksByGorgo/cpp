@@ -11,7 +11,7 @@ CHAPTERS := frontmatter.yaml author-intro.md \
 CH_SRCS := $(filter ch%.md,$(CHAPTERS))
 CH_PDFS := $(CH_SRCS:.md=.pdf)
 
-all: $(PDFS)
+all: $(PDFS) $(CH_PDFS)
 
 chapters: $(CH_PDFS)
 
@@ -21,8 +21,8 @@ c4c++.pdf: $(CHAPTERS) callout.lua
 c4c++-answers.pdf: c4c++-answers.md callout.lua
 	pandoc $< -o $@ $(PANDOC_OPTS)
 
-ch%.pdf: frontmatter.yaml ch%.md callout.lua
-	pandoc frontmatter.yaml ch$*.md -o $@ $(PANDOC_OPTS)
+ch%.pdf: ch%.md callout.lua
+	pandoc chapfront.yaml ch$*.md -o $@ $(PANDOC_OPTS) 
 
 clean:
 	rm -f $(PDFS) $(CH_PDFS) *.idx *.ilg *.ind

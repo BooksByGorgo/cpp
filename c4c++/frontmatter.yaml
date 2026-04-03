@@ -7,4 +7,6 @@ header-includes:
   - \usepackage[most]{tcolorbox}
   - \usepackage{makeidx}
   - \makeindex
+  - \usepackage{titlesec}
+  - \newcommand{\sectionbreak}{\clearpage}
 ---
