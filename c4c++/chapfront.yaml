@@ -1,0 +1,10 @@
+---
+title: "C for C++ Programmers"
+colorlinks: true
+classoption:
+  - notitlepage
+header-includes:
+  - \usepackage[most]{tcolorbox}
+  - \usepackage{makeidx}
+  - \makeindex
+---
