@@ -36,6 +36,9 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Gold Digger — Kanye West
 - Single Ladies — Beyonce
 
+## Chapter 9: RAII and Resource Management
+- Somebody That I Used to Know — Gotye
+
 ## Chapter 8: Namespaces and the Preprocessor
 - Yellow — Coldplay
 - Speed of Sound — Coldplay
