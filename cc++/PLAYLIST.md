@@ -20,6 +20,22 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Lose Yourself — Eminem
 - I Gotta Feeling — Black Eyed Peas
 
+## Chapter 3: The Standard Template Library
+- Elephant — The White Stripes (album)
+- Hot Fuss — The Killers (album)
+- Funeral — Arcade Fire (album)
+- X&Y — Coldplay (album)
+- Absolution — Muse (album)
+- Rehab — Amy Winehouse
+- Poker Face — Lady Gaga
+- Use Somebody — Kings of Leon
+- Chasing Cars — Snow Patrol
+- How to Save a Life — The Fray
+- Fix You — Coldplay
+- Crazy — Gnarls Barkley
+- Gold Digger — Kanye West
+- Single Ladies — Beyonce
+
 ## Chapter 4: Ranges, Algorithms, and Lambdas
 - Hey Ya! — OutKast
 - Mr. Brightside — The Killers
