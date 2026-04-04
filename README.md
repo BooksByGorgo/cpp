@@ -1,6 +1,6 @@
 # Why?
 
-![another mid c++ book](images/midc++.png)
+<img src="images/midc++.png" alt="another mid c++ book" width="50%">
 
 There are lots of programming text books.
 Why in the world would we do another?!?!?!
@@ -11,7 +11,7 @@ I believe there will always be a niche for free programming textbooks that evolv
 
 We want the books we use the match our curricula needs, so having control over our books helps.
 
-![meh c++ book](images/c++books++.png)
+<img src="images/mehc++.png" alt="meh c++ book" width="50%">
 
 Perhaps, the book is *meh*.
 We are going for engaging, but meh can work as long as it conveys what we need.
