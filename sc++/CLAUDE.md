@@ -22,7 +22,7 @@ No previous programming experience is assumed.
 - For strings, use 90s references, lyrics from 90s songs, and Spanish occasionally. Keep it short.
 - avoid repeating lyrics in examples even across chapters
 - Validate examples to make sure syntax and result is correct
-- Compile examples with `g++ -std=c++20 -Wall -Wextra -pedantic` to verify correctness
+- Compile examples with `g++ -std=c++23 -Wall -Wextra -pedantic` to verify correctness
 - Always include the headers needed by every example (e.g., `#include <string>` when using `std::string`)
 - Create short example programs to illustrate the concepts covered
 
@@ -57,7 +57,7 @@ No previous programming experience is assumed.
 - place `\index{term}` at the primary introduction/definition of a term, not inside code blocks
 - use `\index{parent!child}` for sub-entries (e.g., `\index{pointer!arithmetic}`)
 - in `\index{}`, escape double quotes by doubling them (e.g., `\index{extern ""C""}`)
-- `\printindex` goes only in ch13.md (the last chapter) — do not add it to other chapters
+- `\printindex` goes only in ch14.md (the last chapter) — do not add it to other chapters
 
 ## 90s References
 
@@ -145,17 +145,25 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
         - `width`: minimum field width
         - `prec`: fixed floats: # of digits after . else precision; strings: max len 
         - `type`: `d` (decimal), `x` (hex), `f` (fixed-point), `s` (string), `p` pointer, etc.
-11. Classes
+11. Exceptions
+    - try/catch/throw
+    - standard exception types (std::exception, std::runtime_error, std::logic_error)
+    - throwing and catching exceptions
+    - stack unwinding
+    - noexcept
+    - std::expected (C++23) as an alternative to exceptions
+    - when to use exceptions vs std::expected
+12. Classes
     - constructors/destructors
     - member methods
-12. Memory Management
+13. Memory Management
     - new/delete
     - don't use new/delete use std::unique_ptr
     - std::shared_ptr
     - move
     - special members
 
-13. Odds and Ends
+14. Odds and Ends
     - explain exit() and when it might be more useful than return
     - explain using extern "C" to use c functions from c++
     - numbers and casting (chars as numbers, bit widths, static_cast, dynamic_cast, const_cast, reinterpret_cast)

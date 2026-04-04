@@ -55,7 +55,9 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Closing Time — Semisonic
 - Tubthumping — Chumbawamba
 
-## Chapter 11: Classes
+## Chapter 11: Exceptions
+
+## Chapter 12: Classes
 - Enter Sandman — Metallica
 - Black Hole Sun — Soundgarden
 - All Star — Smash Mouth
@@ -66,12 +68,12 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - I'll Be There for You — The Rembrandts
 - Vogue — Madonna
 
-## Chapter 12: Memory Management
+## Chapter 13: Memory Management
 - Under the Bridge — Red Hot Chili Peppers
 - Nothing Compares 2 U — Sinead O'Connor
 - Don't Speak — No Doubt
 
-## Chapter 13: Odds and Ends
+## Chapter 14: Odds and Ends
 - La Copa de la Vida — Ricky Martin
 - Believe — Cher
 - "Cinco tracks al azar" (Spanish phrase used in random numbers example)

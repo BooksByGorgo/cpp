@@ -1533,7 +1533,220 @@ int main()
 }
 ```
 
-# Chapter 11: Classes
+# Chapter 11: Exceptions
+
+**1. What does the following program print?**
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+void step3() { throw std::runtime_error("oops"); }
+void step2() { step3(); }
+void step1() { step2(); }
+
+int main()
+{
+    try {
+        step1();
+        std::cout << "A" << std::endl;
+    } catch (const std::runtime_error &e) {
+        std::cout << "B: " << e.what() << std::endl;
+    }
+    std::cout << "C" << std::endl;
+    return 0;
+}
+```
+
+It prints:
+
+```
+B: oops
+C
+```
+
+`step1()` calls `step2()`, which calls `step3()`, which throws.
+The exception propagates back through `step2` and `step1` to the `catch` block in `main`.
+`"A"` is never printed because the rest of the `try` block is skipped.
+After the `catch` block handles the exception, execution continues normally and `"C"` is printed.
+
+**2. What is wrong with this code?**
+
+```cpp
+try {
+    int n = std::stoi(input);
+} catch (const std::out_of_range &e) {
+    std::cout << "out of range" << std::endl;
+} catch (const std::exception &e) {
+    std::cout << "error" << std::endl;
+} catch (const std::invalid_argument &e) {
+    std::cout << "bad input" << std::endl;
+}
+```
+
+The `catch (const std::invalid_argument &e)` block will never execute.
+`std::invalid_argument` derives from `std::exception`, and `catch` blocks are tried in order.
+The `catch (const std::exception &e)` block matches any `std::exception` (including `std::invalid_argument`), so it catches the exception before the more specific handler gets a chance.
+The fix is to put more specific `catch` blocks before more general ones — move `std::invalid_argument` above `std::exception`.
+
+**3. Why should you always catch exceptions by `const` reference rather than by value?**
+
+Catching by value makes a copy of the exception object, which can **slice** it.
+If the thrown exception is a derived type (like `std::out_of_range`) and you catch by value as `std::exception`, the copy loses the derived class's data — you get only the base class portion.
+Catching by `const` reference avoids the copy and preserves the full object, including any derived-class behavior.
+The `const` part signals that you do not intend to modify the exception.
+
+**4. What does the following program print?**
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+struct Amp {
+    std::string name;
+    Amp(const std::string &n) : name(n) {
+        std::cout << name << " on" << std::endl;
+    }
+    ~Amp() {
+        std::cout << name << " off" << std::endl;
+    }
+};
+
+void soundcheck() {
+    Amp a("Marshall");
+    Amp b("Fender");
+    throw std::runtime_error("feedback!");
+}
+
+int main()
+{
+    try {
+        soundcheck();
+    } catch (...) {
+        std::cout << "handled" << std::endl;
+    }
+    return 0;
+}
+```
+
+It prints:
+
+```
+Marshall on
+Fender on
+Fender off
+Marshall off
+handled
+```
+
+The two `Amp` objects are constructed in order.
+When the exception is thrown, the stack unwinds and destroys them in reverse order — `Fender` first, then `Marshall`.
+After stack unwinding, the `catch (...)` block runs.
+
+**5. Will this code compile? If so, what happens when `play()` is called?**
+
+```cpp
+void load(const std::string &file) {
+    throw std::runtime_error("file not found");
+}
+
+void play() noexcept {
+    load("track01.wav");
+}
+```
+
+Yes, it compiles.
+The compiler does not check whether a `noexcept` function actually avoids throwing — `noexcept` is a promise, not a compile-time guarantee.
+When `play()` is called, `load()` throws `std::runtime_error`.
+Because `play()` is marked `noexcept`, the exception cannot escape it, so the program calls `std::terminate()` and crashes immediately — no chance to catch the exception.
+
+**6. What is the output of this program?**
+
+```cpp
+#include <expected>
+#include <iostream>
+#include <string>
+
+std::expected<int, std::string> divide(int a, int b) {
+    if (b == 0) {
+        return std::unexpected("division by zero");
+    }
+    return a / b;
+}
+
+int main()
+{
+    auto r1 = divide(10, 3);
+    auto r2 = divide(10, 0);
+
+    if (r1) std::cout << *r1 << std::endl;
+    if (!r2) std::cout << r2.error() << std::endl;
+
+    return 0;
+}
+```
+
+It prints:
+
+```
+3
+division by zero
+```
+
+`divide(10, 3)` returns the expected value `3` (integer division truncates).
+`divide(10, 0)` returns an unexpected error `"division by zero"`.
+The boolean check `if (r1)` is true because `r1` holds a value; `if (!r2)` is true because `r2` holds an error.
+
+**7. When would you use `std::expected` instead of throwing an exception? Give an example scenario for each.**
+
+Use `std::expected` when failure is a *normal, expected outcome* that the caller will handle immediately.
+For example, parsing user input: if you ask the user for a number and they type "abc", that is not exceptional — it is a routine case.
+Returning `std::expected<int, std::string>` lets the caller inspect the error and try again.
+
+Use exceptions when failure is *rare and should propagate* up several layers.
+For example, opening a configuration file that the program requires: if the file is missing, the error should propagate up to a high-level handler that can report the problem and shut down gracefully.
+Threading error codes through every intermediate function would be tedious and error-prone.
+
+**8. Write a function `safe_sqrt` that returns `std::expected<double, std::string>`.**
+
+```cpp
+#include <cmath>
+#include <expected>
+#include <iostream>
+#include <string>
+
+std::expected<double, std::string> safe_sqrt(double x) {
+    if (x < 0) {
+        return std::unexpected("cannot take square root of negative number");
+    }
+    return std::sqrt(x);
+}
+
+int main()
+{
+    auto r1 = safe_sqrt(25.0);
+    if (r1) {
+        std::cout << "sqrt(25) = " << *r1 << std::endl;
+    }
+
+    auto r2 = safe_sqrt(-4.0);
+    if (!r2) {
+        std::cout << "Error: " << r2.error() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+Output:
+
+```
+sqrt(25) = 5
+Error: cannot take square root of negative number
+```
+
+# Chapter 12: Classes
 
 **1. What is the difference between a `struct` and a `class` in C++? Why would you choose one over the other?**
 
@@ -1879,7 +2092,7 @@ int main()
 }
 ```
 
-# Chapter 12: Memory Management
+# Chapter 13: Memory Management
 
 **1. What is the difference between stack and heap memory? Give one situation where you would need to use the heap.**
 
@@ -2009,24 +2222,33 @@ The compiler-generated defaults will then do the right thing.
 You should prefer the **Rule of Zero** because it results in less code, fewer bugs, and classes that are easier to maintain.
 Only fall back to the Rule of Five when you have no choice but to manage a resource manually.
 
-**9. Will this code compile? If so, what happens when `process()` is called?**
+**9. A coworker writes a class with a move constructor but `std::vector` keeps copying objects instead of moving them during reallocation. What is wrong with the move constructor?**
 
 ```cpp
-void load_track(const std::string &filename) {
-    // might throw if file not found
-    throw std::runtime_error("file not found");
-}
+class Track {
+private:
+    std::string title;
+    std::vector<int> samples;
 
-void process() noexcept {
-    load_track("track01.wav");
-}
+public:
+    Track(const std::string &t) : title(t) {}
+
+    Track(Track &&other)
+        : title(std::move(other.title)),
+          samples(std::move(other.samples)) {}
+};
 ```
 
-Yes, it compiles.
-The compiler does not check whether a `noexcept` function actually avoids throwing — `noexcept` is a promise, not a compile-time guarantee.
-When `process()` is called, `load_track()` throws `std::runtime_error`.
-Because `process()` is marked `noexcept`, the exception cannot escape it, so the program calls `std::terminate()` and crashes immediately — no chance to catch the exception.
-The fix is either to remove `noexcept` from `process()`, or to wrap the call in a `try`/`catch` block inside `process()` so the exception never escapes.
+The move constructor is missing `noexcept`.
+`std::vector` will only move elements during reallocation if the move constructor promises not to throw.
+Without `noexcept`, the vector falls back to copying because a failed move mid-reallocation would leave the vector in a broken state — some elements moved, others lost.
+The fix:
+
+```cpp
+Track(Track &&other) noexcept
+    : title(std::move(other.title)),
+      samples(std::move(other.samples)) {}
+```
 
 **10. Write a program with `std::unique_ptr` that demonstrates moving ownership.**
 
@@ -2059,7 +2281,7 @@ second: Wannabe
 first is empty (nullptr)
 ```
 
-# Chapter 13: Odds and Ends
+# Chapter 14: Odds and Ends
 
 **1. What does the following program print if the file `data.txt` does not exist?**
 
