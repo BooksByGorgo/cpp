@@ -36,6 +36,15 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Gold Digger — Kanye West
 - Single Ladies — Beyonce
 
+## Chapter 6: Advanced Strings
+- Nelly Furtado — Say It Right
+- The Strokes (band)
+- Arcade Fire (band)
+- Interpol (band)
+- Gorillaz — Feel Good Inc
+- Keane — Somewhere Only We Know
+- Daft Punk — One More Time
+
 ## Chapter 4: Ranges, Algorithms, and Lambdas
 - Hey Ya! — OutKast
 - Mr. Brightside — The Killers
