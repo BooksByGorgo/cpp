@@ -22,7 +22,6 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 ## Chapter 4: Expressions
 - Jump Around — House of Pain
 - U Can't Touch This — MC Hammer
-- Gonna Make You Sweat (Everybody Dance Now) — C+C Music Factory
 
 ## Chapter 5: Control Flow
 - Losing My Religion — R.E.M.
@@ -39,6 +38,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 ## Chapter 7: Containers
 - Wannabe — Spice Girls
 - No Diggity — Blackstreet
+- Oasis (band name used in example)
 
 ## Chapter 8: Ranges, Algorithms, and Lambdas
 - Creep — Radiohead
@@ -64,6 +64,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Basket Case — Green Day
 - Virtual Insanity — Jamiroquai
 - I'll Be There for You — The Rembrandts
+- Vogue — Madonna
 
 ## Chapter 12: Memory Management
 - Under the Bridge — Red Hot Chili Peppers
@@ -71,7 +72,6 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Don't Speak — No Doubt
 
 ## Chapter 13: Odds and Ends
-- The Matrix (1999 film)
 - La Copa de la Vida — Ricky Martin
 - Believe — Cher
 - "Cinco tracks al azar" (Spanish phrase used in random numbers example)

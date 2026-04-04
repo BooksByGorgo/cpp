@@ -586,18 +586,19 @@ The `break` in `case 3` stops the fall-through.
 **4. Where is the bug?**
 
 ```cpp
+int i;
 int total = 0;
-for (int i = 0; i < 10; i++);
+for (i = 0; i < 10; i++);
 {
     total += i;
 }
 std::cout << "Total: " << total << "\n";
 ```
 
-There is a stray semicolon at the end of the `for` line: `for (int i = 0; i < 10; i++);`.
+There is a stray semicolon at the end of the `for` line: `for (i = 0; i < 10; i++);`.
 The semicolon makes the `for` loop's body an empty statement, so the loop runs 10 times doing nothing.
-The block `{ total += i; }` is a separate block that is not part of the loop.
-Additionally, `i` is out of scope inside that block, so the code will not compile.
+The block `{ total += i; }` is a separate block that runs once after the loop finishes, when `i` is 10.
+The program prints `Total: 10` instead of the intended `Total: 45`.
 The fix is to remove the semicolon after the `for` statement.
 
 **5. Calculation: How many times does the body of this loop execute?**
@@ -654,16 +655,15 @@ Numbers not divisible by 3 or 5 produce no output.
 **7. Where is the bug?**
 
 ```cpp
-int n = 1;
+int n = 0;
 while (n != 10) {
     std::cout << n << " ";
     n += 3;
 }
 ```
 
-`n` starts at 1 and increases by 3 each iteration: 1, 4, 7, 10.
-While `n` does reach 10 in this case, using `!=` with an increment that could skip the target value is dangerous.
-If the starting value or increment were slightly different (e.g., `n += 2` starting at 1: 1, 3, 5, 7, 9, 11...), `n` would skip over 10 and the loop would run forever.
+`n` starts at 0 and increases by 3 each iteration: 0, 3, 6, 9, 12, 15, ...
+The value 10 is never reached, so the condition `n != 10` is always true and the loop runs forever.
 The fix is to use `<` instead of `!=`:
 
 ```cpp
@@ -1199,8 +1199,8 @@ std::for_each(nums.begin(), nums.end(), [total](int n) {
 std::cout << "Total: " << total << "\n";
 ```
 
-The lambda captures `total` by value (`[total]`), so it modifies its own copy of `total`, not the original.
-The `total` in `main` remains 0.
+The lambda captures `total` by value (`[total]`), but by-value captures are `const` by default.
+The line `total += n` tries to modify a const variable, so the code will not compile.
 The fix is to capture `total` by reference:
 
 ```cpp
@@ -1693,9 +1693,9 @@ public:
 };
 ```
 
-The constructor parameters have the same names as the member variables.
-Inside the constructor body, `name = name` assigns the parameter to itself (the parameter shadows the member), and the member is never set.
-The same problem occurs with `score = score`.
+The constructor parameters have the same names as the member variables, so the parameters shadow the members.
+The line `name = name` will not compile because the parameter `name` is `const std::string &` — you cannot assign to a const reference.
+Even if both parameters were non-const, the assignments would just assign each parameter to itself without ever setting the members.
 
 The fix is to use `this->` or, better yet, a member initializer list:
 
@@ -1805,7 +1805,7 @@ void peek(const Vault &v) {
 
 int main()
 {
-    Vault v("Macarena");
+    Vault v("Vogue");
     peek(v);
     return 0;
 }
@@ -1814,7 +1814,7 @@ int main()
 It prints:
 
 ```
-Macarena
+Vogue
 ```
 
 The free function `peek` is declared as a `friend` of `Vault`, so it can access the private member `secret` directly.
