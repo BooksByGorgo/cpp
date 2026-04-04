@@ -62,7 +62,7 @@ This book covers all the topics that a good C++ programmer uses in daily life in
 - place `\index{term}` at the primary introduction/definition of a term, not inside code blocks
 - use `\index{parent!child}` for sub-entries (e.g., `\index{pointer!arithmetic}`)
 - in `\index{}`, escape double quotes by doubling them (e.g., `\index{extern ""C""}`)
-- `\printindex` goes only in ch14.md (the last chapter) — do not add it to other chapters
+- `\printindex` goes only in ch12.md (the last numbered chapter) — do not add it to other chapters or appendices
 
 ## 2000s References
 
@@ -142,19 +142,21 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - directory iteration
     - file operations (copy, rename, remove)
     - file status and permissions
-12. Build systems and tooling
+12. Best practices and common idioms
+    - coding standards and style
+    - common C++ idioms (PIMPL, CRTP, tag dispatch)
+    - code review checklist
+    - what's next (C++26 preview)
+
+Appendix A. Build systems and tooling
     - CMake basics
     - compiler flags and warnings
     - sanitizers (address, undefined behavior, thread)
     - static analysis
     - debugging with gdb/lldb
-13. Testing
+
+Appendix B. Testing
     - unit testing concepts
     - testing frameworks (Google Test, Catch2)
     - test-driven development
     - mocking
-14. Best practices and common idioms
-    - coding standards and style
-    - common C++ idioms (PIMPL, CRTP, tag dispatch)
-    - code review checklist
-    - what's next (C++26 preview)
