@@ -1776,7 +1776,59 @@ If a non-default parameter came after a default one, there would be no way to sk
 For example, `void f(int a = 10, int b)` would make `f(5)` ambiguous — is 5 the value for `a` or `b`?
 The compiler rejects this as an error.
 
-**11. Write a class called `Album` with private members, a parameterized constructor, a `const` print function, and an overloaded `==` operator.**
+**11. Why does `operator<<` for output have to be a free function (or a friend) rather than a member function of your class?**
+
+For `std::cout << myObject` to work, `operator<<` needs `std::ostream` as its left operand.
+If `operator<<` were a member function of your class, the syntax would be `myObject << std::cout`, which is backwards.
+The left operand of a binary operator determines which class's member function is called, and you cannot add member functions to `std::ostream` (you do not own it).
+So `operator<<` must be a free function, and if it needs access to private members, it must be declared as a `friend`.
+
+**12. What does the following program print?**
+
+```cpp
+#include <iostream>
+#include <string>
+
+class Vault {
+private:
+    std::string secret;
+
+public:
+    Vault(const std::string &s) : secret(s) {}
+
+    friend void peek(const Vault &v);
+};
+
+void peek(const Vault &v) {
+    std::cout << v.secret << std::endl;
+}
+
+int main()
+{
+    Vault v("Macarena");
+    peek(v);
+    return 0;
+}
+```
+
+It prints:
+
+```
+Macarena
+```
+
+The free function `peek` is declared as a `friend` of `Vault`, so it can access the private member `secret` directly.
+
+**13. If class `A` declares class `B` as a friend, and class `B` declares class `C` as a friend, can `C` access `A`'s private members? Why or why not?**
+
+No.
+Friendship is not transitive.
+`B` being a friend of `A` means `B` can access `A`'s privates.
+`C` being a friend of `B` means `C` can access `B`'s privates.
+But that does not give `C` any access to `A`.
+For `C` to access `A`'s private members, `A` would need to declare `C` as a friend directly.
+
+**14. Write a class called `Album` with private members, a parameterized constructor, a `const` print function, an overloaded `==` operator, and a friend `operator<<`.**
 
 ```cpp
 #include <iostream>
@@ -1801,7 +1853,15 @@ public:
         return title == other.title && artist == other.artist
             && track_count == other.track_count;
     }
+
+    friend std::ostream &operator<<(std::ostream &os, const Album &a);
 };
+
+std::ostream &operator<<(std::ostream &os, const Album &a) {
+    os << a.title << " by " << a.artist
+       << " (" << a.track_count << " tracks)";
+    return os;
+}
 
 int main()
 {
@@ -1809,8 +1869,8 @@ int main()
     Album b("Tragic Kingdom", "No Doubt", 14);
     Album c("Nevermind", "Nirvana", 12);
 
-    a.print();
-    b.print();
+    std::cout << a << std::endl;
+    std::cout << b << std::endl;
 
     std::cout << (a == b) << std::endl;  // 0 (false)
     std::cout << (a == c) << std::endl;  // 1 (true)

@@ -63,6 +63,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Kiss from a Rose — Seal
 - Basket Case — Green Day
 - Virtual Insanity — Jamiroquai
+- I'll Be There for You — The Rembrandts
 
 ## Chapter 12: Memory Management
 - Under the Bridge — Red Hot Chili Peppers
