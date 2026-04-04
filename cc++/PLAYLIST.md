@@ -36,6 +36,12 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Gold Digger — Kanye West
 - Single Ladies — Beyonce
 
+## Chapter 8: Namespaces and the Preprocessor
+- Yellow — Coldplay
+- Speed of Sound — Coldplay
+- Harder Better Faster Stronger — Daft Punk
+- Around the World — Daft Punk
+
 ## Chapter 7: Utilities
 - Missy Elliott (artist)
 - In the End — Linkin Park
