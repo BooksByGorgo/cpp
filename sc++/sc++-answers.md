@@ -1660,7 +1660,80 @@ The fix is to use `this->` or, better yet, a member initializer list:
 Player(const std::string &name, int score) : name(name), score(score) {}
 ```
 
-**8. Write a class called `Album` with private members, a parameterized constructor, a `const` print function, and an overloaded `<<` operator.**
+**8. What does the following program print?**
+
+```cpp
+#include <iostream>
+#include <string>
+
+class Radio {
+public:
+    void play(const std::string &song) {
+        std::cout << "Playing: " << song << std::endl;
+    }
+
+    void play(const std::string &song, int volume) {
+        std::cout << "Playing: " << song << " at volume " << volume << std::endl;
+    }
+
+    void play(int station) {
+        std::cout << "Tuned to station " << station << std::endl;
+    }
+};
+
+int main()
+{
+    Radio r;
+    r.play("Torn");
+    r.play(98);
+    r.play("Basket Case", 11);
+    return 0;
+}
+```
+
+It prints:
+
+```
+Playing: Torn
+Tuned to station 98
+Playing: Basket Case at volume 11
+```
+
+The compiler matches each call to the overload whose parameters match the arguments.
+`r.play("Torn")` matches the `string` overload, `r.play(98)` matches the `int` overload, and `r.play("Basket Case", 11)` matches the `string, int` overload.
+
+**9. What is wrong with the following code?**
+
+```cpp
+class Speaker {
+public:
+    void set_volume(int v) {
+        volume = v;
+    }
+
+    void set_volume(int v, int max = 100) {
+        volume = (v > max) ? max : v;
+    }
+
+private:
+    int volume;
+};
+```
+
+The call `set_volume(50)` is ambiguous.
+It could match either `set_volume(int)` or `set_volume(int, int)` (using the default value of 100 for `max`).
+The compiler cannot decide which one to call and will refuse to compile the code.
+The fix is to remove one of the overloads or change the default parameter design so the signatures do not overlap.
+
+**10. Why must default parameters appear at the end of the parameter list? What happens if you try to put a default parameter before a non-default one?**
+
+Default parameters must appear at the end because the compiler fills in defaults from right to left.
+If a non-default parameter came after a default one, there would be no way to skip the default and supply the later argument.
+
+For example, `void f(int a = 10, int b)` would make `f(5)` ambiguous — is 5 the value for `a` or `b`?
+The compiler rejects this as an error.
+
+**11. Write a class called `Album` with private members, a parameterized constructor, a `const` print function, and an overloaded `<<` operator.**
 
 ```cpp
 #include <iostream>

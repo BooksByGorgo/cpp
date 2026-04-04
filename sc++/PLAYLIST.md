@@ -57,6 +57,9 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Enter Sandman — Metallica
 - Black Hole Sun — Soundgarden
 - All Star — Smash Mouth
+- Torn — Natalie Imbruglia
+- Kiss from a Rose — Seal
+- Basket Case — Green Day
 
 ## Chapter 12: Memory Management
 - Under the Bridge — Red Hot Chili Peppers
