@@ -69,7 +69,50 @@ printf("Pi is %f\n", pi);
 
 ---
 
-**5. Write a program** that prints a 5x5 multiplication table using `printf`
+**5. Where is the bug?**
+
+```c
+int count;
+scanf("%d", count);
+```
+
+**Answer:** `scanf` needs the **address** of the variable, not its value.
+Without `&`, `scanf` interprets the uninitialized value of `count` as a memory address and writes to it — undefined behavior.
+The fix:
+
+```c
+scanf("%d", &count);
+```
+
+---
+
+**6. Write a program** that reads the user's name (single word) and a year with `scanf`, then prints a greeting like `Hello, Sting! The year is 1983.` using `printf`.
+
+**Answer:**
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    char name[50];
+    int year;
+
+    printf("Enter your name: ");
+    scanf("%49s", name);
+    printf("Enter a year: ");
+    scanf("%d", &year);
+
+    printf("Hello, %s! The year is %d.\n", name, year);
+    return 0;
+}
+```
+
+Note that `name` does not need `&` because an array name already decays to a pointer.
+The `%49s` limits input to 49 characters to prevent buffer overflow (leaving room for the null terminator).
+
+---
+
+**7. Write a program** that prints a 5x5 multiplication table using `printf`
 with width formatting so the columns are aligned.
 
 **Answer:**
