@@ -2008,6 +2008,28 @@ second: Wannabe
 first is empty (nullptr)
 ```
 
+**9. What does the following code print?**
+
+```cpp
+int x = 10;
+int *p = &x;
+*p = 20;
+std::cout << x << std::endl;
+```
+
+It prints `20`.
+`p` points to `x`, so `*p = 20` modifies `x` through the pointer.
+
+**10. Given a `struct Song` and a pointer `Song *ptr`, write two equivalent expressions to access `title`.**
+
+```cpp
+(*ptr).title   // dereference first, then access member
+ptr->title     // arrow operator — same thing, cleaner
+```
+
+Both expressions access the `title` member of the `Song` that `ptr` points to.
+`ptr->title` is the preferred form.
+
 # Chapter 13: Special Members and Friends
 
 **1. Explain the difference between the Rule of Five and the Rule of Zero. Which one should you prefer and why?**

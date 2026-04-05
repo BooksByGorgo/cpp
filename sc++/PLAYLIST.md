@@ -69,6 +69,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Under the Bridge — Red Hot Chili Peppers
 - Nothing Compares 2 U — Sinead O'Connor
 - Don't Speak — No Doubt
+- Popular — Nada Surf
 
 ## Chapter 13: Special Members and Friends
 - Torn — Natalie Imbruglia
