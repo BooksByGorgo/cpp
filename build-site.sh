@@ -24,7 +24,9 @@ convert_chapter() {
         printf 'parent: "%s"\n' "$parent"
         printf 'nav_order: %s\n' "$nav_order"
         printf '%s\n\n' "---"
+        printf '{%% raw %%}\n'
         (cd "$src_dir" && pandoc "$md_base" $PANDOC_OPTS $filter_opt)
+        printf '\n{%% endraw %%}\n'
     } > "$dest"
 }
 
