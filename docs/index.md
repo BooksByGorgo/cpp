@@ -28,11 +28,9 @@ Covers object-oriented programming, templates, the STL, concurrency, and modern 
 Introduces C++ programmers to C.
 Good for an intro C/C++ class where students need both languages, or for an Operating Systems class where students know C++ but not C.
 
-## Extra Content
+### [Extras](extras)
 
-- [C++ Operators](https://github.com/breed/intro-to-programming/blob/main/operators/operators.md) -- operator reference
-- [Numbers in C++](https://github.com/breed/intro-to-programming/blob/main/numbers/numbers.md) -- number representation and arithmetic
-- [Cheat Sheet](https://github.com/breed/intro-to-programming/blob/main/cheetsheet/cheetsheet.md) -- quick reference
+Supplemental references for operators, numbers, and more.
 
 ## AI Usage
 
