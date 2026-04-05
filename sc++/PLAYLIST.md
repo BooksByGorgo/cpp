@@ -65,16 +65,16 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Basket Case — Green Day
 - Virtual Insanity — Jamiroquai
 
-## Chapter 12: Special Members and Friends
+## Chapter 12: Memory Management
+- Under the Bridge — Red Hot Chili Peppers
+- Nothing Compares 2 U — Sinead O'Connor
+- Don't Speak — No Doubt
+
+## Chapter 13: Special Members and Friends
 - Torn — Natalie Imbruglia
 - Kiss from a Rose — Seal
 - I'll Be There for You — The Rembrandts
 - Vogue — Madonna
-
-## Chapter 13: Memory Management
-- Under the Bridge — Red Hot Chili Peppers
-- Nothing Compares 2 U — Sinead O'Connor
-- Don't Speak — No Doubt
 
 ## Chapter 14: Odds and Ends
 - La Copa de la Vida — Ricky Martin

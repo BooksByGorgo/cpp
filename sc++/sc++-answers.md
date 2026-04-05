@@ -1859,7 +1859,156 @@ If a non-default parameter came after a default one, there would be no way to sk
 For example, `void f(int a = 10, int b)` would make `f(5)` ambiguous — is 5 the value for `a` or `b`?
 The compiler rejects this as an error.
 
-# Chapter 12: Special Members and Friends
+# Chapter 12: Memory Management
+
+**1. What is the difference between stack and heap memory? Give one situation where you would need to use the heap.**
+
+Stack memory is automatically managed — variables are created when declared and destroyed when they go out of scope.
+Stack allocation is fast but limited in size and lifetime.
+
+Heap memory is manually managed (or managed through smart pointers).
+It persists until explicitly freed and can be much larger than the stack.
+
+You would need the heap when you need memory to outlive the current scope (e.g., creating an object inside a function and returning a pointer to it), or when the size of the data is not known at compile time (e.g., reading an unknown number of records from a file).
+
+**2. What does the following program print?**
+
+```cpp
+#include <iostream>
+#include <memory>
+
+int main()
+{
+    auto p = std::make_shared<int>(99);
+    auto q = p;
+    auto r = p;
+
+    std::cout << p.use_count() << std::endl;
+
+    q.reset();
+    std::cout << p.use_count() << std::endl;
+
+    r.reset();
+    std::cout << p.use_count() << std::endl;
+
+    return 0;
+}
+```
+
+It prints:
+
+```
+3
+2
+1
+```
+
+After creating `p`, `q`, and `r` all pointing to the same object, the reference count is 3.
+`q.reset()` releases q's ownership, dropping the count to 2.
+`r.reset()` releases r's ownership, dropping the count to 1.
+Only `p` still owns the object.
+
+**3. What is the bug in the following code?**
+
+```cpp
+void play() {
+    int *volumes = new int[3];
+    volumes[0] = 7;
+    volumes[1] = 9;
+    volumes[2] = 11;
+    delete volumes;
+}
+```
+
+The array was allocated with `new int[3]` (array `new`), but freed with `delete` (non-array `delete`).
+When you allocate with `new[]`, you must free with `delete[]`.
+Using plain `delete` on an array is undefined behavior.
+The fix:
+
+```cpp
+delete[] volumes;
+```
+
+**4. Why can you not copy a `std::unique_ptr`? What should you do instead if you want to transfer ownership?**
+
+A `std::unique_ptr` represents sole ownership of a resource.
+If you could copy it, two `unique_ptr`s would own the same memory, and both would try to delete it when destroyed, causing a double-free bug.
+
+To transfer ownership, use `std::move`:
+
+```cpp
+std::unique_ptr<int> a = std::make_unique<int>(42);
+std::unique_ptr<int> b = std::move(a);  // ownership transferred to b
+// a is now nullptr
+```
+
+**5. After `std::move(a)` is called, is it safe to use `a`? What state is `a` in?**
+
+After `std::move(a)`, `a` is in a valid but unspecified state.
+It is safe to assign a new value to `a` or to destroy it, but you should not read its value or call methods that depend on its contents.
+For `std::string`, the moved-from string is typically empty.
+For `std::unique_ptr`, the moved-from pointer is `nullptr`.
+
+**6. What is wrong with the following code?**
+
+```cpp
+#include <memory>
+#include <iostream>
+
+int main()
+{
+    int *raw = new int(42);
+    std::unique_ptr<int> a(raw);
+    std::unique_ptr<int> b(raw);
+
+    std::cout << *a << std::endl;
+    std::cout << *b << std::endl;
+    return 0;
+}
+```
+
+Both `a` and `b` are constructed from the same raw pointer, so they both think they own the same memory.
+When they go out of scope, both will try to `delete` the same pointer, resulting in a double-free bug (undefined behavior).
+This is why you should use `std::make_unique` instead of constructing `unique_ptr` from raw pointers, and never give the same raw pointer to two smart pointers.
+
+**7. If a `std::shared_ptr` is copied 4 times (so there are 5 `shared_ptr`s total), what is the reference count? How many need to be destroyed before the object is freed?**
+
+The reference count is **5**.
+All 5 `shared_ptr`s must be destroyed (or reset) before the object is freed.
+The object is deleted when the last `shared_ptr` owning it is destroyed, which brings the reference count from 1 to 0.
+
+**8. Write a program with `std::unique_ptr` that demonstrates moving ownership.**
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+int main()
+{
+    std::unique_ptr<std::string> first = std::make_unique<std::string>("Wannabe");
+    std::cout << "first: " << *first << std::endl;
+
+    std::unique_ptr<std::string> second = std::move(first);
+    std::cout << "second: " << *second << std::endl;
+
+    if (!first) {
+        std::cout << "first is empty (nullptr)" << std::endl;
+    }
+
+    return 0;
+}
+```
+
+Output:
+
+```
+first: Wannabe
+second: Wannabe
+first is empty (nullptr)
+```
+
+# Chapter 13: Special Members and Friends
 
 **1. Explain the difference between the Rule of Five and the Rule of Zero. Which one should you prefer and why?**
 
@@ -2030,155 +2179,6 @@ int main()
 
     return 0;
 }
-```
-
-# Chapter 13: Memory Management
-
-**1. What is the difference between stack and heap memory? Give one situation where you would need to use the heap.**
-
-Stack memory is automatically managed — variables are created when declared and destroyed when they go out of scope.
-Stack allocation is fast but limited in size and lifetime.
-
-Heap memory is manually managed (or managed through smart pointers).
-It persists until explicitly freed and can be much larger than the stack.
-
-You would need the heap when you need memory to outlive the current scope (e.g., creating an object inside a function and returning a pointer to it), or when the size of the data is not known at compile time (e.g., reading an unknown number of records from a file).
-
-**2. What does the following program print?**
-
-```cpp
-#include <iostream>
-#include <memory>
-
-int main()
-{
-    auto p = std::make_shared<int>(99);
-    auto q = p;
-    auto r = p;
-
-    std::cout << p.use_count() << std::endl;
-
-    q.reset();
-    std::cout << p.use_count() << std::endl;
-
-    r.reset();
-    std::cout << p.use_count() << std::endl;
-
-    return 0;
-}
-```
-
-It prints:
-
-```
-3
-2
-1
-```
-
-After creating `p`, `q`, and `r` all pointing to the same object, the reference count is 3.
-`q.reset()` releases q's ownership, dropping the count to 2.
-`r.reset()` releases r's ownership, dropping the count to 1.
-Only `p` still owns the object.
-
-**3. What is the bug in the following code?**
-
-```cpp
-void play() {
-    int *volumes = new int[3];
-    volumes[0] = 7;
-    volumes[1] = 9;
-    volumes[2] = 11;
-    delete volumes;
-}
-```
-
-The array was allocated with `new int[3]` (array `new`), but freed with `delete` (non-array `delete`).
-When you allocate with `new[]`, you must free with `delete[]`.
-Using plain `delete` on an array is undefined behavior.
-The fix:
-
-```cpp
-delete[] volumes;
-```
-
-**4. Why can you not copy a `std::unique_ptr`? What should you do instead if you want to transfer ownership?**
-
-A `std::unique_ptr` represents sole ownership of a resource.
-If you could copy it, two `unique_ptr`s would own the same memory, and both would try to delete it when destroyed, causing a double-free bug.
-
-To transfer ownership, use `std::move`:
-
-```cpp
-std::unique_ptr<int> a = std::make_unique<int>(42);
-std::unique_ptr<int> b = std::move(a);  // ownership transferred to b
-// a is now nullptr
-```
-
-**5. After `std::move(a)` is called, is it safe to use `a`? What state is `a` in?**
-
-After `std::move(a)`, `a` is in a valid but unspecified state.
-It is safe to assign a new value to `a` or to destroy it, but you should not read its value or call methods that depend on its contents.
-For `std::string`, the moved-from string is typically empty.
-For `std::unique_ptr`, the moved-from pointer is `nullptr`.
-
-**6. What is wrong with the following code?**
-
-```cpp
-#include <memory>
-#include <iostream>
-
-int main()
-{
-    int *raw = new int(42);
-    std::unique_ptr<int> a(raw);
-    std::unique_ptr<int> b(raw);
-
-    std::cout << *a << std::endl;
-    std::cout << *b << std::endl;
-    return 0;
-}
-```
-
-Both `a` and `b` are constructed from the same raw pointer, so they both think they own the same memory.
-When they go out of scope, both will try to `delete` the same pointer, resulting in a double-free bug (undefined behavior).
-This is why you should use `std::make_unique` instead of constructing `unique_ptr` from raw pointers, and never give the same raw pointer to two smart pointers.
-
-**7. If a `std::shared_ptr` is copied 4 times (so there are 5 `shared_ptr`s total), what is the reference count? How many need to be destroyed before the object is freed?**
-
-The reference count is **5**.
-All 5 `shared_ptr`s must be destroyed (or reset) before the object is freed.
-The object is deleted when the last `shared_ptr` owning it is destroyed, which brings the reference count from 1 to 0.
-
-**8. Write a program with `std::unique_ptr` that demonstrates moving ownership.**
-
-```cpp
-#include <iostream>
-#include <memory>
-#include <string>
-
-int main()
-{
-    std::unique_ptr<std::string> first = std::make_unique<std::string>("Wannabe");
-    std::cout << "first: " << *first << std::endl;
-
-    std::unique_ptr<std::string> second = std::move(first);
-    std::cout << "second: " << *second << std::endl;
-
-    if (!first) {
-        std::cout << "first is empty (nullptr)" << std::endl;
-    }
-
-    return 0;
-}
-```
-
-Output:
-
-```
-first: Wannabe
-second: Wannabe
-first is empty (nullptr)
 ```
 
 # Chapter 14: Odds and Ends

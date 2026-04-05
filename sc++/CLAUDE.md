@@ -155,16 +155,16 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
 11. Classes
     - constructors/destructors
     - member methods
-12. Special Members and Friends
-    - special member functions and the Rule of Five
-    - defaulted and deleted functions
-    - the Rule of Zero
-    - friends
-13. Memory Management
+12. Memory Management
     - new/delete
     - don't use new/delete use std::unique_ptr
     - std::shared_ptr
     - move
+13. Special Members and Friends
+    - special member functions and the Rule of Five
+    - defaulted and deleted functions
+    - the Rule of Zero
+    - friends
 14. Odds and Ends
     - explain exit() and when it might be more useful than return
     - explain using extern "C" to use c functions from c++
