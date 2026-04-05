@@ -1980,6 +1980,79 @@ Output:
 Note: In practice, C++ standard headers like `<cstring>` already handle the `extern "C"` linkage for you.
 This exercise demonstrates the mechanism explicitly.
 
+---
+
+**10. Calculation:** What is `sizeof(union { int i; double d; char s[3]; })` on a system where `int` is 4 bytes and `double` is 8 bytes?
+
+**Answer:** **8.** A union is the size of its largest member.
+`int` is 4 bytes, `double` is 8 bytes, and `char s[3]` is 3 bytes.
+The largest is `double` at 8 bytes, so the union is 8 bytes (possibly with padding for alignment, but `double` already satisfies its own alignment requirement).
+
+---
+
+**11. Where is the bug?**
+
+```c
+union value {
+    int i;
+    float f;
+};
+
+union value v;
+v.i = 42;
+printf("%.2f\n", v.f);
+```
+
+**Answer:** The code writes to `v.i` but reads from `v.f`.
+Reading a union member that was not the last one written is undefined behavior (with a few narrow exceptions for type punning).
+The bits of the integer `42` are reinterpreted as a `float`, which will not produce the value `42.0` — it will print something like `0.00` or garbage.
+The fix is to read the same member that was written, or use the union for intentional type punning only when you understand the underlying representation.
+
+---
+
+**12. Write a program** that defines a tagged union representing a shape (circle with a radius, or rectangle with width and height). Write a function that prints the area of the shape using the tag to determine which union member to read.
+
+**Answer:**
+
+```c
+#include <stdio.h>
+#include <math.h>
+
+enum shape_type { CIRCLE, RECTANGLE };
+
+struct shape {
+    enum shape_type type;
+    union {
+        double radius;
+        struct { double width, height; } rect;
+    } data;
+};
+
+void print_area(struct shape s) {
+    switch (s.type) {
+    case CIRCLE:
+        printf("Circle area: %.2f\n",
+               M_PI * s.data.radius * s.data.radius);
+        break;
+    case RECTANGLE:
+        printf("Rectangle area: %.2f\n",
+               s.data.rect.width * s.data.rect.height);
+        break;
+    }
+}
+
+int main(void) {
+    struct shape c = { .type = CIRCLE, .data.radius = 5.0 };
+    struct shape r = { .type = RECTANGLE,
+                       .data.rect = { .width = 4.0, .height = 3.0 } };
+    print_area(c);  /* Circle area: 78.54 */
+    print_area(r);  /* Rectangle area: 12.00 */
+    return 0;
+}
+```
+
+---
+
 # Appendix A: Macros
 
 **1. Think about it:** C++ uses `constexpr` and `inline` functions to replace
