@@ -11,7 +11,7 @@ CHAPTERS := frontmatter.yaml author-intro.md \
 CH_SRCS := $(filter ch%.md,$(CHAPTERS))
 CH_PDFS := $(CH_SRCS:.md=.pdf)
 
-all: $(PDFS)
+all: $(PDFS) $(CH_PDFS)
 
 chapters: $(CH_PDFS)
 
