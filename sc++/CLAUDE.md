@@ -57,7 +57,7 @@ No previous programming experience is assumed.
 - place `\index{term}` at the primary introduction/definition of a term, not inside code blocks
 - use `\index{parent!child}` for sub-entries (e.g., `\index{pointer!arithmetic}`)
 - in `\index{}`, escape double quotes by doubling them (e.g., `\index{extern ""C""}`)
-- `\printindex` goes only in ch13.md (the last chapter) — do not add it to other chapters
+- `\printindex` goes only in ch14.md (the last chapter) — do not add it to other chapters
 
 ## 90s References
 
@@ -155,13 +155,17 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
 11. Classes
     - constructors/destructors
     - member methods
-12. Memory Management
+12. Special Members and Friends
+    - special member functions and the Rule of Five
+    - defaulted and deleted functions
+    - the Rule of Zero
+    - friends
+13. Memory Management
     - new/delete
     - don't use new/delete use std::unique_ptr
     - std::shared_ptr
     - move
-    - special members
-13. Odds and Ends
+14. Odds and Ends
     - explain exit() and when it might be more useful than return
     - explain using extern "C" to use c functions from c++
     - numbers and casting (chars as numbers, bit widths, static_cast, dynamic_cast, const_cast, reinterpret_cast)

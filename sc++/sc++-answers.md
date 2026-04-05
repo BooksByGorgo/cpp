@@ -1859,14 +1859,84 @@ If a non-default parameter came after a default one, there would be no way to sk
 For example, `void f(int a = 10, int b)` would make `f(5)` ambiguous — is 5 the value for `a` or `b`?
 The compiler rejects this as an error.
 
-**11. Why does `operator<<` for output have to be a free function (or a friend) rather than a member function of your class?**
+# Chapter 12: Special Members and Friends
+
+**1. Explain the difference between the Rule of Five and the Rule of Zero. Which one should you prefer and why?**
+
+The **Rule of Five** says that if your class defines any one of the five special member functions (destructor, copy constructor, copy assignment, move constructor, move assignment), you should define all five.
+This is necessary when your class manages a resource directly (like raw heap memory with `new`/`delete`).
+
+The **Rule of Zero** says that you should design your classes so that they do not need to define any special member functions.
+Instead, use standard library types (`std::string`, `std::vector`, `std::unique_ptr`) that manage their own resources.
+The compiler-generated defaults will then do the right thing.
+
+You should prefer the **Rule of Zero** because it results in less code, fewer bugs, and classes that are easier to maintain.
+Only fall back to the Rule of Five when you have no choice but to manage a resource manually.
+
+**2. A coworker writes a class with a move constructor but `std::vector` keeps copying objects instead of moving them during reallocation. What is wrong with the move constructor?**
+
+```cpp
+class Track {
+private:
+    std::string title;
+    std::vector<int> samples;
+
+public:
+    Track(const std::string &t) : title(t) {}
+
+    Track(Track &&other)
+        : title(std::move(other.title)),
+          samples(std::move(other.samples)) {}
+};
+```
+
+The move constructor is missing `noexcept`.
+`std::vector` will only move elements during reallocation if the move constructor promises not to throw.
+Without `noexcept`, the vector falls back to copying because a failed move mid-reallocation would leave the vector in a broken state — some elements moved, others lost.
+The fix:
+
+```cpp
+Track(Track &&other) noexcept
+    : title(std::move(other.title)),
+      samples(std::move(other.samples)) {}
+```
+
+**3. What does `= default` do when applied to a special member function? Why would you write `Song() = default;` instead of just omitting the default constructor?**
+
+`= default` tells the compiler to generate the default version of that special member function.
+
+You need `Song() = default;` when you have already defined another constructor (like a parameterized one).
+Defining any constructor suppresses the compiler's automatic generation of the default constructor.
+Writing `= default` brings it back without you having to write the body yourself.
+
+**4. What does the following code do, and why is it useful?**
+
+```cpp
+class Connection {
+public:
+    Connection(int fd) : fd_(fd) {}
+    Connection(const Connection &) = delete;
+    Connection &operator=(const Connection &) = delete;
+private:
+    int fd_;
+};
+```
+
+The `= delete` on the copy constructor and copy assignment operator prevents `Connection` objects from being copied.
+Any attempt to copy a `Connection` will produce a compile-time error.
+
+This is useful because copying a `Connection` would result in two objects managing the same file descriptor.
+When both are destroyed, the file descriptor would be closed twice, which is a bug.
+Deleting the copy operations forces the caller to use move semantics or pass by reference.
+
+**5. Why does `operator<<` for output have to be a free function (or a friend) rather than a member function of your class?**
 
 For `std::cout << myObject` to work, `operator<<` needs `std::ostream` as its left operand.
 If `operator<<` were a member function of your class, the syntax would be `myObject << std::cout`, which is backwards.
 The left operand of a binary operator determines which class's member function is called, and you cannot add member functions to `std::ostream` (you do not own it).
 So `operator<<` must be a free function, and if it needs access to private members, it must be declared as a `friend`.
 
-**12. What does the following program print?**
+**6. What does the following program print?**
 
 ```cpp
 #include <iostream>
@@ -1902,7 +1972,7 @@ Vogue
 
 The free function `peek` is declared as a `friend` of `Vault`, so it can access the private member `secret` directly.
 
-**13. If class `A` declares class `B` as a friend, and class `B` declares class `C` as a friend, can `C` access `A`'s private members? Why or why not?**
+**7. If class `A` declares class `B` as a friend, and class `B` declares class `C` as a friend, can `C` access `A`'s private members? Why or why not?**
 
 No.
 Friendship is not transitive.
@@ -1911,7 +1981,7 @@ Friendship is not transitive.
 But that does not give `C` any access to `A`.
 For `C` to access `A`'s private members, `A` would need to declare `C` as a friend directly.
 
-**14. Write a class called `Album` with private members, a parameterized constructor, a `const` print function, an overloaded `==` operator, and a friend `operator<<`.**
+**8. Write a class called `Album` with private members, a parameterized constructor, a `const` print function, an overloaded `==` operator, and a friend `operator<<`.**
 
 ```cpp
 #include <iostream>
@@ -1962,7 +2032,7 @@ int main()
 }
 ```
 
-# Chapter 12: Memory Management
+# Chapter 13: Memory Management
 
 **1. What is the difference between stack and heap memory? Give one situation where you would need to use the heap.**
 
@@ -2080,47 +2150,7 @@ The reference count is **5**.
 All 5 `shared_ptr`s must be destroyed (or reset) before the object is freed.
 The object is deleted when the last `shared_ptr` owning it is destroyed, which brings the reference count from 1 to 0.
 
-**8. Explain the difference between the Rule of Five and the Rule of Zero. Which one should you prefer and why?**
-
-The **Rule of Five** says that if your class defines any one of the five special member functions (destructor, copy constructor, copy assignment, move constructor, move assignment), you should define all five.
-This is necessary when your class manages a resource directly (like raw heap memory with `new`/`delete`).
-
-The **Rule of Zero** says that you should design your classes so that they do not need to define any special member functions.
-Instead, use standard library types (`std::string`, `std::vector`, `std::unique_ptr`) that manage their own resources.
-The compiler-generated defaults will then do the right thing.
-
-You should prefer the **Rule of Zero** because it results in less code, fewer bugs, and classes that are easier to maintain.
-Only fall back to the Rule of Five when you have no choice but to manage a resource manually.
-
-**9. A coworker writes a class with a move constructor but `std::vector` keeps copying objects instead of moving them during reallocation. What is wrong with the move constructor?**
-
-```cpp
-class Track {
-private:
-    std::string title;
-    std::vector<int> samples;
-
-public:
-    Track(const std::string &t) : title(t) {}
-
-    Track(Track &&other)
-        : title(std::move(other.title)),
-          samples(std::move(other.samples)) {}
-};
-```
-
-The move constructor is missing `noexcept`.
-`std::vector` will only move elements during reallocation if the move constructor promises not to throw.
-Without `noexcept`, the vector falls back to copying because a failed move mid-reallocation would leave the vector in a broken state — some elements moved, others lost.
-The fix:
-
-```cpp
-Track(Track &&other) noexcept
-    : title(std::move(other.title)),
-      samples(std::move(other.samples)) {}
-```
-
-**10. Write a program with `std::unique_ptr` that demonstrates moving ownership.**
+**8. Write a program with `std::unique_ptr` that demonstrates moving ownership.**
 
 ```cpp
 #include <iostream>
@@ -2151,7 +2181,7 @@ second: Wannabe
 first is empty (nullptr)
 ```
 
-# Chapter 13: Odds and Ends
+# Chapter 14: Odds and Ends
 
 **1. What does the following program print if the file `data.txt` does not exist?**
 
