@@ -23,7 +23,7 @@ jobs:
       - name: Install pandoc and LaTeX
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          sudo apt-get install -y \
             pandoc \
             latexmk \
             texlive-latex-recommended \
@@ -31,8 +31,7 @@ jobs:
             texlive-fonts-recommended \
             texlive-fonts-extra \
             texlive-xetex \
-            lmodern \
-            tex-gyre
+            lmodern
 
       - name: Build chapter HTML and PDFs
         run: bash build-site.sh
