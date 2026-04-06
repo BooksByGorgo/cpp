@@ -5,6 +5,7 @@ No previous programming experience is assumed.
 
 ## Chapters
 
+- These rules do not apply to chapter 0 or the author intro
 - DO NOT MODIFY THE AUTHOR INTRO section
 - each numbered element in `Content` represents a chapter
 - each chapter starts with a brief overview
