@@ -29,7 +29,10 @@ jobs:
             texlive-latex-recommended \
             texlive-latex-extra \
             texlive-fonts-recommended \
-            texlive-xetex
+            texlive-fonts-extra \
+            texlive-xetex \
+            lmodern \
+            tex-gyre
 
       - name: Build chapter HTML and PDFs
         run: bash build-site.sh
