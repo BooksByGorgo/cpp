@@ -1,0 +1,367 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 15
+
+Exceptions
+
+---
+# What does std::format("{:*^20}", "Hola") produce?
+
+1. `"****Hola************"`
+1. `"********Hola********"`
+1. `"Hola****************"`
+1. `"********Hola"`
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Throw exceptions using `throw` and standard types
+- Catch exceptions with `try`/`catch` --- specific before generic
+- Always catch by `const` reference
+- Trace stack unwinding and destructor cleanup
+- Use `noexcept` and know what violating it does
+- Use `std::expected<T, E>` (C++23) as an alternative
+
+---
+# Why Exceptions?
+
+- Printing errors and returning early works at the top level
+- But what about a function **4 calls deep**?
+- Threading error codes through every layer is tedious and error-prone
+- Exceptions let a function signal an error that code much higher up handles
+
+---
+# Throwing Exceptions
+.lc[
+```cpp
+#include <stdexcept>
+
+int parse_track(
+    const std::string &s)
+{
+    int n = std::stoi(s);
+    if (n < 1) {
+        throw std::out_of_range(
+            "track must be positive");
+    }
+    return n;
+}
+```
+]
+.rc[
+- `throw` stops the function **immediately**
+- Control travels up the call stack looking for a handler
+- Standard types live in `<stdexcept>`
+]
+
+---
+# Standard Exception Types
+
+| type | when to use |
+|---|---|
+| `std::runtime_error` | general runtime error |
+| `std::out_of_range` | value outside valid range |
+| `std::invalid_argument` | argument does not make sense |
+| `std::logic_error` | programmer bug |
+| `std::overflow_error` | arithmetic overflow |
+
+- All take a `std::string` and provide `.what()`
+- All derive from `std::exception`
+
+---
+# Catching Exceptions
+.lc[
+```cpp
+try {
+    int track = parse_track("0");
+    std::cout << "Track: "
+              << track << "\n";
+} catch (const std::out_of_range &e) {
+    std::cout << "Error: "
+              << e.what() << "\n";
+}
+```
+]
+.rc[
+- Wrap risky code in `try`
+- Follow with one or more `catch` blocks
+- Execution continues **after** the catch when handled
+]
+
+---
+# Multiple Catch Blocks
+.lc[
+```cpp
+try {
+    int v = parse_volume("abc");
+} catch (const std::out_of_range &e) {
+    std::cout << "range: "
+              << e.what() << "\n";
+} catch (const std::invalid_argument &e) {
+    std::cout << "input: "
+              << e.what() << "\n";
+}
+```
+]
+.rc[
+- Tested in order; **first match wins**
+- List **specific** types **before** generic ones
+
+**Tip:** Always catch by `const` reference to avoid slicing.
+]
+
+---
+# Catch Order Matters
+.lc[
+```cpp
+try { /* ... */ }
+catch (const std::exception &e) {
+    // catches everything
+}
+catch (const std::out_of_range &e) {
+    // UNREACHABLE
+}
+```
+]
+.rc[
+- If `std::exception` comes first, the more specific handlers can never match
+- Fix: specific types **first**
+- This is a common bug
+]
+
+---
+# Stack Unwinding
+.lc[
+```cpp
+struct Song {
+    std::string title;
+    Song(const std::string &t)
+        : title(t) {
+        std::cout << "on: "
+                  << title << "\n";
+    }
+    ~Song() {
+        std::cout << "off: "
+                  << title << "\n";
+    }
+};
+```
+]
+.rc[
+- When an exception is thrown, destructors run as the stack unwinds
+- Cleanup is automatic, in **reverse order of construction**
+- This is why RAII matters
+]
+
+---
+# Stack Unwinding Output
+.lc[
+```cpp
+void deep()   {
+    Song s("The Freshmen");
+    throw std::runtime_error("oops");
+}
+void middle() {
+    Song s("Save Tonight");
+    deep();
+}
+```
+]
+.rc[
+Output:
+
+```
+on: Save Tonight
+on: The Freshmen
+off: The Freshmen
+off: Save Tonight
+caught: oops
+```
+
+**Trap:** **Never throw from a destructor** during stack unwinding --- calls `std::terminate()`.
+]
+
+---
+# noexcept
+.lc[
+```cpp
+int add(int a, int b) noexcept {
+    return a + b;
+}
+```
+]
+.rc[
+- Promises the function will not throw
+- Violating the promise calls `std::terminate()`
+- **Not verified** at compile time
+- Compilers use it for optimization
+
+**Tip:** Mark move constructors, move assignment, and destructors `noexcept`.
+]
+
+---
+# std::expected (C++23)
+.lc[
+```cpp
+#include <expected>
+#include <string>
+
+std::expected<int, std::string>
+divide(int a, int b) {
+    if (b == 0)
+        return std::unexpected(
+            "division by zero");
+    return a / b;
+}
+```
+]
+.rc[
+- Holds **either** a value `T` or an error `E`
+- Return a value normally for success
+- Wrap the error in `std::unexpected`
+]
+
+---
+# Using std::expected
+.lc[
+```cpp
+auto r1 = divide(10, 3);
+if (r1)
+    std::cout << *r1 << "\n";
+// 3
+
+auto r2 = divide(10, 0);
+if (!r2)
+    std::cout << r2.error() << "\n";
+// division by zero
+```
+]
+.rc[
+- `*result` or `.value()` for the value
+- `.error()` for the error
+- `if (r)` tests whether a value is present
+]
+
+---
+# Exceptions vs std::expected
+
+| | Exceptions | std::expected |
+|---|---|---|
+| Best for | rare failures | routine failures |
+| Error path | unwinds stack | normal return |
+| Must check? | no | yes |
+| Cost | zero until thrown | small constant |
+
+- Propagate up several layers --> exceptions
+- Handled immediately --> `std::expected`
+
+---
+# What does this print?
+.lc[
+```cpp
+void step3() {
+    throw std::runtime_error("oops");
+}
+void step2() { step3(); }
+void step1() { step2(); }
+
+try {
+    step1();
+    std::cout << "A\n";
+} catch (const std::runtime_error &e) {
+    std::cout << "B: " << e.what() << "\n";
+}
+std::cout << "C\n";
+```
+]
+.rc[
+1. `A C`
+1. `A B: oops C`
+1. `B: oops`
+1. `B: oops C`
+1. Ben got this wrong
+]
+
+---
+# What is wrong?
+.lc[
+```cpp
+try { }
+catch (const std::exception &e) {}
+catch (const std::out_of_range &e) {}
+catch (const std::invalid_argument &e) {}
+```
+]
+.rc[
+1. Missing `#include`
+1. `catch (...)` is required
+1. `std::exception` catches everything; the other handlers are unreachable
+1. You cannot have multiple catches
+1. Ben got this wrong
+]
+
+---
+# What happens at runtime?
+.lc[
+```cpp
+void load(const std::string &file) {
+    throw std::runtime_error("not found");
+}
+
+void play() noexcept {
+    load("track01.wav");
+}
+```
+]
+.rc[
+1. Compile error
+1. Throws the exception normally
+1. Calls `std::terminate()`
+1. Exception is silently ignored
+1. Ben got this wrong
+]
+
+---
+# Key Points
+
+- `throw` signals, `try`/`catch` handles
+- Always catch by `const` reference
+- Specific catch blocks **before** generic ones
+- Destructors run during stack unwinding --- RAII matters
+- **Never** throw from a destructor
+- `noexcept` is a promise --- violation calls `std::terminate()`
+- `std::expected<T, E>` for routine errors the caller handles
+
+**Read:** chapter 12 of *Starting C++*, first half --- struct-to-class, access, constructors, destructors.
+**Do:** exercises 1, 2, 4, 5, 10, 11, 12.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

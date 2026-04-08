@@ -1,0 +1,322 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 16
+
+From Struct to Class
+
+---
+# Will this compile, and what happens at runtime?
+.lc[
+```cpp
+void load(const std::string &f) {
+    throw std::runtime_error("oops");
+}
+void play() noexcept {
+    load("track01.wav");
+}
+```
+]
+.rc[
+1. Compile error
+1. Throws normally
+1. Calls `std::terminate()`
+1. Exception is silently ignored
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Explain the difference between `struct` and `class`
+- Use `public`, `private`, and `protected`
+- Write default and parameterized constructors using member initializer lists
+- Mark single-arg constructors `explicit`
+- Write a destructor and understand when it runs
+
+---
+# Why Classes?
+.lc[
+```cpp
+struct Song {
+    std::string title;
+    std::string artist;
+    int year;
+};
+
+Song s;
+s.year = -5;   // nothing stops this!
+```
+]
+.rc[
+- Any code can set `year` to garbage
+- Functions that operate on a `Song` live separately from the data
+- Classes bundle data **and** behavior with access control
+]
+
+---
+# Access Specifiers
+
+Three keywords:
+
+- **`public`** --- accessible from anywhere
+- **`private`** --- only accessible inside the class
+- **`protected`** --- inside the class and derived classes (advanced)
+
+**Wut:** `struct` and `class` are almost the same thing. The only difference: `struct` is public by default, `class` is private by default.
+
+---
+# A First Class
+.lc[
+```cpp
+class Song {
+private:
+    std::string title;
+    std::string artist;
+    int year;
+public:
+    void set_year(int y) {
+        if (y > 0) year = y;
+    }
+    int get_year() const {
+        return year;
+    }
+};
+```
+]
+.rc[
+- Data is private; access is through member functions
+- `set_year` validates input
+- The interface controls how data is used
+]
+
+---
+# Default Constructor
+.lc[
+```cpp
+class Song {
+    std::string title;
+    std::string artist;
+    int year;
+public:
+    Song()
+        : title("Unknown"),
+          artist("Unknown"),
+          year(0) {}
+};
+
+Song s;   // calls default ctor
+```
+]
+.rc[
+- Runs when you create a `Song` with no arguments
+- Same name as the class
+- **No return type**
+]
+
+---
+# Parameterized Constructor
+.lc[
+```cpp
+class Song {
+    std::string title;
+    std::string artist;
+    int year;
+public:
+    Song(const std::string &t,
+         const std::string &a,
+         int y)
+        : title(t), artist(a), year(y) {}
+};
+
+Song b("Enter Sandman",
+       "Metallica", 1991);
+```
+]
+.rc[
+- Takes arguments to initialize members
+- The `: title(t)...` part is the **member initializer list**
+]
+
+---
+# Member Initializer Lists
+
+**Always prefer initializer lists over assignment in the constructor body.**
+
+- More efficient (skips a default-construct-then-assign)
+- **Required** for `const` members and references
+
+**Trap:** Members are initialized in the order they are **declared** in the class, not the order in the initializer list. Keep them matching.
+
+---
+# explicit Constructors
+.lc[
+```cpp
+class Volume {
+public:
+    explicit Volume(int l)
+        : level(l) {}
+    int level;
+};
+
+void play(Volume v) { }
+
+play(11);            // ERROR
+play(Volume(11));    // OK
+```
+]
+.rc[
+- Without `explicit`, the compiler silently converts `11` to `Volume(11)`
+- `explicit` prevents surprise implicit conversions
+
+**Trap:** Mark single-arg constructors `explicit` unless you specifically want implicit conversion.
+]
+
+---
+# Destructors
+.lc[
+```cpp
+class Song {
+    std::string title;
+public:
+    Song(const std::string &t)
+        : title(t) {
+        std::cout << title << " on\n";
+    }
+    ~Song() {
+        std::cout << title << " off\n";
+    }
+};
+```
+]
+.rc[
+- Same name, prefixed with `~`
+- No parameters
+- Runs automatically when the object is destroyed
+- You do **not** call it yourself
+]
+
+---
+# Destructor in Action
+.lc[
+```cpp
+int main() {
+    Song s("Black Hole Sun");
+    std::cout << "stuff...\n";
+}
+```
+]
+.rc[
+Output:
+
+```
+Black Hole Sun on
+stuff...
+Black Hole Sun off
+```
+
+- The destructor runs automatically at the end of the scope
+- For classes containing only standard library types, the compiler-generated destructor is fine
+]
+
+---
+# Order of Construction and Destruction
+.lc[
+```cpp
+int main() {
+    Song a("Torn");
+    Song b("Vogue");
+    Song c("Iris");
+    // end of main:
+    // c destroyed (most recent)
+    // b destroyed
+    // a destroyed
+}
+```
+]
+.rc[
+- Locals are destroyed in **reverse order of construction**
+- Base classes construct before derived, destruct in reverse
+- Preview of inheritance (advanced)
+]
+
+---
+# Which is NOT a difference between struct and class?
+
+1. Default access level
+1. Members of `struct` are public by default
+1. `class` supports constructors but `struct` does not
+1. You can use either for OOP
+1. Ben got this wrong
+
+---
+# Why prefer member initializer lists?
+
+1. They look nicer
+1. They are the only way to initialize `const` members and references
+1. They skip a temporary default-construct-then-assign
+1. Both B and C
+1. Ben got this wrong
+
+---
+# Where is the bug?
+.lc[
+```cpp
+class Volume {
+public:
+    Volume(int l) : level(l) {}
+    int level;
+};
+
+void play(Volume v) { }
+play(11);
+```
+]
+.rc[
+1. Missing semicolon
+1. `Volume` has no destructor
+1. `Volume(int)` is not `explicit` --- probably not intended
+1. `play` cannot take `Volume`
+1. Ben got this wrong
+]
+
+---
+# Key Points
+
+- `class` = `struct` with private-by-default
+- Use access specifiers to hide implementation
+- **Always** use member initializer lists
+- Mark single-arg constructors `explicit`
+- Destructors run in **reverse order** of construction
+
+**Read:** chapter 12, remaining sections --- member functions, `this`, operator overloading.
+**Do:** exercises 3, 6, 7, 8, 9, 13.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

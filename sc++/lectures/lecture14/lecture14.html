@@ -1,0 +1,322 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 14
+
+std::format and std::print
+
+---
+# What is wrong with this file-writing code?
+.lc[
+```cpp
+std::ofstream out;
+out << "Yo me la paso bien\n";
+out.close();
+```
+]
+.rc[
+1. Missing `#include <fstream>`
+1. No filename passed to the constructor
+1. `\n` should be `std::endl`
+1. Cannot `<<` to an `ofstream`
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Use `std::format` with `{}` placeholders
+- Distinguish implicit and indexed argument numbering
+- Apply format specifiers for width, alignment, fill, sign, base
+- Control floating-point precision with `{:.Nf}`
+- Use `std::print` / `std::println` to print in one call
+
+---
+# Motivation
+.lc[
+```cpp
+// old way
+std::cout << std::fixed
+          << std::setprecision(2)
+          << std::setw(10)
+          << score << "\n";
+
+// new way
+std::println("{:10.2f}", score);
+```
+]
+.rc[
+- Stream manipulators are verbose and sticky
+- `std::format` (C++20) and `std::println` (C++23) are clean and one-shot
+]
+
+---
+# std::format Basics
+.lc[
+```cpp
+#include <format>
+#include <string>
+
+std::string artist = "Santana";
+int year = 1999;
+
+std::string msg = std::format(
+    "{} --- Smooth ({})",
+    artist, year);
+// Santana --- Smooth (1999)
+```
+]
+.rc[
+- Returns a `std::string`
+- `{}` placeholders substituted **in order**
+- The compiler validates format strings
+]
+
+---
+# Indexed Arguments
+.lc[
+```cpp
+std::format("{1} --- {0} ({2})",
+    "Santana", "Smooth", 1999);
+// "Smooth --- Santana (1999)"
+
+std::format("{0}, {0}, {0}!", "yeah");
+// "yeah, yeah, yeah!"
+```
+]
+.rc[
+- Zero-based indices inside the braces
+- Good for reordering or repeating
+
+**Trap:** You **cannot mix** implicit `{}` and indexed `{0}` in the same format string.
+]
+
+---
+# Width and Alignment
+.lc[
+```cpp
+std::format("{:>10}", "hola");
+// "      hola"
+
+std::format("{:<10}", "hola");
+// "hola      "
+
+std::format("{:^10}", "hola");
+// "   hola   "
+```
+]
+.rc[
+- Format spec: `{index:[[fill]align][sign][#][0][width][.prec][type]}`
+- `<`, `>`, `^` for left, right, center alignment
+- Default fill is space
+]
+
+---
+# Fill Characters
+.lc[
+```cpp
+std::format("{:*>10}", "hola");
+// "******hola"
+
+std::format("{:-^20}", "Smooth");
+// "-------Smooth-------"
+```
+]
+.rc[
+- Fill character comes **before** the alignment
+- Any single character works
+- Combine with width for clean tables
+]
+
+---
+# Sign and Alternate Form
+.lc[
+```cpp
+std::format("{:+}", 42);   // "+42"
+std::format("{:-}", 42);   // "42"
+std::format("{: }", 42);   // " 42"
+
+std::format("{:#x}", 255);
+// "0xff"
+
+std::format("{:#b}", 10);
+// "0b1010"
+
+std::format("{:05}", 42);
+// "00042"
+```
+]
+.rc[
+- `+` always shows the sign
+- Space pads with a space for positive
+- `#` adds the base prefix
+- `0` zero-pads to width
+]
+
+---
+# Bases
+.lc[
+```cpp
+std::format("{:d}", 42);    // "42"
+std::format("{:x}", 255);   // "ff"
+std::format("{:o}", 8);     // "10"
+std::format("{:b}", 10);    // "1010"
+```
+]
+.rc[
+- `d` decimal, `x` hex, `o` octal, `b` binary
+- `X` for uppercase hex
+- Combine with `#` for the prefix
+]
+
+---
+# Floating-Point Precision
+.lc[
+```cpp
+std::format("{:.2f}",  3.14159);
+// "3.14"
+
+std::format("{:.4f}",  2.5);
+// "2.5000"
+
+std::format("{:10.2f}", 3.14);
+// "      3.14"
+```
+]
+.rc[
+- `.N` is the number of decimal places
+- `f` is fixed-point
+- Combine with width for aligned columns
+]
+
+---
+# std::print and std::println
+.lc[
+```cpp
+#include <print>
+
+std::println(
+    "You get what you give");
+
+std::print(
+    "Track {:d}: {}",
+    1, "You Get What You Give");
+std::println("");
+
+double score = 9.5;
+std::println(
+    "Rating: {:.1f}/10", score);
+```
+]
+.rc[
+- `std::print` --- no trailing newline
+- `std::println` --- adds a newline
+- One call instead of format + cout
+
+**Wut:** Requires C++23. Fall back to `cout << format(...)` if `<print>` is missing.
+]
+
+---
+# Try It --- Formatted Table
+.lc[
+```cpp
+std::cout << std::format(
+    "{:<20} {:>5} {:>8}\n",
+    "Song", "Year", "Score");
+
+std::cout << std::format(
+    "{:<20} {:>5} {:>8.1f}\n",
+    "Wonderwall", 1995, 9.5);
+
+std::cout << std::format(
+    "{:<20} {:>5} {:>8.1f}\n",
+    "Jumper", 1997, 9.8);
+```
+]
+.rc[
+```
+Song                  Year    Score
+Wonderwall            1995      9.5
+Jumper                1997      9.8
+```
+
+- Columns align cleanly
+- Reads top to bottom
+]
+
+---
+# What does std::format("{:>8.2f}", 3.1) produce?
+
+1. `"3.10"`
+1. `"    3.10"`
+1. `"3.1     "`
+1. `"00003.10"`
+1. Ben got this wrong
+
+---
+# What is wrong with this?
+.lc[
+```cpp
+std::string result = std::format(
+    "{} scored {1} points",
+    name, score);
+```
+]
+.rc[
+1. Missing `#include <format>`
+1. Cannot mix implicit `{}` and indexed `{1}`
+1. `score` must be a string
+1. Cannot have a space in a format string
+1. Ben got this wrong
+]
+
+---
+# What does std::format("{:*^20}", "Hola") produce?
+
+1. `"****Hola************"`
+1. `"********Hola********"`
+1. `"Hola****************"`
+1. `"********Hola"`
+1. Ben got this wrong
+
+---
+# Key Points
+
+- `std::format` returns a `std::string`
+- `std::print`/`std::println` write directly
+- Implicit `{}` and indexed `{0}` **cannot be mixed**
+- Spec: `[[fill]align][sign][#][0][width][.prec][type]`
+- `{:.Nf}` for floats, `{:x}`/`{:o}`/`{:b}` for bases
+- Prefer `std::format`/`std::println` over `<<` with `setw`/`setprecision`
+
+**Read:** chapter 11 of *Starting C++* (Exceptions).
+**Do:** exercises 1-9.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
