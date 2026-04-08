@@ -76,3 +76,13 @@ Use `sc++/lectures/lecture1/lecture1.html` as the canonical template. The struct
 - At the end of the lecture add 2 or 3 multiple choice questions about the lecture
 - One question per slide --- do not batch multiple questions onto the same slide
 
+## Last slide
+
+The last slide of each lecture assigns the reading and exercises for the **next** lecture (not the current one), so students come prepared. Use the lecture-to-chapter mapping above to find the next chapter, then reference its exercises:
+
+```
+**Read:** chapter N of *Starting C++*. **Do:** exercises 1-M.
+```
+
+where `N` is the chapter covered by the next lecture and `M` is the last exercise number in that chapter.
+
