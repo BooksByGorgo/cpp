@@ -1,0 +1,349 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 13
+
+I/O Streams
+
+---
+# What does this print?
+.lc[
+```cpp
+std::vector<int> v =
+    {10, 20, 30, 40, 50};
+v.insert(v.begin() + 2, 25);
+v.erase(v.begin());
+for (const auto& n : v)
+    std::cout << n << " ";
+```
+]
+.rc[
+1. `10 20 25 30 40 50`
+1. `20 25 30 40 50`
+1. `20 25 30 40`
+1. `10 25 30 40 50`
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Use `<<` and `>>` with string and file streams
+- Apply stream manipulators for old-school formatting
+- Build strings with `std::ostringstream` and parse with `std::istringstream`
+- Read and write files with `std::ifstream` / `std::ofstream`
+- **Always** check if a file opened
+- Combine file mode flags with `|`
+
+---
+# Why?
+
+- Console I/O is **ephemeral** --- everything is gone when the program ends
+- Cannot save results, cannot process data from a file, cannot build strings piece by piece
+- C++ reuses `<<` and `>>` for strings and files --- same interface
+
+---
+# Quick Review
+.lc[
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string song;
+    std::cout << "Song? ";
+    std::getline(std::cin, song);
+    std::cout << "Good: "
+              << song << "\n";
+}
+```
+]
+.rc[
+- `std::cout` is an **output stream**
+- `std::cin` is an **input stream**
+- `<<` inserts, `>>` extracts
+- Everything in this chapter builds on this
+]
+
+---
+# Stream Manipulators
+.lc[
+```cpp
+#include <iomanip>
+
+bool on_tour = true;
+std::cout << on_tour;  // 1
+std::cout << std::boolalpha
+          << on_tour;  // true
+
+double score = 9.87654;
+std::cout << std::fixed
+          << std::setprecision(2)
+          << std::setw(10) << score;
+//       9.88
+```
+]
+.rc[
+- `<iomanip>` for setw, setprecision, setfill
+- `<iostream>` for boolalpha, fixed, etc.
+- **Sticky** --- set once, stays set
+- `setw` is the exception --- resets after one `<<`
+]
+
+---
+# ostringstream --- Building Strings
+.lc[
+```cpp
+#include <sstream>
+
+std::ostringstream oss;
+oss << "Man, it's a hot one"
+    << " --- " << 1999;
+
+std::string result = oss.str();
+std::cout << result << "\n";
+// Man, it's a hot one --- 1999
+```
+]
+.rc[
+- Treat a string like an output stream
+- `<<` to build piece by piece
+- `.str()` to extract the finished string
+- Great for mixing text and numbers
+]
+
+---
+# istringstream --- Parsing Strings
+.lc[
+```cpp
+std::string data = "42 3.14 hola";
+std::istringstream iss(data);
+
+int n;
+double d;
+std::string s;
+
+iss >> n >> d >> s;
+// n = 42, d = 3.14, s = "hola"
+```
+]
+.rc[
+- Tokenize whitespace-separated values
+- Same `>>` you know from `std::cin`
+- Typed extraction converts as it goes
+]
+
+---
+# Reading Words in a Loop
+.lc[
+```cpp
+std::istringstream iss(
+    "I get knocked down 7 times");
+
+std::string word;
+while (iss >> word) {
+    std::cout << "[" << word << "]\n";
+}
+```
+]
+.rc[
+Output:
+
+```
+[I]
+[get]
+[knocked]
+[down]
+[7]
+[times]
+```
+]
+
+---
+# Writing to a File
+.lc[
+```cpp
+#include <fstream>
+
+std::ofstream out("setlist.txt");
+if (!out) {
+    std::cerr << "Could not open\n";
+    return 1;
+}
+
+out << "Closing Time\n";
+out << "Smooth\n";
+out << "Tubthumping\n";
+
+out.close();
+```
+]
+.rc[
+- Constructor takes the filename
+- `if (!out)` checks the open
+- Use `<<` exactly like `cout`
+- `.close()` is good practice --- destructor closes automatically
+
+**Trap:** If open failed, subsequent `<<` silently does nothing!
+]
+
+---
+# Reading from a File
+.lc[
+```cpp
+std::ifstream in("setlist.txt");
+if (!in) {
+    std::cerr << "Could not open\n";
+    return 1;
+}
+
+std::string line;
+int count = 0;
+while (std::getline(in, line)) {
+    std::cout << ++count << ": "
+              << line << "\n";
+}
+```
+]
+.rc[
+- `std::getline(in, line)` reads one line at a time
+- Loop ends when the stream evaluates to `false`
+- You can also read word by word with `>>`
+]
+
+---
+# File Modes
+.lc[
+```cpp
+std::ofstream log("events.log",
+    std::ios::out | std::ios::app);
+```
+]
+.rc[
+| flag | meaning |
+|---|---|
+| `std::ios::out` | write (default) |
+| `std::ios::in` | read (default) |
+| `std::ios::app` | append |
+| `std::ios::binary` | binary mode |
+| `std::ios::trunc` | truncate |
+
+Combine with `|` --- bitwise OR from chapter 4.
+]
+
+---
+# Try It --- Write, Read, Parse
+.lc[
+```cpp
+std::ofstream out("setlist.txt");
+out << "ClosingTime 1998\n";
+out << "Tubthumping 1997\n";
+out << "Smooth 1999\n";
+out.close();
+
+std::ifstream in("setlist.txt");
+std::string line;
+while (std::getline(in, line)) {
+    std::istringstream iss(line);
+    std::string song;
+    int year;
+    iss >> song >> year;
+    std::cout << song << " ("
+              << year << ")\n";
+}
+```
+]
+.rc[
+- One stream writes, another reads
+- A third (per line) parses
+- All sharing the same `<<`/`>>` interface
+]
+
+---
+# What is wrong with this code?
+.lc[
+```cpp
+std::ofstream out;
+out << "Yo me la paso bien\n";
+out.close();
+```
+]
+.rc[
+1. Missing `#include <fstream>`
+1. No filename in constructor --- not attached to a file
+1. `\n` should be `std::endl`
+1. Cannot `<<` to an `ofstream`
+1. Ben got this wrong
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+std::istringstream iss("100 hola 3.14");
+int n;
+std::string s;
+double d;
+iss >> n >> s >> d;
+std::cout << d << " " << n
+          << " " << s;
+```
+]
+.rc[
+1. `100 hola 3.14`
+1. `3.14 100 hola`
+1. `3.14 hola 100`
+1. `hola 100 3.14`
+1. Ben got this wrong
+]
+
+---
+# Why is it useful that all streams share <<, >>?
+
+1. It is not --- it is confusing
+1. The compiler requires it
+1. Code written for one stream works with all of them
+1. It makes files faster
+1. Ben got this wrong
+
+---
+# Key Points
+
+- All C++ streams share `<<` and `>>`
+- `ostringstream` builds, `istringstream` parses
+- `ofstream` writes, `ifstream` reads
+- **Always** check `if (!stream) { /* error */ }`
+- Stream manipulators are sticky --- prefer `std::format` for new code
+- Combine file mode flags with `|`; `std::ios::app` appends
+
+**Read:** chapter 10 of *Starting C++* (`std::format` and `std::print`).
+**Do:** exercises 1-6.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
