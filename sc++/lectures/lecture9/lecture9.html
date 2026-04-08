@@ -1,0 +1,289 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 9
+
+Numbers: Bases and Conversions
+
+---
+# What is factorial(6)?
+
+1. 120
+1. 180
+1. 720
+1. 5040
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Convert between decimal, binary, hex, and octal
+- Write integer literals with `0b`, `0x`, and leading `0`
+- Use digit separators (`'`) for readability
+- Print in a different base with `std::format`/`std::println`
+- Convert strings to/from numbers, including with a base parameter
+
+---
+# Why Bases?
+
+*There are only 10 kinds of people in the world: those who understand binary and those who don't.*
+
+- The number **five** is five whether you write `5`, `V`, or `|||||`
+- Different **bases** make different patterns easy to spot
+- Decimal (humans), binary (CPU), hex (compact binary), octal (legacy)
+
+---
+# Decimal Place Values
+
+```
+  4   7   2
+  |   |   |
+  |   |   +-- 2 * 10^0 =   2
+  |   +------ 7 * 10^1 =  70
+  +---------- 4 * 10^2 = 400
+                          ---
+                          472
+```
+
+- Each position is a power of 10
+
+---
+# Binary Place Values
+
+```
+  1   0   1   0   1   0
+                           binary
+  1*32 + 0 + 1*8 + 0 + 1*2 + 0 = 42
+```
+
+| dec | bin |
+|---|---|
+| 0 | 0 |
+| 1 | 1 |
+| 2 | 10 |
+| 3 | 11 |
+| 4 | 100 |
+| 5 | 101 |
+
+---
+# Hex (Base 16)
+
+- Digits `0-9` and `A-F` (A=10, ..., F=15)
+- **One hex digit = 4 bits** --- two hex digits = 1 byte
+- Used for colors, memory addresses, bit masks
+
+```
+Binary:  1010 1100
+Hex:        A    C   -> 0xAC = 172
+```
+
+---
+# Octal (Base 8)
+
+- Digits `0-7`
+- **One octal digit = 3 bits**
+- Seen in Unix file permissions (`0755`)
+
+```
+Binary:  101 010
+Octal:     5   2    -> 052 = 42
+```
+
+---
+# Literals in Other Bases
+.lc[
+```cpp
+int dec = 42;         // decimal
+int bin = 0b101010;   // binary  (0b)
+int hex = 0x2A;       // hex     (0x)
+int oct = 052;        // octal   (0)
+```
+]
+.rc[
+- All four are **exactly 42**
+- The prefix changes how you write the number, not how it is stored
+
+**Trap:** Be careful with leading zeros. `052` is octal, not decimal 52.
+]
+
+---
+# Digit Separators
+.lc[
+```cpp
+int billion = 1'000'000'000;
+int bits    = 0b1010'1100;
+int color   = 0xFF'80'00;
+```
+]
+.rc[
+- `'` between digits, anywhere you like
+- The compiler ignores them completely
+- C++14 and later
+]
+
+---
+# Printing in Other Bases
+.lc[
+```cpp
+int val = 42;
+
+std::println("{}",    val);   // 42
+std::println("{:b}",  val);   // 101010
+std::println("{:x}",  val);   // 2a
+std::println("{:X}",  val);   // 2A
+std::println("{:o}",  val);   // 52
+
+// with base prefix:
+std::println("{:#b}", val);   // 0b101010
+std::println("{:#x}", val);   // 0x2a
+```
+]
+.rc[
+- Format specifier after `:` inside `{}`
+- The value does not change --- you are just looking at it differently
+- `#` turns on the base prefix
+- Full format coverage in chapter 10
+]
+
+---
+# Strings to Numbers
+.lc[
+```cpp
+int a = std::stoi("42");        // 42
+int b = std::stoi("  -7");      // -7
+int c = std::stoi("1984abc");   // 1984
+
+double d = std::stod("2.71828");
+double e = std::stod("1.5e3"); // 1500.0
+```
+]
+.rc[
+- `std::stoi` / `std::stol` / `std::stoll` for ints
+- `std::stof` / `std::stod` / `std::stold` for floats
+- Skip leading whitespace
+- Stop at first non-digit (no throw in that case)
+]
+
+---
+# The pos Parameter
+.lc[
+```cpp
+std::size_t pos;
+int val = std::stoi("42px", &pos);
+// val == 42, pos == 2
+```
+]
+.rc[
+- `pos` receives the index of the first non-consumed character
+- Useful for parsing multiple numbers from one string
+- Or for checking "did the whole string get parsed?"
+]
+
+---
+# Parsing Other Bases
+.lc[
+```cpp
+int a = std::stoi("101010", nullptr, 2);
+// binary -> 42
+
+int b = std::stoi("2A", nullptr, 16);
+// hex    -> 42
+
+int c = std::stoi("52", nullptr, 8);
+// octal  -> 42
+```
+]
+.rc[
+- Third parameter is the base (2 to 36)
+- Base **0** auto-detects from prefix
+
+**Trap:** With base 0, `"010"` parses as **octal 8**, not decimal 10.
+]
+
+---
+# Numbers to Strings
+.lc[
+```cpp
+std::string s1 = std::to_string(42);
+// "42"
+
+std::string s2 = std::to_string(-7);
+// "-7"
+
+std::string s3 = std::to_string(3.14);
+// "3.140000"
+```
+]
+.rc[
+- Simple but not configurable
+- For prettier output use `std::format` (chapter 10)
+]
+
+---
+# What does std::stoi("1984abc") return?
+
+1. 0
+1. 1984
+1. throws an exception
+1. the integer equivalent of the whole string
+1. Ben got this wrong
+
+---
+# What does std::stoi("010", nullptr, 0) return?
+
+1. 0
+1. 8
+1. 10
+1. 16
+1. Ben got this wrong
+
+---
+# Which prints 0b101010?
+
+1. `std::println("{:#b}", 42)`
+1. `std::println("{:b}", 42)`
+1. `std::println("{b}", 42)`
+1. `std::println("0b{:b}", 42)`
+1. Ben got this wrong
+
+---
+# Key Points
+
+- The same number has many spellings; the stored value is identical
+- `0b`, `0x`, leading `0` set the base of a literal
+- `'` is a digit separator
+- `{:b}`, `{:x}`, `{:o}` print in other bases; `#` adds the prefix
+- `std::stoi`/`std::stod` parse; the `base` parameter handles other bases
+- Leading zeros in input strings are a minefield
+
+**Read:** chapter 7, remaining sections --- two's complement, integer sizes, bit and shift operators.
+**Do:** exercises 3, 4, 5, 6, 8, 9, 10, 11.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

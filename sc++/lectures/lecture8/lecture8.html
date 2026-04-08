@@ -1,0 +1,326 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 8
+
+Advanced Functions
+
+---
+# What does this print?
+.lc[
+```cpp
+void mystery(int a, int &b) {
+    a += 10;
+    b += 10;
+}
+
+int main() {
+    int x = 5, y = 5;
+    mystery(x, y);
+    std::cout << x << " " << y;
+}
+```
+]
+.rc[
+1. `5 5`
+1. `5 15`
+1. `15 5`
+1. `15 15`
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Overload functions on parameter type or count
+- Write a recursive function with a correct base case
+- Use function pointers as callbacks
+- Use `[[nodiscard]]` to mark important return values
+- Write operator functions (and know what NOT to overload)
+
+---
+# Function Overloading
+.lc[
+```cpp
+void display(int value) {
+    std::cout << "Int: " << value << "\n";
+}
+
+void display(
+    const std::string &value)
+{
+    std::cout << "Str: " << value << "\n";
+}
+
+void display(double value) {
+    std::cout << "Dbl: " << value << "\n";
+}
+```
+]
+.rc[
+- Same name, **different parameter lists**
+- The compiler picks the best match based on argument types
+- You **cannot** overload on return type alone
+]
+
+---
+# Recursive Functions
+.lc[
+```cpp
+int factorial(int n) {
+    if (n <= 1) return 1;       // base case
+    return n * factorial(n - 1);
+}
+
+factorial(5);   // 120
+```
+]
+.rc[
+Every recursion needs:
+
+1. A **base case** --- stopping condition
+1. A **recursive case** --- call self with a smaller problem
+
+**Trap:** Forgetting the base case is the #1 recursion bug.
+]
+
+---
+# Tracing Recursion
+
+```
+factorial(3)
+  -> 3 * factorial(2)
+       -> 2 * factorial(1)
+            -> 1           (base case)
+       -> 2
+  -> 6
+```
+
+- Walk through it on the board
+- Ask: "under what condition does this function NOT call itself?"
+
+---
+# Function Pointers
+.lc[
+```cpp
+int add(int a, int b) { return a + b; }
+int sub(int a, int b) { return a - b; }
+
+int (*op)(int, int);
+
+op = add;
+std::cout << op(10, 3) << "\n";   // 13
+
+op = sub;
+std::cout << op(10, 3) << "\n";   // 7
+```
+]
+.rc[
+- `int (*op)(int, int)` = "pointer to function taking two ints, returning int"
+- Parentheses around `*op` are required
+- The syntax is ugly --- use `using` to alias
+]
+
+---
+# Cleaning Up with using
+.lc[
+```cpp
+using MathOp = int (*)(int, int);
+
+MathOp op = add;
+std::cout << op(10, 3) << "\n";
+
+op = sub;
+std::cout << op(10, 3) << "\n";
+```
+]
+.rc[
+- `using` creates a **type alias**
+- `MathOp` now means "pointer to a function taking two ints, returning int"
+- Much easier to read, especially for callbacks
+]
+
+---
+# Callbacks
+.lc[
+```cpp
+void process(
+    const std::string songs[], int n,
+    void (*action)(const std::string &))
+{
+    for (int i = 0; i < n; i++)
+        action(songs[i]);
+}
+
+void shout(const std::string &s) {
+    std::cout << ">> " << s << " <<\n";
+}
+
+process(playlist, 3, shout);
+```
+]
+.rc[
+- The caller passes behavior as a parameter
+- `process` does not know or care what `action` does
+- Swap behavior by passing a different function
+]
+
+---
+# [[nodiscard]]
+.lc[
+```cpp
+[[nodiscard]]
+int find_track(const std::string &pl);
+
+// warning: ignoring return value
+find_track("90s Jams");
+
+// OK
+int pos = find_track("90s Jams");
+```
+]
+.rc[
+- Warns if the caller discards the return value
+- Good for error codes, computed results, newly allocated resources
+- C++20 allows a reason: `[[nodiscard("...")]]`
+]
+
+---
+# Operator Functions
+.lc[
+```cpp
+struct Score {
+    std::string player;
+    int points;
+};
+
+Score operator+(const Score &a,
+                const Score &b) {
+    return Score{
+        a.player + " & " + b.player,
+        a.points + b.points
+    };
+}
+```
+]
+.rc[
+- Teach the compiler what `+`, `==`, `<<` mean for your type
+- Free function named `operator` + symbol
+- At least one operand must be a user-defined type
+]
+
+---
+# The << Operator
+.lc[
+```cpp
+std::ostream &operator<<(
+    std::ostream &os,
+    const Score &s)
+{
+    os << s.player << ": " << s.points;
+    return os;
+}
+
+Score a{"Fly", 95};
+std::cout << a << "\n";   // Fly: 95
+```
+]
+.rc[
+- Returning the stream enables chaining
+- `std::cout << a << b` works because each call returns `std::cout`
+- This is how iostream does it under the hood
+]
+
+---
+# Rules and Traps
+
+- **Cannot** invent new operators
+- **Cannot** change arity or precedence
+- `::`, `.`, `.*`, `?:`, `sizeof` cannot be overloaded
+- Behave as expected: `+` combines, `==` compares
+
+**Trap:** **Do not** overload `&&`, `||`, or `,`. The built-ins short-circuit; overloaded versions do not.
+
+---
+# What is factorial(6)?
+
+1. 120
+1. 180
+1. 720
+1. 5040
+1. Ben got this wrong
+
+---
+# What does this print?
+.lc[
+```cpp
+int apply(int (*f)(int, int),
+          int a, int b) {
+    return f(a, b);
+}
+
+int add(int a, int b) { return a + b; }
+int mul(int a, int b) { return a * b; }
+
+std::cout << apply(add, 3, 4) << " "
+          << apply(mul, 3, 4);
+```
+]
+.rc[
+1. `3 4`
+1. `7 7`
+1. `7 12`
+1. `12 7`
+1. Ben got this wrong
+]
+
+---
+# Why should you NOT overload &&?
+
+1. It is not a valid operator
+1. You lose short-circuit evaluation
+1. The compiler rejects it
+1. It makes function pointer syntax worse
+1. Ben got this wrong
+
+---
+# Key Points
+
+- Overloading is based on **parameter lists**, never return type alone
+- Every recursion needs a base case
+- Function pointer syntax is ugly --- use `using` to alias
+- `[[nodiscard]]` prevents silently ignored return values
+- Operator functions should **behave as expected**
+- Do not overload `&&`, `||`, or `,`
+
+**Read:** chapter 7 of *Starting C++*, sections on bases, literals, printing, and string/number conversions.
+**Do:** exercises 1, 2, 7.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

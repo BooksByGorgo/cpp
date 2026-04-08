@@ -1,0 +1,322 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 10
+
+Two's Complement and Bit Manipulation
+
+---
+# What does std::stoi("010", nullptr, 0) return?
+
+1. 0
+1. 8
+1. 10
+1. 16
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Compute two's complement by hand
+- Describe integer type sizes and ranges
+- Predict signed vs unsigned overflow
+- Perform binary addition and subtraction
+- Use bit operators `& | ^ ~` to test, set, clear, and toggle
+- Use shift operators `<<` `>>` for power-of-two arithmetic
+
+---
+# One's Complement (and Why We Don't Use It)
+
+Flip every bit to negate:
+
+```
+ 42 = 0010 1010
+-42 = 1101 0101
+```
+
+**Fatal flaw:** two zeros.
+
+```
++0 = 0000 0000
+-0 = 1111 1111
+```
+
+Is `-0 == +0`? Complicates hardware.
+
+---
+# Two's Complement
+
+Recipe: **flip all bits, then add 1**.
+
+```
+ 42 = 0010 1010
+      1101 0101   (flip)
+    + 0000 0001   (add 1)
+      ---------
+-42 = 1101 0110
+```
+
+- Only **one** zero
+- Addition works for signed and unsigned alike
+
+---
+# The Sign Bit
+
+In 8-bit two's complement:
+
+- `0xxx xxxx` --- **positive** (0 to 127)
+- `1xxx xxxx` --- **negative** (-128 to -1)
+
+Range: **-128 to 127** --- one more negative than positive because zero takes one of the "positive" slots.
+
+---
+# Integer Sizes
+
+| Type | Bytes | Bits |
+|---|---|---|
+| `char` | 1 | 8 |
+| `short` | 2 | 16 |
+| `int` | 4 | 32 |
+| `long` | 4 or 8 | 32 or 64 |
+| `long long` | 8 | 64 |
+
+- Use `std::numeric_limits<T>::min()` / `max()` when in doubt
+
+---
+# Integer Ranges
+
+With `n` bits:
+
+- **Unsigned**: `0` to `2^n - 1`
+- **Signed**: `-2^(n-1)` to `2^(n-1) - 1`
+
+| Type | Range |
+|---|---|
+| `unsigned char` | 0 to 255 |
+| `char` | -128 to 127 |
+| `unsigned int` | 0 to ~4.3 billion |
+| `int` | -2.1 to +2.1 billion |
+
+---
+# Overflow and Underflow
+.lc[
+```cpp
+unsigned char x = 255;
+x = x + 1;   // 0 (wraps)
+x = x - 2;   // 254 (wraps)
+
+int y = 2'147'483'647;  // INT_MAX
+y = y + 1;              // UB!
+```
+]
+.rc[
+- **Unsigned** wraps predictably
+- **Signed** overflow is **undefined behavior**
+
+**Trap:** "Undefined behavior" is not theoretical --- compilers exploit it. Never rely on signed overflow.
+]
+
+---
+# Binary Addition
+
+Carry at 2 instead of 10:
+
+```
+  0 + 0 = 0
+  0 + 1 = 1
+  1 + 1 = 10  (0 carry 1)
+```
+
+```
+    0010 1010   (42)
+  + 0000 1111   (15)
+  -----------
+    0011 1001   (57)
+```
+
+---
+# Binary Subtraction via Two's Complement
+
+Compute `42 - 15`. Step 1: `-15 = 1111 0001`.
+
+Step 2:
+
+```
+    0010 1010   (42)
+  + 1111 0001   (-15)
+  -----------
+  1 0001 1011   (result 27;
+                 overflow discarded)
+```
+
+Same hardware handles signed and unsigned addition.
+
+---
+# Bit Operators
+
+| op | name | example | result |
+|---|---|---|---|
+| `&` | AND | `0b1100 & 0b1010` | `0b1000` |
+| `\|` | OR | `0b1100 \| 0b1010` | `0b1110` |
+| `^` | XOR | `0b1100 ^ 0b1010` | `0b0110` |
+| `~` | NOT | `~0b1100` | flips all |
+
+---
+# Bit Idioms
+.lc[
+```cpp
+// test a bit (is it set?)
+if (flags & 0b0010) { }
+
+// set a bit
+flags |= 0b0010;
+
+// clear a bit
+flags &= ~0b0010;
+
+// toggle a bit
+flags ^= 0b0010;
+```
+]
+.rc[
+- AND tests/clears
+- OR sets
+- XOR toggles
+- NOT flips everything
+]
+
+---
+# Left Shift
+
+```
+  0000 0101  (5)
+  << 3
+  0010 1000  (40)
+```
+
+```cpp
+int x = 5;
+int doubled  = x << 1;   // 10
+int times8   = x << 3;   // 40
+```
+
+- Shifting left by `n` multiplies by `2^n`
+
+---
+# Right Shift
+
+```
+  0010 1000  (40)
+  >> 3
+  0000 0101  (5)
+```
+
+```cpp
+int y = 40;
+int halved    = y >> 1;   // 20
+int div8      = y >> 3;   // 5
+```
+
+- Divides by `2^n` (integer division)
+- For signed values, the sign bit is copied
+
+---
+# Shift Tips and Traps
+
+**Tip:** Modern compilers turn `x * 4` into `x << 2` automatically. Write multiplication when you mean multiplication; reserve shifts for bit manipulation.
+
+**Trap:** Shifting by more bits than the type has is **undefined behavior**. Valid shift counts for 32-bit `int` are 0 to 31.
+
+---
+# Why does this never terminate?
+.lc[
+```cpp
+unsigned int count = 10;
+while (count >= 0) {
+    --count;
+}
+```
+]
+.rc[
+1. Off-by-one error
+1. `count >= 0` is always true for unsigned
+1. `--count` should be `count--`
+1. Infinite loops are UB
+1. Ben got this wrong
+]
+
+---
+# What are the values?
+.lc[
+```cpp
+int a = 1 << 10;
+int b = 100 >> 3;
+int c = (1 << 4) - 1;
+```
+]
+.rc[
+1. 10, 12, 15
+1. 1024, 12, 15
+1. 1024, 12, 16
+1. 10, 12, 16
+1. Ben got this wrong
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+uint8_t a = 250;
+uint8_t b = 20;
+uint8_t sum = a + b;
+std::println("{}", sum);
+```
+]
+.rc[
+1. 270
+1. 255
+1. 14
+1. undefined behavior
+1. Ben got this wrong
+]
+
+---
+# Key Points
+
+- Two's complement = flip and add 1; only one zero; addition works for both
+- **Signed** overflow is UB; **unsigned** wraps predictably
+- `&` tests/clears, `|` sets, `^` toggles, `~` flips
+- `<<` and `>>` multiply and divide by powers of two
+- `unsigned` comparisons never go below zero --- watch loops
+
+**Read:** chapter 8 of *Starting C++*, sections on `std::array` and `std::vector` basics.
+**Do:** exercises 1, 2, 3, 5, 8, 10.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
