@@ -86,27 +86,6 @@ void play() {
 ]
 
 ---
-# Why the Heap?
-.lc[
-```cpp
-int count;
-std::cin >> count;
-// int scores[count];   // not C++
-
-std::string *make() {
-    std::string local = "Don't Speak";
-    return &local;   // BUG: dangling
-}
-```
-]
-.rc[
-- Size not known until runtime
-- Object must outlive the current scope
-
-The heap solves both.
-]
-
----
 # Pointer Basics
 .lc[
 ```cpp
@@ -151,6 +130,27 @@ ptr->title;     // equivalent, clean
 - `ptr->member` is exactly `(*ptr).member`
 - Everywhere you have a pointer to a struct or class
 - The standard way in C++
+]
+
+---
+# Why the Heap?
+.lc[
+```cpp
+int count;
+std::cin >> count;
+// int scores[count];   // not C++
+
+std::string *make() {
+    std::string local = "Don't Speak";
+    return &local;   // BUG: dangling
+}
+```
+]
+.rc[
+- Size not known until runtime
+- Object must outlive the current scope
+
+The heap solves both.
 ]
 
 ---
