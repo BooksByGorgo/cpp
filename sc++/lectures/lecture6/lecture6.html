@@ -1,0 +1,291 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 6
+
+Loops, Jumps, and `switch`
+
+---
+# How many times does this run?
+.lc[
+```cpp
+int i = 10;
+while (i > 10) {
+    i++;
+}
+```
+]
+.rc[
+1. 0
+1. 1
+1. 10
+1. infinite
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Use `do-while` for loops that must run at least once
+- Use `break` to exit and `continue` to skip
+- Write classic `for` loops and range-based `for` loops
+- Use `switch` with `break`, fall-through, and `default`
+
+---
+# do-while Loops
+.lc[
+```cpp
+std::string input;
+
+do {
+    std::cout << "Dime algo: ";
+    std::getline(std::cin, input);
+    std::cout << "You said: "
+              << input << "\n";
+} while (input != "quit");
+```
+]
+.rc[
+- Condition tested **after** the body --- always runs at least once
+- Note the **semicolon** after `while(...)`
+- Classic use: menus, input validation
+
+**Tip:** Use `do-while` when a `while` would need code duplication to prime the first test.
+]
+
+---
+# break and continue
+.lc[
+```cpp
+for (int i = 0; i < 3; i++) {
+    if (tracks[i] == "Zombie") {
+        std::cout << i << "\n";
+        break;
+    }
+}
+
+for (int i = 1; i <= 10; i++) {
+    if (i % 2 == 0) continue;
+    std::cout << i << " ";
+}
+```
+]
+.rc[
+- `break` exits the **nearest** loop
+- `continue` skips to the next iteration
+
+**Trap:** `break` does not escape **outer** loops --- only the innermost one.
+]
+
+---
+# for Loops
+.lc[
+```cpp
+for (int i = 0; i < 5; i++) {
+    std::cout << i << " ";
+}
+// 0 1 2 3 4
+```
+]
+.rc[
+Three parts of the header:
+
+1. **init** --- once, before the loop
+1. **condition** --- tested each iteration
+1. **update** --- after each iteration
+
+- Any part can be omitted
+- `for (;;)` is an infinite loop
+]
+
+---
+# Range-Based for
+.lc[
+```cpp
+int scores[] = {90, 84, 77, 95, 88};
+
+for (int s : scores) {
+    std::cout << s << " ";
+}
+// 90 84 77 95 88
+```
+]
+.rc[
+- Takes each value in turn
+- No index variable, no bounds worries
+- Essential for `std::vector` and `std::array` (chapter 8)
+
+**Wut:** Range-based `for` **copies** each element. Use `int &s` to avoid copies or modify in place.
+]
+
+---
+# switch Statements
+.lc[
+```cpp
+switch (track) {
+case 1:
+    std::cout << "Losing My Religion\n";
+    break;
+case 2:
+    std::cout << "Bitter Sweet Symphony\n";
+    break;
+case 3:
+    std::cout << "Zombie\n";
+    break;
+default:
+    std::cout << "Unknown\n";
+    break;
+}
+```
+]
+.rc[
+- Each `case` label must be a **compile-time constant**
+- No variables, no strings as case labels
+- Include a `default` for safety
+]
+
+---
+# Intentional Fall-Through
+.lc[
+```cpp
+switch (grade) {
+case 'A':
+case 'B':
+case 'C':
+    std::cout << "Passing\n";
+    break;
+case 'D':
+case 'F':
+    std::cout << "Not passing\n";
+    break;
+}
+```
+]
+.rc[
+- Cases stacked without `break` share a body
+- Useful when multiple values need the same treatment
+- Be explicit about intent with a comment or `[[fallthrough]];`
+]
+
+---
+# Accidental Fall-Through
+.lc[
+```cpp
+switch (x) {
+case 1:
+    std::cout << "uno\n";
+    // oops, no break!
+case 2:
+    std::cout << "dos\n";
+    break;
+}
+```
+]
+.rc[
+- If `x` is 1, prints **both** "uno" and "dos"
+- Silent bug source
+
+**Trap:** End every case with `break` unless you intentionally want fall-through.
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+int x = 2;
+switch (x) {
+case 1: std::cout << "uno ";
+case 2: std::cout << "dos ";
+case 3: std::cout << "tres ";
+    break;
+default: std::cout << "other ";
+}
+```
+]
+.rc[
+1. `uno`
+1. `dos`
+1. `dos tres`
+1. `uno dos tres`
+1. Ben got this wrong
+]
+
+---
+# How many times does the body run?
+.lc[
+```cpp
+int count = 0;
+int i = 10;
+do {
+    count++;
+    i--;
+} while (i > 10);
+```
+]
+.rc[
+1. 0
+1. 1
+1. 9
+1. 10
+1. Ben got this wrong
+]
+
+---
+# Where is the bug?
+.lc[
+```cpp
+int total = 0;
+for (int i = 0; i < 10; i++);
+{
+    total += i;
+}
+```
+]
+.rc[
+1. Stray `;` after `for(...)` makes the body empty
+1. `total` should be `double`
+1. `i` is out of scope inside the braces
+1. Both A and C
+1. Ben got this wrong
+]
+
+---
+# Key Points
+
+- `do-while` runs at least once --- use for menus and retries
+- `break` exits the nearest loop; `continue` skips to the next iteration
+- Classic `for` = init + condition + update; declare `i` inside
+- Range-based `for` is cleaner without an index; use `&` to avoid copies
+- `switch` needs a constant expression; **always** `break` unless you mean to fall through
+
+**Read:** chapter 6 of *Starting C++*, sections on declarations/definitions, parameters, pass-by, `const`, and default parameters.
+**Do:** exercises 1, 2, 6, 11.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

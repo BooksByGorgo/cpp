@@ -1,0 +1,237 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 5
+
+Decisions and `while`
+
+---
+# What does this print?
+.lc[
+```cpp
+int a = 10;
+int b = a++;
+int c = ++a;
+std::cout << a << " "
+          << b << " "
+          << c << "\n";
+```
+]
+.rc[
+1. `10 10 11`
+1. `11 10 11`
+1. `12 10 12`
+1. `12 11 12`
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Write `if`, `if/else`, `if/else if/else` chains
+- Avoid the `=` vs `==` trap
+- Write a `while` loop that terminates
+- Trace a nested `if` and know when to flatten
+- Use `while` for input validation loops
+
+---
+# if Statements
+.lc[
+```cpp
+int score = 85;
+
+if (score >= 90) {
+    std::cout << "Excelente!\n";
+}
+```
+]
+.rc[
+- Condition must be a boolean expression
+- True --> body runs; false --> body is skipped
+- **Always** use `{}` --- saves you from the dangling-if trap
+]
+
+---
+# else and else if
+.lc[
+```cpp
+if (score >= 90) {
+    std::cout << "A\n";
+} else if (score >= 80) {
+    std::cout << "B\n";
+} else if (score >= 70) {
+    std::cout << "C\n";
+} else {
+    std::cout << "Try again\n";
+}
+```
+]
+.rc[
+- Tested **top to bottom**
+- First match wins; the rest are skipped
+- Final `else` catches anything that did not match
+
+**Trap:** `if (x = 5)` **assigns** 5, does not compare.
+]
+
+---
+# Nested if
+.lc[
+```cpp
+if (age >= 18) {
+    if (has_ticket) {
+        std::cout << "Welcome\n";
+    } else {
+        std::cout << "Ticket?\n";
+    }
+} else {
+    std::cout << "18+\n";
+}
+```
+]
+.rc[
+- Legal, but deep nesting is hard to read
+- Flatten by combining with `&&` / `||`
+- Or by returning early from a function (chapter 6)
+]
+
+---
+# while Loops
+.lc[
+```cpp
+int countdown = 5;
+
+while (countdown > 0) {
+    std::cout << countdown << "... ";
+    countdown--;
+}
+std::cout << "Vamos!\n";
+```
+]
+.rc[
+- Condition tested **before** each iteration
+- If false from the start, the body **never** runs
+- Make sure the loop variable changes
+
+**Trap:** Forgetting to update the loop variable gives an infinite loop. Ctrl+C is your friend.
+]
+
+---
+# Input Validation
+.lc[
+```cpp
+int n;
+std::cout << "Positive number: ";
+std::cin >> n;
+
+while (n <= 0) {
+    std::cout << "Try again: ";
+    std::cin >> n;
+}
+```
+]
+.rc[
+- Classic pattern: ask, test, ask again
+- `do-while` will make this cleaner next lecture
+]
+
+---
+# Try It --- Guessing Game
+.lc[
+```cpp
+int target = 42, guess;
+std::cin >> guess;
+
+while (guess != target) {
+    if (guess < target)
+        std::cout << "Higher! ";
+    else
+        std::cout << "Lower! ";
+    std::cin >> guess;
+}
+std::cout << "Got it!\n";
+```
+]
+.rc[
+- One-word changes can make the loop infinite
+- Non-numeric input is a preview of chapter 9
+- Ask the class: what is the smallest bug?
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+int x = 5;
+if (x = 10) {
+    std::cout << "A ";
+}
+std::cout << x << "\n";
+```
+]
+.rc[
+1. `A 5`
+1. `A 10`
+1. `5`
+1. `10`
+1. Ben got this wrong
+]
+
+---
+# How many times does this run?
+.lc[
+```cpp
+int i = 10;
+while (i > 10) {
+    std::cout << "hi\n";
+    i++;
+}
+```
+]
+.rc[
+1. 0
+1. 1
+1. 10
+1. infinite
+1. Ben got this wrong
+]
+
+---
+# Key Points
+
+- `if` / `else if` / `else` chains are top-to-bottom, first match wins
+- `while` tests the condition **before** each iteration
+- Make sure the loop variable changes
+- `==` compares, `=` assigns
+
+**Read:** chapter 5 of *Starting C++*, `do-while`, `for`, `switch`, and `break`/`continue`.
+**Do:** exercises 2, 3, 4, 6, 8.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

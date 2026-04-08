@@ -1,0 +1,316 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 7
+
+Function Basics
+
+---
+# What does this print?
+.lc[
+```cpp
+int x = 2;
+switch (x) {
+case 1: std::cout << "uno ";
+case 2: std::cout << "dos ";
+case 3: std::cout << "tres "; break;
+default: std::cout << "other ";
+}
+```
+]
+.rc[
+1. `uno`
+1. `dos`
+1. `dos tres`
+1. `uno dos tres`
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Distinguish a declaration from a definition
+- Write a forward declaration when needed
+- Use pass-by-value vs pass-by-reference
+- Use `const` references for efficient, safe parameters
+- Give functions default parameter values
+
+---
+# Why Functions?
+
+- `main` grows fast --- split into named pieces
+- Each function has a signature, a body, and up to one return value
+- You have been using them all along: `main`, `std::string::size()`, every `<<`
+
+---
+# Declarations vs Definitions
+.lc[
+```cpp
+// Declaration (prototype) ---
+// no body, just a semicolon
+int add(int a, int b);
+
+// Definition --- has the body
+int add(int a, int b) {
+    return a + b;
+}
+```
+]
+.rc[
+- **Declaration**: signature only
+- **Definition**: the actual code
+- One Definition Rule: many declarations OK, exactly **one** definition
+]
+
+---
+# Forward Declarations
+.lc[
+```cpp
+#include <iostream>
+#include <string>
+
+void greet(const std::string &name);
+
+int main() {
+    greet("Mack");
+}
+
+void greet(const std::string &name) {
+    std::cout << "Return of the "
+              << name << "!\n";
+}
+```
+]
+.rc[
+- The compiler reads top to bottom
+- A forward declaration lets you call a function before its body appears
+- Foundation of header files
+]
+
+---
+# inline in Headers
+.lc[
+```cpp
+// helpers.h
+inline int max_volume() {
+    return 11;
+}
+```
+]
+.rc[
+- Defining a function in a header without `inline` is an ODR violation when included from multiple `.cpp` files
+- `inline` tells the linker "these are all the same"
+
+**Wut:** `inline` does **not** mean the compiler will inline the call. It is a linkage hint.
+]
+
+---
+# Parameters and Return Values
+.lc[
+```cpp
+int multiply(int x, int y) {
+    return x * y;
+}
+
+int result = multiply(6, 7);   // 42
+
+void print_chorus() {
+    std::cout << "I want it that way\n";
+}
+```
+]
+.rc[
+- Return type before the name
+- `void` for no return
+- `return;` (no value) can still exit a `void` function early
+]
+
+---
+# Pass-by-Value
+.lc[
+```cpp
+void try_to_change(int x) {
+    x = 999;   // only modifies the copy
+}
+
+int main() {
+    int num = 42;
+    try_to_change(num);
+    std::cout << num;   // still 42
+}
+```
+]
+.rc[
+- **Default** behavior
+- The function gets a **copy**
+- Changes do not affect the caller
+- For small types (`int`, `char`, `double`), this is exactly what you want
+]
+
+---
+# Pass-by-Reference
+.lc[
+```cpp
+void make_it_louder(int &volume) {
+    volume = 11;
+}
+
+int main() {
+    int vol = 5;
+    make_it_louder(vol);
+    std::cout << vol;   // 11
+}
+```
+]
+.rc[
+- `&` after the type --- `volume` is an **alias** for the caller's variable
+- Changes propagate back to the caller
+- Classic use: a `swap` function
+]
+
+---
+# const References
+.lc[
+```cpp
+void print_song(
+    const std::string &title)
+{
+    std::cout << "Now playing: "
+              << title << "\n";
+    // title = "other";   // ERROR
+}
+```
+]
+.rc[
+- No copy, no modification
+- Best of both worlds
+- Rule of thumb: small type --> by value, large type you do not modify --> `const &`, need to modify --> non-const `&`
+
+**Wut:** `const` refs bind to temporaries; non-const refs do not.
+]
+
+---
+# Structs as Parameters
+.lc[
+```cpp
+struct Album {
+    std::string title;
+    std::string artist;
+    int year;
+    int tracks;
+};
+
+void print_bad(Album a);
+void print_good(const Album &a);
+```
+]
+.rc[
+- Passing a struct by value **copies every member** (strings too!)
+- Can be surprisingly expensive
+- Use `const &` unless you need your own copy to modify
+]
+
+---
+# Default Parameters
+.lc[
+```cpp
+void play(const std::string &song,
+          int volume = 5)
+{
+    std::cout << "Playing " << song
+              << " at " << volume << "\n";
+}
+
+play("Return of the Mack");       // 5
+play("Return of the Mack", 11);   // 11
+```
+]
+.rc[
+- Default value lives in the **declaration**
+- Defaulted parameters must be at the **end** of the parameter list
+- Cannot put a default before a non-defaulted parameter
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+void mystery(int a, int &b) {
+    a = a + 10;
+    b = b + 10;
+}
+
+int main() {
+    int x = 5, y = 5;
+    mystery(x, y);
+    std::cout << x << " " << y;
+}
+```
+]
+.rc[
+1. `5 5`
+1. `5 15`
+1. `15 5`
+1. `15 15`
+1. Ben got this wrong
+]
+
+---
+# Where is the bug?
+.lc[
+```cpp
+void set_volume(int volume = 5,
+                const std::string &song)
+{
+    std::cout << song << " at "
+              << volume << "\n";
+}
+```
+]
+.rc[
+1. `volume` should be `const`
+1. Default parameter must be at the **end**
+1. `song` should have a default too
+1. `void` functions cannot take parameters
+1. Ben got this wrong
+]
+
+---
+# Key Points
+
+- Declarations vs definitions; forward declarations enable multi-file programs
+- Default is **pass-by-value** --- copies are cheap for ints, expensive for strings
+- `&` for references; add `const` when you do not need to modify
+- Default parameters live on the **right** side of the parameter list
+
+**Read:** chapter 6, remaining sections --- overloading, recursion, function pointers, operators.
+**Do:** exercises 3, 4, 5, 7, 8, 9, 10, 12.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
