@@ -1,0 +1,285 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 2
+
+Variables
+
+---
+# What does std::cin >> name store for "Los Del Rio"?
+.lc[
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string name;
+    std::cin >> name;
+    std::cout << name << "\n";
+}
+```
+]
+.rc[
+1. `Los Del Rio`
+1. `Los`
+1. `Rio`
+1. an empty string
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Name the fundamental types and their sizes
+- Declare, initialize, and never leave variables uninitialized
+- Use `sizeof` and `std::numeric_limits<T>`
+- Declare and index 1D and 2D arrays safely
+- Use `const` for read-only values (and pointers)
+- Group fields with a `struct` and access them with `.`
+
+---
+# Why Variables?
+
+- Without variables, you can only use **literal** values
+- A variable gives a **name** to a piece of typed memory
+- Every variable has a **type** set at compile time
+- In C++, "object" = any region of memory with a type (not just OOP!)
+
+---
+# Basic Types
+.lc[
+```cpp
+int score = 99;
+short small = 42;
+long big = 1'000'000L;
+long long huge = 9'000'000'000LL;
+
+unsigned int positive = 42;
+
+float price = 9.99f;
+double pi = 3.14159265358979;
+
+char grade = 'A';
+bool game_over = false;
+```
+]
+.rc[
+- Integers differ in **size** and **range**
+- Prefer `double` over `float`
+- A `char` is a tiny integer: `'A'` is 65
+- **Single** quotes for chars, **double** for strings
+]
+
+---
+# Declaring and Initializing
+.lc[
+```cpp
+int waterfalls = 3;
+int x = 0, y = 0, z = 0;
+
+int count;   // uninitialized --- garbage!
+
+auto w = 3;         // int
+auto s = 88.0;      // double
+auto c = 'T';       // char
+```
+]
+.rc[
+- Declare multiple of the same type in one line
+- **Always** initialize --- uninitialized variables hold whatever garbage was there before
+- `auto` asks the compiler to deduce the type
+- C++ is still strictly typed with `auto`
+]
+
+---
+# sizeof and std::numeric_limits
+.lc[
+```cpp
+#include <iostream>
+#include <limits>
+
+int main() {
+    std::cout << sizeof(int) << "\n";
+    std::cout <<
+        std::numeric_limits<int>::max()
+        << "\n";
+}
+```
+]
+.rc[
+- `sizeof(type)` --- parens required for a type
+- `sizeof(char)` is **always 1**
+- `std::numeric_limits<T>::min()`, `max()`, `lowest()` from `<limits>`
+- For floats, `min()` is the smallest **positive** normal --- use `lowest()` for most negative
+]
+
+---
+# Arrays
+.lc[
+```cpp
+int scores[5] = {99, 85, 73, 91, 100};
+
+std::cout << scores[0] << "\n";   // 99
+std::cout << scores[4] << "\n";   // 100
+
+int primes[] = {2, 3, 5, 7, 11};
+
+int n = sizeof(primes) /
+        sizeof(primes[0]);
+```
+]
+.rc[
+- Fixed size, contiguous memory
+- Indices **0** to **size - 1**
+- Let the compiler count with `[]`
+- **No bounds checking** --- `scores[5]` is undefined behavior
+- `sizeof/sizeof` trick for element count
+]
+
+---
+# 2D Arrays
+.lc[
+```cpp
+int grid[3][4] = {
+    {1, 2, 3, 4},
+    {5, 6, 7, 8},
+    {9, 10, 11, 12}
+};
+
+std::cout << grid[0][0];  // 1
+std::cout << grid[2][3];  // 12
+```
+]
+.rc[
+- "3 rows of 4 ints each"
+- First index = row, second = column
+- Elements laid out **row by row** in memory
+- Neighbors: `grid[0][3]` and `grid[1][0]`
+]
+
+---
+# const
+.lc[
+```cpp
+const double PI = 3.14159265358979;
+const int MAX_LIVES = 3;
+
+int vida = 99;
+const int *p1 = &vida;   // const int
+int *const p2 = &vida;   // const ptr
+const int *const p3 = &vida;
+```
+]
+.rc[
+- `const` = read-only, enforced by the compiler
+- `const int *p1` --- cannot change the value through `p1`, but can repoint
+- `int *const p2` --- cannot repoint, but can change the value
+- Read **right to left**
+]
+
+---
+# Structures
+.lc[
+```cpp
+struct Song {
+    std::string title;
+    std::string artist;
+    int year;
+};
+
+Song favorite;
+favorite.title = "Waterfalls";
+favorite.artist = "TLC";
+favorite.year = 1995;
+
+Song hit = {"No Scrubs", "TLC", 1999};
+```
+]
+.rc[
+- Groups related fields under one type
+- Access members with the **dot** operator
+- Brace initialization is shorter
+- **Assignment copies every member** --- each struct has its own storage
+]
+
+---
+# What is printed?
+.lc[
+```cpp
+#include <iostream>
+
+int main() {
+    char c = 'C';
+    c = c + 3;
+    std::cout << c << "\n";
+}
+```
+]
+.rc[
+1. `C3`
+1. `C`
+1. `F`
+1. `70`
+1. Ben got this wrong
+]
+
+---
+# What is sizeof(scores) for int scores[10]?
+
+On a system where `int` is 4 bytes:
+
+1. 4
+1. 10
+1. 14
+1. 40
+1. Ben got this wrong
+
+---
+# Which lets you change *p but not where p points?
+
+1. `const int *p`
+1. `int const *p`
+1. `int *const p`
+1. `const int *const p`
+1. Ben got this wrong
+
+---
+# Key Points
+
+- Every variable has a type; the type sets size and legal operations
+- **Always initialize** --- no uninitialized variables
+- `sizeof` is in bytes; `std::numeric_limits<T>` for ranges
+- Arrays are fixed-size, zero-indexed, **no bounds checking**
+- Read pointer `const` **right to left**
+- `struct` assignment copies every member
+
+**Read:** chapter 3 of *Starting C++*. **Do:** exercises 1-9.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

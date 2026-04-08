@@ -1,0 +1,321 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 3
+
+Strings
+
+---
+# On a system with 4-byte int, what is sizeof(scores) for int scores[10]?
+
+1. 4
+1. 10
+1. 14
+1. 40
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Create `std::string` and use `.size()`, `.length()`, `.empty()`
+- Concatenate with `+` and `+=`
+- Compare strings (character by character, ASCII)
+- Access characters with `[]` and `.at()`
+- Iterate with range-based `for`
+- `.find()` and `.substr()` to search and extract
+- Read lines with `std::getline`
+- Convert strings to/from numbers
+
+---
+# Why std::string?
+
+- Raw `char` arrays are painful:
+    - you track the length
+    - cannot resize
+    - `==` compares pointers, not content
+    - missing `'\0'` crashes you
+- `std::string` manages its own memory
+- Always `#include <string>`
+
+---
+# Creating Strings
+.lc[
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string empty;
+    std::string greeting = "Hola";
+    std::string copy = greeting;
+    std::string repeat(5, '!');
+
+    std::cout << greeting << "\n";
+}
+```
+]
+.rc[
+- Default-constructed string is `""` (**not** garbage)
+- `std::string(count, char)` repeats the character
+- Copies are deep --- each has its own buffer
+]
+
+---
+# Length, Size, Empty
+.lc[
+```cpp
+std::string title = "Ice Ice Baby";
+
+std::cout << title.size() << "\n";    // 12
+std::cout << title.length() << "\n";  // 12
+
+std::string nada;
+if (nada.empty()) {
+    std::cout << "nothing here\n";
+}
+```
+]
+.rc[
+- `.size()` and `.length()` are **identical**
+- `.empty()` returns `true` for zero length
+- Return type is `size_t` (**unsigned**) --- careful with signed comparisons
+]
+
+---
+# Concatenation
+.lc[
+```cpp
+std::string first = "Baby";
+std::string second = " One More Time";
+std::string hit = first + second;
+
+std::string lyrics = "Bailamos";
+lyrics += ", te quiero";
+```
+]
+.rc[
+- `+` produces a new string
+- `+=` modifies in place
+- At least **one side** of `+` must be a real `std::string`
+
+**Trap:** `"hello" + " world"` does **not** compile --- both are `const char*`.
+]
+
+---
+# Comparing Strings
+.lc[
+```cpp
+std::string a = "Hanson";
+std::string b = "Vanilla Ice";
+if (a < b) {
+    std::cout << a << " first\n";
+}
+```
+]
+.rc[
+- `==`, `!=`, `<`, `>`, `<=`, `>=` all work
+- Character by character using **ASCII values**
+- `'Z'` (90) < `'a'` (97)
+- So `"Zebra" < "apple"` is **true**
+]
+
+---
+# Accessing Characters
+.lc[
+```cpp
+std::string song = "MMMBop";
+
+std::cout << song[0] << "\n";     // M
+std::cout << song.at(3) << "\n";  // B
+
+std::string shout = "hey!";
+shout[0] = 'H';   // now "Hey!"
+```
+]
+.rc[
+- `[]` is fast, **no bounds check**
+- `.at()` throws `std::out_of_range` on bad index
+- Both are writable
+
+**Tip:** Use `.at()` when you are not 100% sure the index is valid.
+]
+
+---
+# Iterating
+.lc[
+```cpp
+std::string word = "Iris";
+
+for (char c : word) {
+    std::cout << c << ' ';
+}
+
+for (size_t i = 0;
+     i < word.size(); ++i) {
+    std::cout << word[i] << ' ';
+}
+```
+]
+.rc[
+- Range-based `for` is cleanest
+- Use `size_t` for the index --- matches `.size()`
+- Avoid `int` vs `size_t` signed/unsigned warnings
+]
+
+---
+# Finding and Extracting
+.lc[
+```cpp
+std::string line = "Ice Ice Baby";
+
+size_t pos = line.find("Baby");
+if (pos != std::string::npos) {
+    std::cout << pos << "\n";  // 8
+}
+
+std::string part = line.substr(8, 4);
+// "Baby"
+```
+]
+.rc[
+- `.find(needle)` returns position or `std::string::npos`
+- **Always** check for `npos`
+- `.substr(pos, len)` extracts; omit `len` for "to the end"
+]
+
+---
+# Reading Whole Lines
+.lc[
+```cpp
+std::string full_name;
+std::cout << "full name: ";
+std::getline(std::cin, full_name);
+
+int age;
+std::string name;
+std::cin >> age;
+std::cin.ignore();
+std::getline(std::cin, name);
+```
+]
+.rc[
+- `std::getline(cin, s)` reads **up to the newline**
+- `cin >> s` stops at whitespace
+
+**Trap:** Mixing `>>` and `getline` without `cin.ignore()` gives an empty line.
+]
+
+---
+# Strings to/from Numbers
+.lc[
+```cpp
+std::string y = "1997";
+int year = std::stoi(y);
+
+std::string p = "9.99";
+double price = std::stod(p);
+
+int track = 7;
+std::string label =
+    "Track " + std::to_string(track);
+```
+]
+.rc[
+- `std::stoi` --- string to int
+- `std::stod` --- string to double
+- `std::to_string` --- any number to string
+
+**Trap:** `std::stoi("abc")` **throws** an exception --- crash unless you handle it.
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+std::string a = "Ice";
+std::string b =
+    a + " " + a + " Baby";
+std::cout << b.size() << "\n";
+```
+]
+.rc[
+1. 8
+1. 11
+1. 12
+1. 13
+1. Ben got this wrong
+]
+
+---
+# Where is the bug?
+
+```cpp
+std::string greeting = "Hello, " + "world!";
+```
+
+1. Missing `#include <string>`
+1. `std::string` does not allow `+`
+1. Both operands are literals; one side must be `std::string`
+1. `+` should be `+=`
+1. Ben got this wrong
+
+---
+# Why is getline returning empty after cin >>?
+.lc[
+```cpp
+int age;
+std::string name;
+std::cin >> age;
+std::getline(std::cin, name);
+// name is empty!
+```
+]
+.rc[
+1. `getline` only reads one word
+1. The newline left by `>>` was consumed by `getline`
+1. `std::cin` was closed
+1. `getline` does not work with string
+1. Ben got this wrong
+]
+
+---
+# Key Points
+
+- `std::string` lives in `<string>`
+- `.size()` / `.length()` are equal; both return `size_t`
+- `+` needs at least one `std::string` operand
+- Comparisons are ASCII, character by character
+- `[]` is fast, `.at()` is safe
+- `std::getline` reads lines; watch the `cin >>` newline trap
+- `std::stoi`/`std::stod`/`std::to_string` bridge strings and numbers
+
+**Read:** chapter 4 of *Starting C++*. **Do:** exercises 1-9.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

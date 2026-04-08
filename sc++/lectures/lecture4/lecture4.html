@@ -1,0 +1,340 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 4
+
+Expressions
+
+---
+# Where is the bug?
+
+```cpp
+std::string greeting = "Hello, " + "world!";
+```
+
+1. Missing `#include <string>`
+1. `std::string` does not allow `+`
+1. Both operands are literals; one side must be `std::string`
+1. `+` should be `+=`
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Use `+ - * / %` and avoid the integer division trap
+- Build boolean expressions with `&& || !`
+- Lean on **short-circuit evaluation**
+- Distinguish prefix (`++n`) and postfix (`n++`)
+- Use compound assignment (`+=`, `-=`, ...) and preview bitwise operators
+- Use the ternary `?:`
+- Apply operator precedence --- and parenthesize when in doubt
+
+---
+# Assignment
+.lc[
+```cpp
+int jumps = 0;
+jumps = 42;
+jumps = jumps + 1;    // 43
+```
+]
+.rc[
+- `=` evaluates the right side, then stores in the left
+- You can use the variable itself on the right
+
+**Trap:** `if (x = 5)` **assigns** 5 and then tests truthy. Use `==`. `-Wall` will warn you.
+]
+
+---
+# Arithmetic Operators
+.lc[
+```cpp
+7 + 3    // 10
+7 - 3    //  4
+7 * 3    // 21
+7 / 3    //  2  <-- integer division!
+7 % 3    //  1  <-- modulo, ints only
+```
+]
+.rc[
+- Integer `/` **truncates** (does not round)
+- `%` is integer-only (no `%` on `double`)
+- Use a `double` operand to get the decimals
+]
+
+---
+# Integer Division Trap
+.lc[
+```cpp
+int wrong = 7 / 3;     // 2
+double ok = 7.0 / 3;   // 2.333...
+double ok2 = 7 / 3.0;  // 2.333...
+```
+]
+.rc[
+- Two `int` operands --> truncated result
+- One `double` --> the compiler promotes and you get the decimals
+
+**Trap:** Integer `/` by zero is undefined behavior. Always check the divisor.
+]
+
+---
+# Modulo for Even/Odd
+.lc[
+```cpp
+if (number % 2 == 0) {
+    std::cout << "even\n";
+} else {
+    std::cout << "odd\n";
+}
+```
+]
+.rc[
+- `%` gives the remainder of integer division
+- `n % 2 == 0` is the idiomatic even test
+- Works for any integer type
+- No `%` for floats
+]
+
+---
+# Comparison Operators
+
+| expression | result |
+|---|---|
+| `5 == 5` | `true` |
+| `5 != 3` | `true` |
+| `3 < 5` | `true` |
+| `3 >= 5` | `false` |
+
+- Always produce a `bool`
+- Work on strings too (character by character, from chapter 3)
+
+---
+# Logical Operators
+.lc[
+```cpp
+int pencils = 2;
+int pens = 1;
+bool has_calc = true;
+bool can_take_test =
+    (pencils == 2 || pens == 1)
+    && !has_calc;
+```
+]
+.rc[
+- `&&` AND, `||` OR, `!` NOT
+- `!` binds **tighter** than `&&` and `||`
+- Use **parentheses** when mixing operators
+]
+
+---
+# Short Circuit Evaluation
+.lc[
+```cpp
+int x = 0;
+if (x != 0 && 10 / x > 2) {
+    // safe --- never divides
+}
+```
+]
+.rc[
+- `&&` stops at the first **false**
+- `||` stops at the first **true**
+- This is a **guarantee**, not an optimization
+- Use it for **guard conditions**
+]
+
+---
+# Increment and Decrement
+.lc[
+```cpp
+int a = 5;
+int b = ++a;
+// a is 6, b is 6
+
+int c = a++;
+// c is 6, then a becomes 7
+```
+]
+.rc[
+- Prefix `++a` --- increment, return new value
+- Postfix `a++` --- return old value, then increment
+- Standalone `n++;` and `++n;` are identical
+
+**Tip:** Prefer prefix as a habit --- matters for iterators.
+]
+
+---
+# Compound Assignment
+.lc[
+```cpp
+int score = 100;
+score += 50;   // 150
+score -= 25;   // 125
+score *= 2;    // 250
+```
+]
+.rc[
+- `+=`, `-=`, `*=`, `/=`, `%=`
+- Also `&=`, `|=`, `^=`, `<<=`, `>>=`
+- Pure shorthand --- no behavior difference from `x = x + y`
+]
+
+---
+# Bitwise Operators (Preview)
+.lc[
+```cpp
+0b1100 & 0b1010   // 0b1000
+0b1100 | 0b1010   // 0b1110
+0b1100 ^ 0b1010   // 0b0110
+~0b1100           // flips all bits
+0b0001 << 2       // 0b0100
+0b1000 >> 2       // 0b0010
+```
+]
+.rc[
+- `0b` prefix for binary literals
+- Chapter 7 covers these in detail
+
+**Trap:** `&&` is not `&`, `||` is not `|`.
+
+**Trap:** `^` is **not** exponentiation! `2^2` is 0, not 4.
+]
+
+---
+# The Ternary Operator
+.lc[
+```cpp
+int temperature = 30;
+std::string weather =
+    (temperature > 25)
+        ? "hot"
+        : "cool";
+```
+]
+.rc[
+- `condition ? true_value : false_value`
+- Equivalent to `if/else`, but a single **expression**
+- Best for short, obvious choices
+- Use `if/else` when logic gets hairy
+]
+
+---
+# Operator Precedence --- The Classic Trap
+.lc[
+```cpp
+// BUG: parses as
+// flags & (0x02 == 0x02)
+if (flags & 0x02 == 0x02) { }
+
+// CORRECT
+if ((flags & 0x02) == 0x02) { }
+```
+]
+.rc[
+- Comparison (`==`) binds **tighter** than bitwise (`&`)
+- Multiplicative binds tighter than additive
+- Assignment is **lower** than almost everything
+
+**Tip:** When in doubt, parenthesize. No bonus points for memorizing the table.
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+int a = 10;
+int b = a++;
+int c = ++a;
+std::cout << a << " "
+          << b << " "
+          << c << "\n";
+```
+]
+.rc[
+1. `10 10 11`
+1. `11 10 11`
+1. `12 10 12`
+1. `12 11 12`
+1. Ben got this wrong
+]
+
+---
+# Why does this not crash?
+.lc[
+```cpp
+int x = 0;
+bool ok = (x != 0) && (100 / x > 5);
+```
+]
+.rc[
+1. The compiler optimizes the divide
+1. Division by zero is actually fine
+1. Short-circuit --- `&&` stops after the first false
+1. Nothing runs; it is just a declaration
+1. Ben got this wrong
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+int score = 85;
+std::string grade =
+    (score >= 90) ? "A"
+  : (score >= 80) ? "B"
+  : (score >= 70) ? "C"
+  :                 "F";
+std::cout << grade << "\n";
+```
+]
+.rc[
+1. `A`
+1. `B`
+1. `C`
+1. `F`
+1. Ben got this wrong
+]
+
+---
+# Key Points
+
+- `=` stores, `==` compares --- do not confuse them
+- Integer `/` truncates; use a `double` operand for real division
+- `%` is integer only
+- `&&` and `||` short-circuit --- use it for guards
+- Prefix vs postfix matters inside an expression
+- Comparison binds tighter than bitwise --- parenthesize
+- When in doubt, **parenthesize**
+
+**Read:** chapter 5 of *Starting C++*, `if` and `while` sections only.
+**Do:** exercises 1, 5, 7.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
