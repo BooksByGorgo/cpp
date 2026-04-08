@@ -109,6 +109,42 @@ int main()
 }
 ```
 
+**8. Think about it: What is the difference between `std::endl` and `"\n"`?**
+
+Both write a newline character, so the cursor moves to the next line in either case.
+The difference is that `std::endl` *also* flushes the output buffer.
+`"\n"` is just a character --- the runtime is free to keep it (and everything before it) sitting in the buffer until the buffer fills up or the program flushes it some other way (program exit, `std::cin >>`, an explicit `std::cout.flush()`, etc.).
+
+When does the difference matter?
+Anywhere you need the user to see output *right now*, before the next thing happens: progress messages during a long computation, prompts that come before a `std::cin`, log lines you want to read while a program is still running, and so on.
+For most everyday output the difference is invisible because the buffer is flushed often enough on its own, and `"\n"` is faster (no flush).
+
+**9. Where is the bug? "Loading..." does not appear until the program exits.**
+
+`std::cout` is buffered.
+`"Loading..."` has no newline at the end and nothing in the program flushes the buffer, so the characters sit in `std::cout`'s buffer through the long computation and only get written when the program exits and the buffer is finally flushed.
+
+The fix is to flush the buffer explicitly so the message reaches the terminal before the computation runs:
+
+```cpp
+std::cout << "Loading..." << std::endl;
+// or
+std::cout << "Loading..." << std::flush;
+```
+
+Either change makes "Loading..." appear immediately.
+
+**10. Reading "Como estas" with `std::cin >>` vs `std::getline`.**
+
+With `std::cin >> greeting;` the program prints `[Como]`.
+The `>>` operator on `std::string` reads characters until it sees whitespace, so it stops at the space between `Como` and `estas` and only the first word ends up in `greeting`.
+The rest of the line (` estas\n`) is left sitting in the input buffer.
+
+With `std::getline(std::cin, greeting);` the program prints `[Como estas]`.
+`std::getline` reads characters until it sees a newline (which it consumes but does not store), so the entire `Como estas` becomes one string, spaces and all.
+
+Use `>>` when you want to read one whitespace-delimited token; use `std::getline` when you want a whole line of input including any internal spaces.
+
 # Chapter 2: Variables
 
 **1. On a system where `int` is 4 bytes, what is `sizeof(scores)` for `int scores[10]`?**
@@ -247,6 +283,37 @@ int main()
 `std::numeric_limits<double>::min()` is *not* a large negative number.
 It returns the smallest *positive* normalized `double` value (approximately 2.2e-308).
 To get the most negative `double`, use `std::numeric_limits<double>::lowest()`.
+
+**10. What does the `auto` example print, and what types are deduced?**
+
+It prints `42 42 8 8.4`.
+
+- `auto a = 42;` deduces `int` (the literal `42` is `int`).
+- `auto b = 42.0;` deduces `double` (the literal `42.0` is `double`).
+- `auto c = 42 / 5;` deduces `int`.
+  Both operands are `int`, so this is integer division: 42 / 5 == 8.
+- `auto d = 42.0 / 5;` deduces `double`.
+  One operand is `double`, so the other is converted and the division is floating point: 42.0 / 5 == 8.4.
+
+`auto` is convenient, but you have to know the rules of the right-hand side to predict the type.
+
+**11. Calculation: `grid[1][2]`, `sizeof(grid)`, total elements.**
+
+- `grid[1][2]` is `6`. `grid[1]` is the second row `{4, 5, 6, 7}`, and index `2` of that row is `6`.
+- `sizeof(grid)` is `48` bytes. The grid has 3 * 4 == 12 `int` elements, and `int` is 4 bytes, so 12 * 4 == 48.
+- The grid holds 12 `int` elements total.
+
+**12. What does the `unsigned char x = 250; x = x + 10;` example print?**
+
+It prints `4`.
+
+`x` is an 8-bit `unsigned char`, so it can hold values from 0 to 255.
+The arithmetic `x + 10` would be 260, which does not fit in 8 bits.
+For unsigned types this is **wraparound**: the value goes off the top end and reappears at 0, so 260 becomes 260 - 256 = 4.
+This is well-defined behavior for unsigned types --- the standard guarantees the result is taken modulo 2^N.
+(Signed integer overflow is **undefined** behavior, which you will learn more about in Chapter 7.)
+
+The `static_cast<int>(x)` is just so `std::cout` prints `x` as a number instead of as a character; without it, `x` would be printed as the unprintable character with code 4.
 
 # Chapter 3: Strings
 
@@ -394,6 +461,67 @@ int main()
 }
 ```
 
+**10. What does the `lyric.replace(0, 3, "Pop")` example print?**
+
+It prints:
+
+```
+Pop bop, ba duba dop
+```
+
+`replace(pos, len, str)` removes `len` characters starting at index `pos` and inserts `str` in their place.
+Here it removes the 3 characters `"Mmm"` starting at index 0 and inserts `"Pop"`, leaving the rest of the string unchanged.
+Note that the inserted string does not have to be the same length as the removed range.
+
+**11. What does the `substr` example print?**
+
+It prints:
+
+```
+Wann
+nabe
+nabe
+```
+
+- `title.substr(0, 4)` extracts 4 characters starting at index 0: `"Wann"`.
+- `title.substr(3)` (no length argument) extracts everything from index 3 to the end of the string: `"nabe"`.
+- `title.substr(3, 100)` asks for 100 characters starting at index 3, but there are only 4 characters left in the string.
+  `substr` does not crash or throw --- it silently clamps the requested length to whatever is available, so you get `"nabe"` again.
+
+(If the *starting* index were past the end of the string, `substr` would throw `std::out_of_range`. Only an over-long *length* is silently clamped.)
+
+**12. Think about it: case-sensitive comparison `"Wonderwall"` vs `"wonderwall"`.**
+
+It prints:
+
+```
+0
+1
+```
+
+`std::string` comparison compares characters by their numeric (ASCII) values.
+`'W'` is ASCII 87 and `'w'` is ASCII 119, so the very first character of `a` is *less than* the first character of `b`, which makes the entire string `a` less than `b`.
+Equality (`==`) returns `0` (false) because the first characters differ; ordering (`<`) returns `1` (true) because uppercase letters come before lowercase ones in ASCII.
+
+To compare case-insensitively you have to normalize the case yourself first --- for example, copy both strings, convert each character with `std::tolower` from `<cctype>`, then compare:
+
+```cpp
+#include <cctype>
+
+std::string lower(std::string s)
+{
+    for (char &c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return s;
+}
+
+bool equal_ignore_case(const std::string &x, const std::string &y)
+{
+    return lower(x) == lower(y);
+}
+```
+
+`std::string` has no built-in case-insensitive compare; you build it yourself like this.
+
 # Chapter 4: Expressions
 
 **1. What is the difference between `7 / 2` and `7.0 / 2` in C++? Why does it matter?**
@@ -535,6 +663,38 @@ int main()
     return 0;
 }
 ```
+
+**10. What does the compound-assignment example print?**
+
+It prints `0`.
+
+| Line       | New value of `x` |
+|:-----------|:----------------:|
+| `x = 10`   | 10               |
+| `x += 5`   | 15               |
+| `x *= 2`   | 30               |
+| `x -= 3`   | 27               |
+| `x /= 4`   | 6 (integer div)  |
+| `x %= 5`   | 1                |
+
+Wait --- 6 % 5 is 1, not 0.
+Trace it again carefully: 10 + 5 = 15, 15 * 2 = 30, 30 - 3 = 27, 27 / 4 = 6 (integer division drops the remainder), 6 % 5 = 1.
+The program prints `1`.
+
+**11. Think about it: precedence of `a < b && c == d || !e`.**
+
+Operator precedence in this expression, from highest to lowest:
+
+1. `!e` (unary NOT) is evaluated first.
+2. `a < b` and `c == d` (relational and equality) are evaluated next.
+3. `a < b && c == d` (logical AND) binds more tightly than `||`.
+4. `... || !e` (logical OR) is evaluated last.
+
+So C++ reads it as `((a < b) && (c == d)) || (!e)`.
+
+The explicit version is preferable because it costs nothing to read (no precedence rules to recall) and it removes any temptation to "fix" it later by reordering operators.
+You may remember the precedence rules today; the next reader of the code (including future-you) might not.
+The CLAUDE.md style guide for this book even has a tip recommending parentheses whenever you mix logical operators for exactly this reason.
 
 # Chapter 5: Control Flow
 
@@ -729,6 +889,110 @@ int main()
     return 0;
 }
 ```
+
+**9. What does the nested-loop triangle program print?**
+
+The first version prints
+
+```
+*
+**
+***
+```
+
+The outer loop runs `row` from 1 to 3 and the inner loop prints `row` stars on each line.
+
+Replacing the inner loop with `for (int col = 1; col <= 4 - row; ++col)` flips the pattern, because now each row prints `4 - row` stars: 3 on the first row, 2 on the second, 1 on the third.
+
+```
+***
+**
+*
+```
+
+**10. What does the range-based `for` loop print, and why use `const std::string &`?**
+
+It prints:
+
+```
+- Wonderwall
+- Creep
+- Linger
+```
+
+Using `const std::string &` instead of plain `std::string` avoids copying each string for every iteration --- the loop binds the reference directly to the element in the vector.
+The `const` makes it clear that the loop body will not modify the elements (and lets the compiler help enforce that).
+For a tiny type like `int` the copy is free and you can just write `int x : numbers`, but for `std::string`, large structs, or anything that owns memory, prefer `const &`.
+
+**11. Write a program that uses `break` to find the first negative number in an array.**
+
+```cpp
+#include <iostream>
+
+int main()
+{
+    int values[] = {3, 7, 2, -5, 4, -1};
+    int size = sizeof(values) / sizeof(values[0]);
+
+    int found_index = -1;
+    for (int i = 0; i < size; ++i) {
+        if (values[i] < 0) {
+            found_index = i;
+            break;
+        }
+    }
+
+    if (found_index >= 0) {
+        std::cout << "first negative is " << values[found_index]
+                  << " at index " << found_index << "\n";
+    } else {
+        std::cout << "none\n";
+    }
+
+    return 0;
+}
+```
+
+`break` exits the `for` loop the moment we find a negative element, so we do not waste time scanning the rest of the array.
+The sentinel `found_index = -1` lets us tell "found nothing" apart from "found something at index 0" after the loop.
+
+**12. Think about it: intentional `switch` fall-through.**
+
+Fall-through is useful when several cases should run the same code.
+A common example is grouping characters that should be treated identically:
+
+```cpp
+switch (c) {
+case 'a':
+case 'e':
+case 'i':
+case 'o':
+case 'u':
+    std::cout << "vowel\n";
+    break;
+default:
+    std::cout << "consonant\n";
+    break;
+}
+```
+
+Each empty `case` falls through into the next one, so any vowel ends up running the same body.
+This pattern is so idiomatic that no annotation is needed; the empty cases make the intent obvious.
+
+When the fall-through is between *non-empty* cases, the C++17 attribute `[[fallthrough]]` tells both the compiler and human readers that the missing `break` is intentional:
+
+```cpp
+switch (mode) {
+case 1:
+    setup();
+    [[fallthrough]];
+case 2:
+    run();
+    break;
+}
+```
+
+Without `[[fallthrough]]`, modern compilers warn about the missing `break` because that is almost always a bug.
 
 # Chapter 6: Functions
 
@@ -960,6 +1224,20 @@ inline int double_it(int n) {
 The compiler produces a warning because `compute` is marked `[[nodiscard]]` and the return value of `compute(6, 7)` is discarded.
 The program still compiles, but the warning tells you that ignoring the result is almost certainly a bug.
 
+**13. Pass `Album` by value vs by `const &`.**
+
+Both versions compile and print the same thing, but `print_album_ref(const Album &a)` is preferred for a struct like `Album`.
+
+The reason is *copying*.
+`print_album(Album a)` makes a complete copy of the `Album` struct every time it is called: a copy of the `int year`, plus full copies of the two `std::string` members (which each allocate and copy their character data).
+`print_album_ref(const Album &a)` does none of that --- it just makes the parameter a reference to the existing `Album`, with no copy at all.
+The `const` is what makes it safe and self-documenting: the function promises not to modify the caller's `Album`, and the compiler enforces that promise.
+
+For a function that takes a single `int` the answer is the *opposite*: just pass it by value.
+An `int` is the size of a CPU register; copying it is essentially free, and using a reference (`const int &`) actually adds a level of indirection that the function then has to follow.
+The rule of thumb is "pass cheap-to-copy types by value, pass everything else by `const &`."
+That cutoff varies by platform, but for this book the practical guidance is: built-in scalar types (`int`, `double`, `bool`, `char`, pointers) by value, and `std::string`, `std::vector`, structs, and other "owns memory" types by `const &`.
+
 # Chapter 7: Numbers
 
 **1. Convert the decimal number `200` to binary, hexadecimal, and octal by hand. Verify with a C++ program.**
@@ -1112,6 +1390,79 @@ std::println("{} + {} = {}",
     static_cast<int>(a), static_cast<int>(b), static_cast<int>(sum));
 // 250 + 20 = 14
 ```
+
+**11. What does the digit-separator example print? Are the separators part of the value?**
+
+It prints `1000000 16711935 61680`.
+
+Digit separators (`'`) are *not* part of the stored value --- they exist purely to make literals easier to read in the source code.
+The compiler ignores them entirely, so `1'000'000` is exactly the same value as `1000000`, `0xFF'00'FF` is exactly the same as `0xFF00FF`, and so on.
+You can place them anywhere between digits and group however you like.
+
+**12. What does the `std::stoi` + `pos` chain print, and what is `pos` after each call?**
+
+It prints `42 100 255`.
+
+| Call                                           | Returns | `pos` after the call            |
+|:-----------------------------------------------|:-------:|:--------------------------------|
+| `std::stoi(input, &pos)` on `"42 100 255"`     | `42`    | `2` --- index of the space after `42` |
+| `std::stoi(input.substr(2), &pos)` on `" 100 255"` | `100`   | `4` --- 1 leading space + `100` is 4 chars |
+| `std::stoi(input.substr(6))` on `" 255"`       | `255`   | (not requested)                 |
+
+Each call skips leading whitespace, parses as much as it can, and stops at the first non-digit character.
+The `pos` parameter is how the caller learns where parsing stopped, which is what makes it possible to chain multiple parses through one string.
+
+**13. Calculation: bitwise on 8-bit values.**
+
+```
+0b1010'1100 & 0b1111'0000 = 0b1010'0000 = 160
+0b1010'1100 | 0b0000'1111 = 0b1010'1111 = 175
+0b1010'1100 ^ 0b1111'1111 = 0b0101'0011 =  83
+```
+
+XOR with all-ones flips every bit --- it is the same as the bitwise complement (`~`) for that width.
+The result is the *one's complement* of the original value.
+
+**14. Calculation: `sizeof` and ranges on a typical 64-bit Linux system.**
+
+| Type        | `sizeof` | Largest unsigned value |
+|:------------|:--------:|:-----------------------|
+| `char`      | 1        | 2^8 - 1 = 255          |
+| `short`     | 2        | 2^16 - 1 = 65,535      |
+| `int`       | 4        | 2^32 - 1 (~4.3 billion) |
+| `long`      | 8        | 2^64 - 1 (~1.8 * 10^19) |
+| `long long` | 8        | 2^64 - 1 (~1.8 * 10^19) |
+
+Note that on Linux/macOS `long` is 8 bytes but on 64-bit Windows `long` is still 4 bytes.
+This is exactly why `long` should be avoided when you need a specific width --- use a fixed-width type like `int64_t` from `<cstdint>` instead.
+
+**15. Write a program that prints an integer in decimal, hex, octal, binary, and as a string.**
+
+```cpp
+#include <print>
+#include <iostream>
+#include <string>
+
+int main()
+{
+    std::print("Enter an integer: ");
+    int n{};
+    std::cin >> n;
+
+    std::println("decimal: {}",   n);
+    std::println("hex:     {:#x}", n);
+    std::println("octal:   {:#o}", n);
+    std::println("binary:  {:#b}", n);
+
+    std::string s = std::to_string(n);
+    std::println("string:  \"{}\" (length {})", s, s.size());
+
+    return 0;
+}
+```
+
+The `#` flag adds the `0x`, `0`, and `0b` prefixes so the bases are obvious.
+`std::to_string` always produces the *decimal* string form of the number; if you want a hex string, use `std::format("{:x}", n)` instead.
 
 # Chapter 8: Containers
 
@@ -1281,6 +1632,71 @@ It prints: `20 25 30 40 50`
 
 The size is 3 (three elements were added).
 The capacity is at least 100 (the `reserve` call preallocated room for 100 elements, and adding 3 elements does not exceed that, so no reallocation occurs).
+
+**13. Where is the bug? `push_back` inside an iterator loop.**
+
+The bug is **iterator invalidation**.
+When `push_back` runs out of capacity, the vector reallocates its storage to a new (larger) buffer and copies the elements over.
+After that happens, every iterator, pointer, and reference into the old storage --- including the loop variable `it` --- is dangling.
+The next `++it` and `*it` then access freed memory, which is undefined behavior.
+
+You may "get away with it" sometimes if the vector happens to have spare capacity at the moment you call `push_back`, but the moment it has to grow, the loop blows up.
+
+Two safe ways to fix it:
+
+```cpp
+// 1. Collect the work first, then apply it after the loop ends.
+std::vector<int> to_add;
+for (int x : v) {
+    if (x == 3) to_add.push_back(99);
+}
+for (int x : to_add) v.push_back(x);
+```
+
+```cpp
+// 2. Use indices, and re-read v.size() each iteration. Indices are
+//    not invalidated by reallocation the way iterators are.
+for (std::size_t i = 0; i < v.size(); ++i) {
+    if (v[i] == 3) v.push_back(99);
+}
+```
+
+The general rule: do not modify a container's structure while iterating over it. If you need to add or remove elements based on what you find, build a list of changes first and apply them afterward.
+
+**14. Think about it: `std::array<double, 3>` vs `std::vector<double>`.**
+
+The size `3` is part of the *type* of `std::array`.
+A function that takes `const std::array<double, 3> &` will only accept a 3-element array; passing a `std::array<double, 4>` is a compile error, because `std::array<double, 3>` and `std::array<double, 4>` are completely different types.
+That is exactly the point: the compiler statically guarantees that the function will receive 3 doubles, no more, no less.
+
+`const std::vector<double> &` is more flexible --- it accepts any size --- but the cost is that the function has to check `v.size()` at run time and decide what to do if it is not 3.
+There is no compile-time guarantee that the input is the right shape.
+
+Use `std::array<T, N>` when the size is known and fixed at compile time and you want the compiler to enforce it.
+Use `std::vector<T>` when the size is determined at run time or might change.
+
+**15. Calculation: `reserve(8)` then 12 `push_back` calls.**
+
+After `reserve(8)`: `size() == 0`, `capacity() == 8`.
+
+| `push_back` # | size | capacity | reallocated? |
+|:-------------:|:----:|:--------:|:------------:|
+| 1             | 1    | 8        | no           |
+| 2             | 2    | 8        | no           |
+| 3             | 3    | 8        | no           |
+| 4             | 4    | 8        | no           |
+| 5             | 5    | 8        | no           |
+| 6             | 6    | 8        | no           |
+| 7             | 7    | 8        | no           |
+| 8             | 8    | 8        | no           |
+| 9             | 9    | 16       | **yes**      |
+| 10            | 10   | 16       | no           |
+| 11            | 11   | 16       | no           |
+| 12            | 12   | 16       | no           |
+
+The 9th `push_back` is the only one that reallocates: capacity was full at 8, and the doubling rule grows it to 16.
+That is also the only call where existing iterators, pointers, and references into the vector are invalidated.
+The 1st through 8th calls only write into already-reserved storage, and the 10th through 12th only fill in the freshly-allocated space, so iterators obtained *after* the reallocation are still valid.
 
 # Chapter 9: I/O Streams
 
@@ -1468,6 +1884,63 @@ The loop iterates **5** times, and the final value of `count` is **5**.
 `iss >> word` reads one whitespace-delimited token per iteration: "Closing", "Time", "1998", "Smooth", "1999".
 The `>>` operator splits on whitespace, so each word and number is a separate token.
 
+**10. What does the bidirectional `std::stringstream` example print?**
+
+It prints `[year] [1999]`.
+
+After `ss << "year " << 1999;`, the stream contains the characters `year 1999` in its internal buffer.
+The first `ss >> word` reads up to the next whitespace, so `word` becomes `"year"` and the stream's read position now sits on the space.
+The second `ss >> year` skips the leading whitespace and parses `1999` into the `int year`.
+A `std::stringstream` is just a `std::ios::in | std::ios::out` stream backed by a string, so the same object can both produce text (via `<<`) and consume text (via `>>`).
+
+**11. Calculation: file open mode flags.**
+
+Each flag is one bit in a `std::ios_base::openmode` bitmask, so combinations are made by OR'ing them together.
+You use `|` because that is the bitwise OR operator (the same one introduced in Chapter 7) --- it sets all the bits that are on in either operand, which is exactly what "this mode AND that mode" means.
+You cannot use `+` or `,` because those would either give the wrong numeric value or not produce a valid `openmode` at all.
+
+| Expression                                   | What it asks for                                            |
+|:---------------------------------------------|:------------------------------------------------------------|
+| `std::ios::out`                              | open for writing (the default for `ofstream`)               |
+| `std::ios::out | std::ios::app`              | open for writing in **append** mode (do not truncate)       |
+| `std::ios::out | std::ios::trunc`            | open for writing and **truncate** the file to zero length   |
+| `std::ios::in | std::ios::out | std::ios::binary` | open for reading **and** writing in **binary** mode (no newline translation) |
+
+**12. Write a program that reads `oldies.txt`, prints each line, and reports errors on `std::cerr`.**
+
+```cpp
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+
+int main()
+{
+    std::ifstream in("oldies.txt");
+    if (!in) {
+        std::cerr << "could not open oldies.txt for reading\n";
+        return 1;
+    }
+
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(in, line)) {
+        lines.push_back(line);
+    }
+
+    for (const std::string &l : lines) {
+        std::cout << l << "\n";
+    }
+    return 0;
+}
+```
+
+`std::cerr` matters even though it goes to the same terminal by default for two reasons.
+First, `std::cerr` is **unbuffered**, so error messages reach the user immediately even if the program is about to crash.
+Second, on the command line `std::cout` and `std::cerr` are independently redirectable: a user running `./program > out.txt` only sends standard output to the file, so error messages still appear on the screen.
+If the program had written errors to `std::cout` instead, they would have ended up silently in `out.txt`.
+Sending data to `std::cout` and errors to `std::cerr` is the convention every Unix tool follows for exactly this reason.
+
 # Chapter 10: std::format and std::print
 
 **1. What does `std::format("{:>8.2f}", 3.1)` produce? How many characters wide is the result?**
@@ -1563,6 +2036,118 @@ int main()
     return 0;
 }
 ```
+
+**7. What does the indexed-placeholder example print?**
+
+The first call prints:
+
+```
+I Want It That Way - Backstreet Boys (1999)
+```
+
+The placeholders `{1} - {0} ({2})` reorder the arguments at format time: `{0}` is the first argument (`"Backstreet Boys"`), `{1}` is the second (`"I Want It That Way"`), `{2}` is the third (`1999`).
+
+Replacing every placeholder with `{}` and using the original argument order prints:
+
+```
+Backstreet Boys - I Want It That Way (1999)
+```
+
+The rule is: in any single format string, all placeholders must be either *all implicit* (`{}`, `{}`, `{}`) or *all indexed* (`{0}`, `{1}`, `{2}`).
+You cannot mix the two styles.
+A format string like `"{} - {1} - {2}"` is rejected at compile time --- pick one style and stick with it.
+
+**8. Calculation: sign and zero-padding format specs.**
+
+| Expression                  | Result    | Notes                                                       |
+|:----------------------------|:----------|:------------------------------------------------------------|
+| `std::format("{:+d}", 42)`  | `"+42"`   | `+` flag forces a sign on positive numbers                  |
+| `std::format("{:+d}", -42)` | `"-42"`   | negatives still get a `-`                                   |
+| `std::format("{: d}", 42)`  | `" 42"`   | space flag puts a space where `+` would go on positives     |
+| `std::format("{:05d}", 42)` | `"00042"` | width 5, zero-padded; `42` becomes `00042`                  |
+| `std::format("{:+06d}", -42)` | `"-0042"` | width 6, zero-padded, signed; the `-` counts toward the width |
+
+The width includes the sign character, so `"{:+06d}"` on `-42` is `-` followed by 4 zeros and then `42`, totaling 6 characters.
+
+**9. What does the `#` and `08b` example print, and what do those flags mean?**
+
+It prints:
+
+```
+0xff
+0377
+0b11111111
+11111111
+```
+
+- `#` is the **alternate form** flag.
+  For `x` it prepends `0x`, for `o` it prepends `0`, and for `b` it prepends `0b`.
+  Without `#` you would just see `ff`, `377`, and `11111111`.
+- `08b` means width 8, zero-padded, base 2.
+  `255` already takes 8 bits to write in binary, so the result is `11111111` with no padding needed.
+  If the value were `5`, the same spec would produce `00000101`.
+
+**10. What does the string-precision example print, and what does precision mean for strings?**
+
+It prints:
+
+```
+[Smell]
+[Smell     ]
+[     Smell]
+```
+
+For a string argument, precision (`.5`) is the **maximum number of characters to use from the string** --- it truncates anything longer.
+That is the opposite of how precision works for floating-point numbers, where `.5` means "show 5 digits after the decimal point" (which can make the result *longer*, not shorter).
+
+Combined with width and alignment:
+
+- `{:.5}` is just "at most 5 characters", with no width.
+- `{:<10.5}` is "at most 5 characters, left-aligned in a field of width 10", padded with spaces on the right.
+- `{:>10.5}` is the same thing right-aligned.
+
+So the string is first truncated to `"Smell"` and then placed in a 10-wide field.
+
+**11. Write a program that prints three integers in decimal, hex, and binary.**
+
+```cpp
+#include <print>
+#include <format>
+#include <string>
+
+void show(int n)
+{
+    std::string row = std::format(
+        "{:>6d}  {:#010x}  {:#018b}",
+        n, n, n);
+    std::println("{}", row);
+}
+
+int main()
+{
+    show(42);
+    show(255);
+    show(65'535);
+    return 0;
+}
+```
+
+The format specs do all the work:
+
+- `{:>6d}` --- decimal, right-aligned in a 6-character field.
+- `{:#010x}` --- hex with the `0x` prefix (`#`), zero-padded (`0`) to a total field width of 10.
+  Eight of those characters are the hex digits, the other two are `0x`.
+- `{:#018b}` --- binary with the `0b` prefix, zero-padded to a total field width of 18 (16 bits + the 2-character `0b`).
+
+Output:
+
+```
+    42  0x0000002a  0b0000000000101010
+   255  0x000000ff  0b0000000011111111
+ 65535  0x0000ffff  0b1111111111111111
+```
+
+Notice how a single `std::format` call combines width, alignment, fill, the alternate-form flag, zero padding, and the base specifier all in the same string.
 
 # Chapter 11: Exceptions
 
@@ -1783,6 +2368,88 @@ Output:
 sqrt(25) = 5
 Error: cannot take square root of negative number
 ```
+
+**10. Where is the bug? `catch(...)` before `catch(const std::out_of_range &)`.**
+
+The program prints `anything`, and the `out_of_range` handler is never reached.
+
+`catch` clauses are matched **in source order**, top to bottom.
+`catch(...)` matches *anything*, so once it appears at the top of the list, no later handler can ever fire --- the more specific `catch(const std::out_of_range &)` is dead code.
+
+The fix is to put the most specific handlers first and `catch(...)` last as a final safety net:
+
+```cpp
+try {
+    throw std::out_of_range("nope");
+}
+catch (const std::out_of_range &e) {
+    std::cout << "out_of_range: " << e.what() << "\n";
+}
+catch (const std::exception &e) {       // any other std exception
+    std::cout << "std::exception: " << e.what() << "\n";
+}
+catch (...) {                            // truly unknown
+    std::cout << "unknown exception\n";
+}
+```
+
+This is the standard layering: type-specific, then `std::exception` for everything from the standard library, then `catch(...)` to make sure no exception escapes the function.
+With this ordering, the program now prints `out_of_range: nope`.
+
+**11. Write `parse_age` that translates `std::stoi` failures into specific exceptions.**
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+int parse_age(const std::string &s)
+{
+    int n = 0;
+    try {
+        n = std::stoi(s);
+    }
+    catch (const std::invalid_argument &) {
+        throw std::invalid_argument("not a number");
+    }
+    catch (const std::out_of_range &) {
+        throw std::out_of_range("age must be 0..150");
+    }
+
+    if (n < 0 || n > 150) {
+        throw std::out_of_range("age must be 0..150");
+    }
+    return n;
+}
+
+int main()
+{
+    for (const std::string &s : {"42", "abc", "-1"}) {
+        try {
+            int age = parse_age(s);
+            std::cout << s << " -> " << age << "\n";
+        }
+        catch (const std::invalid_argument &e) {
+            std::cout << s << " -> invalid: " << e.what() << "\n";
+        }
+        catch (const std::out_of_range &e) {
+            std::cout << s << " -> range: " << e.what() << "\n";
+        }
+    }
+    return 0;
+}
+```
+
+Output:
+
+```
+42 -> 42
+abc -> invalid: not a number
+-1 -> range: age must be 0..150
+```
+
+The `parse_age` function catches `std::stoi`'s exceptions and re-throws them with our own messages, then does the `[0, 150]` range check itself.
+The caller in `main` distinguishes the two error categories with separate `catch` clauses, so different error types get different messages without using a single generic `catch(...)`.
 
 # Chapter 12: Classes
 
@@ -2092,6 +2759,90 @@ int main()
 }
 ```
 
+**14. Where is the bug? `p.tracks.push_back(...)`.**
+
+The compiler rejects the program with something like:
+
+```
+error: 'std::vector<...> Playlist::tracks' is private within this context
+```
+
+`tracks` is in the `private:` section of `Playlist` (the default for `class`), so code outside of `Playlist` cannot touch it.
+This is exactly the design rule access specifiers exist to enforce: the only way to interact with a class's data is through its `public` members.
+
+The smallest change that compiles is to make `tracks` public:
+
+```cpp
+class Playlist {
+public:
+    std::vector<std::string> tracks;
+    int size() const { return tracks.size(); }
+};
+```
+
+That works but throws away encapsulation --- `Playlist` no longer controls how its tracks are added or removed.
+The *better* fix is to keep `tracks` private and add a real public method that mediates access:
+
+```cpp
+class Playlist {
+    std::vector<std::string> tracks;
+public:
+    void add(const std::string &track) { tracks.push_back(track); }
+    int  size() const { return tracks.size(); }
+};
+```
+
+Now `Playlist` keeps full control over its internal vector and can later add validation, logging, or change the underlying storage without breaking any caller.
+
+**15. Write a `Builder` with a chainable `add` method.**
+
+```cpp
+#include <iostream>
+#include <vector>
+
+class Builder {
+    std::vector<int> values;
+public:
+    Builder &add(int v) {
+        values.push_back(v);
+        return *this;
+    }
+
+    void print() const {
+        for (int v : values) {
+            std::cout << v << " ";
+        }
+        std::cout << "\n";
+    }
+};
+
+int main()
+{
+    Builder b;
+    b.add(1).add(2).add(3).add(4);
+    b.print();   // 1 2 3 4
+    return 0;
+}
+```
+
+`add` returns `*this` **by reference** so each call hands the *same* `Builder` back to the next call in the chain.
+If `add` returned `*this` by value, each call would build a fresh copy and the chain would be acting on temporary objects --- the original `b` would never get any of the values added past the first one.
+Returning a reference is what makes the fluent interface actually fluent.
+
+**16. Think about it: `explicit operator bool()`.**
+
+`operator bool` is marked `explicit` so the conversion only happens in places where the compiler is *expecting* a bool, not anywhere a `Volume` happens to be used in arithmetic or assignment.
+That avoids the classic "safe bool" footgun where a bool conversion accidentally enables nonsensical comparisons like `volume + 1` or `volume == otherVolume`.
+
+| Call                                          | Compiles? | Why                                                                             |
+|:----------------------------------------------|:---------:|:--------------------------------------------------------------------------------|
+| `(a) if (v) { ... }`                          | yes       | The condition of `if` is a "contextual" bool conversion, which `explicit` allows. |
+| `(b) bool b = v;`                             | **no**    | Implicit copy-initialization to `bool` is not contextual, so `explicit` blocks it. |
+| `(c) bool b2 = static_cast<bool>(v);`         | yes       | An explicit cast asks for the conversion by name, which is exactly what `explicit` permits. |
+| `(d) int n = v;`                              | **no**    | There is no `operator int`, only `operator bool`, and `bool` does not implicitly convert to `int` here without first going through the explicit cast. |
+
+So `explicit operator bool()` lets you write `if (v)`, `while (v)`, `!v`, and so on, while preventing the conversion from sneaking in where you didn't ask for it.
+
 # Chapter 13: Memory Management
 
 **1. What is the difference between stack and heap memory? Give one situation where you would need to use the heap.**
@@ -2257,11 +3008,110 @@ It prints `20`.
 
 ```cpp
 (*ptr).title   // dereference first, then access member
-ptr->title     // arrow operator — same thing, cleaner
+ptr->title     // arrow operator --- same thing, cleaner
 ```
 
 Both expressions access the `title` member of the `Song` that `ptr` points to.
 `ptr->title` is the preferred form.
+
+**11. Where is the bug? `play(Song *song)` with a `nullptr`.**
+
+`play` dereferences `song` (`song->title`) without checking that the pointer is non-null first.
+Calling it with `nullptr` reads from address 0, which is undefined behavior --- on most systems it will crash with a segmentation fault.
+
+The smallest safe change is to check the pointer at the top of the function and either return early or throw, so the program never dereferences a null pointer:
+
+```cpp
+void play(Song *song)
+{
+    if (song == nullptr) {
+        std::cout << "(no song)\n";
+        return;
+    }
+    std::cout << song->title << " (" << song->year << ")\n";
+}
+```
+
+The deeper fix is to use a reference (`Song &`) instead of a pointer when the function never wants to handle "no song", since references cannot be null and the caller is forced to provide a real `Song`.
+
+**12. Think about it: What is RAII?**
+
+RAII --- *Resource Acquisition Is Initialization* --- is the C++ idiom that ties the lifetime of a resource to the lifetime of an object on the stack.
+The constructor of the object **acquires** the resource (memory, a file handle, a lock, etc.), and the destructor **releases** it.
+Because C++ guarantees that destructors run when an object goes out of scope --- whether that happens normally, via an early `return`, or because an exception was thrown --- you cannot accidentally forget to release the resource.
+
+`std::unique_ptr<T>` is the RAII wrapper around `new T(...)` / `delete` for heap memory.
+Its constructor takes ownership of a freshly `new`-allocated pointer, and its destructor calls `delete` for you.
+You never write the matching `delete` yourself, and you cannot leak the memory by taking an early `return`.
+
+Two other RAII types you have already seen:
+
+- **`std::vector<T>`** --- the vector's destructor frees the heap buffer that holds its elements.
+- **`std::ofstream` / `std::ifstream`** --- the destructor closes the underlying file handle, so you do not have to call `.close()` yourself in normal code paths.
+
+Both follow the same pattern: a stack object that owns something on the heap or in the OS, and tears it down automatically when its scope ends.
+
+**13. Where is the bug? `make_playlist` leak.**
+
+The early-return path leaks:
+
+```cpp
+if (fav->size() > 100) {
+    return;            // <-- fav is never deleted
+}
+```
+
+If the string is longer than 100 characters, the function returns *without* running `delete fav`, and the heap object lives forever (until the process exits).
+Adding another `delete` before the `return` would fix this one path, but the next time someone adds a new return statement they would have to remember to do the same thing.
+
+The correct fix is to stop using raw `new` for owning the heap object and let RAII do the cleanup:
+
+```cpp
+#include <memory>
+
+void make_playlist()
+{
+    auto fav = std::make_unique<std::string>("Wonderwall");
+    if (fav->size() > 100) {
+        return;        // unique_ptr's destructor frees the string here
+    }
+    std::cout << *fav << "\n";
+    // and here, when fav goes out of scope normally
+}
+```
+
+Now there is no `delete` to forget, and *every* exit path --- the early `return`, the normal end of the function, even an exception thrown by `std::cout` --- frees the string automatically.
+That is the whole point of RAII.
+
+**14. Write a program that uses `unique_ptr::get()` to call a C-style API.**
+
+```cpp
+#include <iostream>
+#include <memory>
+
+void c_api(int *p)
+{
+    *p += 1;
+}
+
+int main()
+{
+    auto value = std::make_unique<int>(41);
+
+    c_api(value.get());          // hand the raw pointer to the C function
+
+    std::cout << *value << "\n"; // prints 42
+    return 0;
+}
+```
+
+`.get()` returns the raw pointer that the `unique_ptr` is managing without giving up ownership.
+The `unique_ptr` still owns the heap integer; `c_api` only borrows it for the duration of the call.
+
+It is critical that `c_api` does **not** call `delete` on its parameter.
+If it did, the `unique_ptr` would later run its own destructor and call `delete` *again* on the same address --- a classic **double-free** bug, and undefined behavior.
+The rule for raw pointers obtained via `.get()` is "look but do not delete": treat them as observers, never as owners.
+If a function genuinely needs to take ownership instead, hand it the `unique_ptr` itself with `std::move`, which transfers the ownership cleanly.
 
 # Chapter 14: Special Members and Friends
 
@@ -2442,6 +3292,144 @@ int main()
     return 0;
 }
 ```
+
+**10. Write a `Buffer` with all five special members.**
+
+```cpp
+#include <cstring>
+#include <iostream>
+#include <utility>
+
+class Buffer {
+    char *data;
+    std::size_t len;
+public:
+    explicit Buffer(std::size_t n)
+        : data(new char[n]), len(n)
+    {
+        std::cout << "default ctor (size " << len << ")\n";
+    }
+
+    ~Buffer()
+    {
+        std::cout << "dtor (size " << len << ")\n";
+        delete[] data;
+    }
+
+    Buffer(const Buffer &other)
+        : data(new char[other.len]), len(other.len)
+    {
+        std::memcpy(data, other.data, len);
+        std::cout << "copy ctor\n";
+    }
+
+    Buffer &operator=(const Buffer &other)
+    {
+        std::cout << "copy assign\n";
+        if (this != &other) {
+            delete[] data;
+            len = other.len;
+            data = new char[len];
+            std::memcpy(data, other.data, len);
+        }
+        return *this;
+    }
+
+    Buffer(Buffer &&other) noexcept
+        : data(other.data), len(other.len)
+    {
+        other.data = nullptr;
+        other.len  = 0;
+        std::cout << "move ctor\n";
+    }
+
+    Buffer &operator=(Buffer &&other) noexcept
+    {
+        std::cout << "move assign\n";
+        if (this != &other) {
+            delete[] data;
+            data = other.data;
+            len  = other.len;
+            other.data = nullptr;
+            other.len  = 0;
+        }
+        return *this;
+    }
+};
+
+int main()
+{
+    Buffer a(8);                  // default ctor
+    Buffer b = a;                 // copy ctor
+    Buffer c = std::move(a);      // move ctor
+    return 0;                     // dtors for c, b, a (a now owns nothing)
+}
+```
+
+Expected output:
+
+```
+default ctor (size 8)
+copy ctor
+move ctor
+dtor (size 0)
+dtor (size 8)
+dtor (size 8)
+```
+
+Notes:
+
+- The destructor still runs on the moved-from `a`, but its `len` is now `0` and `data` is `nullptr`, so the `delete[]` is a harmless no-op (`delete[] nullptr` is well-defined).
+- Both move operations are marked `noexcept`. That is required if we want `std::vector<Buffer>` to use them during reallocation (see exercise 12).
+- Both assignment operators check `this != &other` to handle the self-assignment case (see exercise 11).
+
+**11. Where is the bug? Self-assignment.**
+
+When the right-hand side and the left-hand side are the same object, this `operator=` first runs `delete[] data` and then tries to copy from `other.data` --- but `other` *is* `*this`, so `other.data` is now a dangling pointer to memory we just freed.
+The subsequent loop reads from freed memory, which is undefined behavior, and the resulting `Buffer` is left in a corrupted state.
+
+The standard fix is to detect self-assignment and bail out before doing any destructive work:
+
+```cpp
+Buffer &operator=(const Buffer &other) {
+    if (this == &other) {
+        return *this;
+    }
+    delete[] data;
+    len  = other.len;
+    data = new char[len];
+    for (std::size_t i = 0; i < len; ++i) data[i] = other.data[i];
+    return *this;
+}
+```
+
+A more robust pattern is **copy-and-swap**, which gets self-assignment safety and exception safety in one step:
+
+```cpp
+Buffer &operator=(Buffer other) {     // by value: makes a copy first
+    using std::swap;
+    swap(data, other.data);
+    swap(len,  other.len);
+    return *this;
+}                                      // other's destructor frees the old buffer
+```
+
+Either form makes `b = b;` a safe no-op instead of a crash.
+
+**12. Think about it: Why does `std::vector` insist on `noexcept` move?**
+
+When `std::vector` runs out of capacity and has to grow, it allocates a new (larger) buffer and has to relocate every existing element from the old buffer into the new one.
+Vector wants this relocation to be **strongly exception safe**: if anything goes wrong partway through, the vector should be left exactly as it was before the `push_back` --- the old buffer still intact, no elements lost, no half-moved state.
+
+If the element type's move constructor is `noexcept`, the vector can move each element into the new buffer with confidence that the move cannot throw.
+If the move *might* throw, vector cannot recover --- once you have moved 5 of 10 elements and the 6th move throws, the first 5 elements have been clobbered and there is no way to roll back.
+So the standard requires that vector only move elements during reallocation when their move is `noexcept`.
+Otherwise it falls back to **copying** them instead, which is exception-safe (if a copy throws, the originals are still untouched), but loses the entire performance benefit of move semantics.
+
+The cost is exactly the cost of copying instead of moving.
+For a vector of 10,000 `std::string`s, that is 10,000 heap allocations and 10,000 character-array copies on every reallocation.
+For a vector of `noexcept`-movable strings, it is 10,000 pointer swaps.
+This is why mature classes that own resources almost always mark their move operations `noexcept`.
 
 # Chapter 15: Odds and Ends
 
@@ -2733,3 +3721,151 @@ int main()
 
 Most values will be close to 100.
 About 68% of values should fall between 85 and 115 (within one standard deviation of the mean), and about 95% should fall between 70 and 130 (within two standard deviations).
+
+**15. What does the `dynamic_cast` example print?**
+
+It prints:
+
+```
+audio
+video
+unknown
+```
+
+`dynamic_cast<Derived *>(base_ptr)` tries to safely down-cast a base pointer to a derived pointer.
+If the object actually *is* a `Derived` (or a more-derived type), the cast returns the new pointer; otherwise it returns `nullptr`.
+That is exactly what each `if` branch in `play` is checking.
+For `&a` the first `dynamic_cast` succeeds and `play` calls `AudioTrack::play()`.
+For `&v` the first `dynamic_cast` returns `nullptr` and the second one succeeds, so `VideoTrack::play()` runs.
+For the plain `Track t`, neither cast succeeds and the function falls through to `"unknown"`.
+
+`dynamic_cast` only works when the base class has at least one `virtual` function, because it needs run-time type information stored in the object's vtable.
+Adding `virtual ~Track() = default;` to the base class is the minimum that gives `Track` a vtable; without it, the program would not compile (`source type is not polymorphic`).
+A virtual destructor is also exactly what you want anyway --- without it, deleting a derived object through a `Track *` would only run `Track`'s destructor.
+
+**16. Where is the bug? `const_cast` on a string literal-like `const std::string`.**
+
+`const_cast` strips the `const` from a reference or pointer, allowing you to modify what was originally declared as `const`.
+The compiler will let you do this --- but the behavior is **only** defined if the underlying object is not actually `const`.
+
+In this program, `title` is declared `const std::string title = "wonderwall";`, so the underlying string really is constant.
+When `uppercase_first` casts away the `const` and then writes through the resulting `char &`, it modifies a truly-`const` object, which is **undefined behavior**.
+On many compilers nothing visible happens; on others the program crashes; on still others the modification appears to "work" in debug builds but not in release builds.
+The fact that it "seems to work" today does not make it legal.
+
+The right fix is not a bigger cast --- it is to remove the `const` from the *original* object, or to make `uppercase_first` take its argument by non-`const` reference and let the caller pass a real mutable string:
+
+```cpp
+void uppercase_first(std::string &s)
+{
+    if (!s.empty()) {
+        s[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(s[0])));
+    }
+}
+
+int main()
+{
+    std::string title = "wonderwall";   // not const
+    uppercase_first(title);
+    std::cout << title << "\n";         // Wonderwall
+    return 0;
+}
+```
+
+The general rule for `const_cast`: only use it to remove `const` from something that was *not* originally declared `const`, typically when interfacing with an old C API that forgot to mark a pointer parameter `const`.
+Anywhere else, prefer to fix the types so the cast is unnecessary.
+
+**17. Calculation: `<cstdint>` fixed-width types.**
+
+| Type       | Bytes | Largest value                              |
+|:-----------|:-----:|:-------------------------------------------|
+| `int8_t`   | 1     | 127 (signed)                               |
+| `uint8_t`  | 1     | 255 (unsigned)                             |
+| `int16_t`  | 2     | 32,767 (signed)                            |
+| `uint32_t` | 4     | 4,294,967,295 (unsigned, ~4.3 billion)     |
+| `int64_t`  | 8     | 9,223,372,036,854,775,807 (signed)         |
+
+Use `int32_t` (or `uint32_t`, `int64_t`, etc.) when you need a *specific* width --- for example, when laying out a binary file format, talking to hardware or a network protocol, or doing portable bit manipulation.
+The plain `int`, `long`, `long long` types are allowed to vary in size between platforms, so a struct field of type `long` is 8 bytes on Linux/macOS and 4 bytes on Windows; that variation breaks anything that depends on a specific layout.
+
+For ordinary counters, indices, and arithmetic, prefer plain `int`.
+The compiler picks whatever the platform's "natural" word size is, which is usually the fastest type and avoids the noisy `int32_t`/`int64_t` spelling on every loop variable.
+The rule of thumb is: `int` for everyday code, `int32_t` / `int64_t` (and friends) when the width is part of the contract.
+
+**18. Think about it: `std::exit(0)` vs `return 0;` from `main`.**
+
+`return 0;` from `main` performs a normal function return, which means C++ first runs the destructors of all local objects in `main` (and then any globals, in reverse order of construction).
+
+`std::exit(0)` immediately terminates the program.
+It does **not** unwind the stack.
+That means the destructors of any local objects still alive in `main` (or in any function above it on the call stack) **do not run**.
+Functions registered with `std::atexit` *do* run, and global / static destructors *do* run, but stack objects are skipped.
+
+Sketch:
+
+```cpp
+#include <cstdlib>
+#include <iostream>
+
+struct Local {
+    const char *name;
+    ~Local() { std::cout << "dtor " << name << "\n"; }
+};
+
+int main()
+{
+    Local a{"a"};
+    Local b{"b"};
+
+    if (false /* change to true to compare */) {
+        std::exit(0);
+    }
+    return 0;
+}
+```
+
+With `return 0;` the program prints:
+
+```
+dtor b
+dtor a
+```
+
+(Locals are destroyed in reverse order of construction.)
+
+With `std::exit(0)` the program prints **nothing** --- both `Local` destructors are skipped.
+This is exactly why `std::exit` is a sledgehammer: anything an RAII object was holding open (a file, a database connection, a temporary directory) is left dangling.
+Prefer `return` from `main` whenever possible, and reserve `std::exit` for cases where you want to abort early from deep inside a call chain *and* you have already cleaned up anything that needed cleaning up.
+
+**19. Write a program that seeds `std::mt19937` from `std::random_device`.**
+
+```cpp
+#include <iostream>
+#include <random>
+
+int main()
+{
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int> dist(1, 100);
+
+    for (int i = 0; i < 10; ++i) {
+        std::cout << dist(rng) << " ";
+    }
+    std::cout << "\n";
+    return 0;
+}
+```
+
+`std::random_device` is a hardware-backed source of entropy where available; on systems without one, the standard library still provides a `std::random_device` that returns *some* unpredictable bits at startup.
+Either way, two runs of this program produce **different** sequences of numbers, because each run reads a fresh seed from `random_device`.
+
+If you replace the seeding line with a fixed constant:
+
+```cpp
+std::mt19937 rng(42);
+```
+
+then the engine starts in exactly the same state every run, and **the two runs print exactly the same 10 numbers**.
+That is a feature, not a bug: it makes randomized programs reproducible (useful for tests and for debugging a problem you only see "sometimes") at the cost of being predictable.
+For anything where unpredictability matters (games, simulations, anything user-facing), seed from `random_device`; for tests and reproducible experiments, seed from a known constant.
