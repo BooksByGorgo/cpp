@@ -1,0 +1,362 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 17
+
+Behavior and Operators
+
+---
+# Where is the bug?
+.lc[
+```cpp
+class Volume {
+public:
+    Volume(int l) : level(l) {}
+    int level;
+};
+void play(Volume v) { }
+play(11);
+```
+]
+.rc[
+1. Missing semicolon
+1. `Volume(int)` is not `explicit`
+1. `play` cannot take `Volume`
+1. `Volume` has no destructor
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Write member functions and mark them `const` when they do not modify
+- Use `this` for name conflicts and to return `*this`
+- Split a class into a header and source file
+- Overload `+`, `+=`, and `==` as member functions
+- Write a conversion operator; know when to mark it `explicit`
+
+---
+# Member Functions and const
+.lc[
+```cpp
+class Song {
+    std::string title;
+    int year;
+public:
+    Song(const std::string &t, int y)
+        : title(t), year(y) {}
+
+    void print() const {
+        std::cout << title << " ("
+                  << year << ")\n";
+    }
+    bool is_90s() const {
+        return year >= 1990
+            && year <= 1999;
+    }
+};
+```
+]
+.rc[
+- `const` after the parameter list = "does not modify the object"
+- **Required** to call these methods on a `const` reference or object
+
+**Tip:** Mark every read-only method `const`.
+]
+
+---
+# Why const Matters
+.lc[
+```cpp
+void show(const Song &s) {
+    s.print();    // OK: print is const
+    s.is_90s();   // OK: is_90s is const
+}
+```
+]
+.rc[
+- Passing by `const &` is the standard way to avoid copies
+- You can only call `const` methods on a `const` object/reference
+- Forgetting `const` on `print()` breaks `show()`
+]
+
+---
+# The this Pointer
+
+`this` is a hidden pointer to the current object, automatic inside every member function.
+
+- `this->member` to access a member through the pointer
+- `*this` gives you the object itself
+
+You rarely need it, but there are two key uses:
+
+1. Resolving name conflicts
+1. Returning `*this` for method chaining
+
+---
+# Resolving Name Conflicts
+.lc[
+```cpp
+class Song {
+    int year;
+public:
+    void set_year(int year) {
+        this->year = year;
+    }
+};
+```
+]
+.rc[
+- Without `this->`, you would be assigning the parameter to itself
+- The initializer list also handles this: `: year(year)`
+- For setters, `this->` is a clean option
+]
+
+---
+# Method Chaining with *this
+.lc[
+```cpp
+class Playlist {
+    std::vector<std::string> songs;
+public:
+    Playlist &add(
+        const std::string &song) {
+        songs.push_back(song);
+        return *this;
+    }
+};
+
+Playlist p;
+p.add("Torn")
+ .add("Vogue")
+ .add("Iris");
+```
+]
+.rc[
+- Return type is `Playlist &` --- a reference, not a copy
+- Each call returns the same object
+- Chains up without copying
+]
+
+---
+# Separating Declaration from Definition
+.lc[
+```cpp
+// song.h
+#ifndef SONG_H
+#define SONG_H
+
+#include <string>
+
+class Song {
+    std::string title;
+    int year;
+public:
+    Song(const std::string &t, int y);
+    void print() const;
+};
+
+#endif
+```
+]
+.rc[
+- Header files declare
+- `#ifndef`/`#define`/`#endif` is an **include guard** --- prevents duplicate inclusion
+- `#pragma once` is a simpler non-standard alternative
+]
+
+---
+# The .cpp File
+.lc[
+```cpp
+// song.cpp
+#include "song.h"
+#include <iostream>
+
+Song::Song(const std::string &t, int y)
+    : title(t), year(y) {}
+
+void Song::print() const {
+    std::cout << title << " ("
+              << year << ")\n";
+}
+```
+]
+.rc[
+- `Song::` is the scope resolution operator from chapter 1
+- "This function belongs to the `Song` class"
+- The `const` qualifier must match the declaration
+]
+
+---
+# Operator Overloading --- + and +=
+.lc[
+```cpp
+class Playlist {
+    std::vector<std::string> songs;
+public:
+    Playlist operator+(
+        const std::string &song) const
+    {
+        Playlist copy = *this;
+        copy.songs.push_back(song);
+        return copy;
+    }
+
+    Playlist &operator+=(
+        const std::string &song)
+    {
+        songs.push_back(song);
+        return *this;
+    }
+};
+```
+]
+.rc[
+- `operator+` is `const` --- returns a **new** playlist
+- `operator+=` is **not** `const` --- modifies in place
+- Mirrors built-ins: `3 + 2` does not change `3`, but `x += 1` changes `x`
+]
+
+---
+# The == Operator
+.lc[
+```cpp
+bool operator==(
+    const Playlist &other) const
+{
+    return name == other.name
+        && songs == other.songs;
+}
+```
+]
+.rc[
+- Takes `const Playlist &` --- comparison should not modify either side
+- Has access to **other's** private members (same class, same rights)
+- Should be symmetric and consistent
+]
+
+---
+# Conversion Operators
+.lc[
+```cpp
+class Volume {
+    int level;
+public:
+    explicit Volume(int l)
+        : level(l) {}
+
+    explicit operator int() const {
+        return level;
+    }
+};
+
+Volume v(11);
+int n = static_cast<int>(v);
+```
+]
+.rc[
+- `operator T()` converts to type `T`
+- Mark them `explicit` to prevent silent conversions
+- Common: `explicit operator bool()` for testable objects like streams
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+class Counter {
+    int n = 0;
+public:
+    Counter &add() {
+        ++n;
+        return *this;
+    }
+    int get() const { return n; }
+};
+
+Counter c;
+c.add().add().add();
+std::cout << c.get();
+```
+]
+.rc[
+1. 0
+1. 1
+1. 3
+1. compile error
+1. Ben got this wrong
+]
+
+---
+# Where is the bug?
+.lc[
+```cpp
+class Song {
+    int year;
+public:
+    int get_year() { return year; }
+};
+
+void show(const Song &s) {
+    std::cout << s.get_year();
+}
+```
+]
+.rc[
+1. `get_year` should be `static`
+1. `get_year` is not marked `const`, so it cannot be called on a `const Song &`
+1. `year` needs to be `public`
+1. `show` should take `Song` by value
+1. Ben got this wrong
+]
+
+---
+# Why does operator+ return new and operator+= return ref?
+
+1. The compiler requires it
+1. `+` should not modify its operands; `+=` does
+1. References are faster
+1. `+=` is always wrong
+1. Ben got this wrong
+
+---
+# Key Points
+
+- Mark read-only methods `const` so they work with `const` references
+- `this` resolves name conflicts; `*this` enables method chaining
+- Split into `.h` and `.cpp`; use include guards or `#pragma once`
+- `operator+` is `const`, `operator+=` is not --- mirror the built-ins
+- Conversion operators should be `explicit` by default
+
+**Read:** chapter 13 of *Starting C++*, first half --- stack vs heap, pointers, `new`/`delete`, `unique_ptr`.
+**Do:** exercises 1, 3, 9, 10.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

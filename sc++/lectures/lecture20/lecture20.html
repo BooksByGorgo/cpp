@@ -1,0 +1,361 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 20
+
+Special Members and Friends
+
+---
+# After std::move(a), what is the state of a?
+
+Where `a` is a `std::unique_ptr<int>`:
+
+1. Contains the same value
+1. Contains garbage
+1. Empty (`nullptr`)
+1. Has been deleted
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- List the five special member functions
+- Apply the Rule of Five
+- Apply the Rule of Zero
+- Use `= default` and `= delete`
+- Declare friend functions and friend classes
+- List the rules of friendship
+
+---
+# The Five Special Member Functions
+
+The compiler can generate up to **five** special functions:
+
+1. **Destructor** --- `~T()`
+1. **Copy constructor** --- `T(const T &)`
+1. **Copy assignment** --- `T &operator=(const T &)`
+1. **Move constructor** --- `T(T &&) noexcept`
+1. **Move assignment** --- `T &operator=(T &&) noexcept`
+
+For classes that only contain standard library types, the compiler versions do the right thing.
+
+---
+# Rule of Five
+
+**If you write any one of the five, you almost certainly need to write all five.**
+
+This matters when your class manages a raw resource like heap memory.
+
+- Without the copy constructor, two objects could both try to free the same memory --- **double-free**
+- Without the move constructor, `std::vector` copies instead of moves during reallocation --- **slow**
+
+---
+# Rule of Five in Code
+.lc[
+```cpp
+class Lyric {
+    char *text;
+public:
+    Lyric(const char *t) {
+        text = new char[strlen(t) + 1];
+        strcpy(text, t);
+    }
+    ~Lyric() { delete[] text; }
+
+    Lyric(const Lyric &o) { /* copy */ }
+    Lyric &operator=(const Lyric &o) {
+        /* copy */
+        return *this;
+    }
+    Lyric(Lyric &&o) noexcept { /* move */ }
+    Lyric &operator=(Lyric &&o) noexcept {
+        /* move */
+        return *this;
+    }
+};
+```
+]
+.rc[
+- Ctor allocates
+- Destructor frees
+- Copies must **deep** copy
+- Moves must leave the source empty
+- Move operations marked `noexcept` so `vector` uses them
+]
+
+---
+# noexcept Matters for Moves
+
+**Tip:** Mark move constructors and move assignment operators `noexcept`.
+
+- `std::vector` checks for this before deciding whether to move or copy during reallocation
+- If your move could throw, `vector` falls back to **copying** --- a huge performance hit
+- Move operations should not throw anyway --- they just transfer pointers
+
+---
+# = default
+.lc[
+```cpp
+class Song {
+    std::string title;
+    std::string artist;
+public:
+    Song(const std::string &t,
+         const std::string &a)
+        : title(t), artist(a) {}
+
+    Song() = default;
+    Song(const Song &) = default;
+    Song &operator=(const Song &)
+        = default;
+    ~Song() = default;
+};
+```
+]
+.rc[
+- Writing a custom constructor suppresses the default
+- `= default` asks the compiler to generate the default version
+- Documents intent: "I thought about this"
+]
+
+---
+# = delete
+.lc[
+```cpp
+class AudioStream {
+    int device_id;
+public:
+    AudioStream(int id)
+        : device_id(id) {}
+
+    AudioStream(const AudioStream &)
+        = delete;
+    AudioStream &operator=(
+        const AudioStream &) = delete;
+
+    AudioStream(AudioStream &&) noexcept
+        = default;
+};
+```
+]
+.rc[
+- Copying an active audio stream would mean two objects fighting over the same device
+- `= delete` prevents the call at **compile time**
+- Clear error message (vs pre-C++11 private-and-undefined trick)
+]
+
+---
+# Rule of Zero
+
+**If your class does not manage a resource directly, do not write any of the five. Let the compiler generate them.**
+
+Rewrite `Lyric` with `std::string`:
+
+```cpp
+class Lyric {
+    std::string text;
+public:
+    Lyric(const std::string &t)
+        : text(t) {}
+    void print() const {
+        std::cout << text << "\n";
+    }
+};
+```
+
+Zero special members. `std::string` already knows how to copy, move, and clean up.
+
+---
+# Rule of Zero Tip
+
+**Tip:** Prefer
+
+- `std::string` over `char *`
+- `std::vector` over raw arrays
+- `std::unique_ptr` over raw `new`/`delete`
+
+When all members manage themselves, you write nothing special.
+
+---
+# Why Friends?
+
+Sometimes an outside function or class genuinely needs access to your private data:
+
+- `operator<<` must be a **free function** (its left operand is `std::ostream`), but needs access to private members
+- A class like `DJ` may need to manipulate a `Playlist`'s internals
+
+C++ solves both with the `friend` keyword --- the class **grants** friendship to specific functions or classes.
+
+---
+# Friend Functions
+.lc[
+```cpp
+class Playlist {
+    std::string name;
+    std::vector<std::string> songs;
+public:
+    Playlist(const std::string &n)
+        : name(n) {}
+    void add(const std::string &s) {
+        songs.push_back(s);
+    }
+    friend std::ostream &operator<<(
+        std::ostream &os,
+        const Playlist &p);
+};
+```
+]
+.rc[
+- `friend` declaration inside the class grants access to private members
+- The function is **defined outside** the class like any free function
+- Returning `std::ostream &` enables chaining
+]
+
+---
+# Defining the Friend
+.lc[
+```cpp
+std::ostream &operator<<(
+    std::ostream &os,
+    const Playlist &p)
+{
+    os << p.name << ":\n";
+    for (size_t i = 0;
+         i < p.songs.size(); ++i) {
+        os << "  " << i + 1
+           << ". " << p.songs[i]
+           << "\n";
+    }
+    return os;
+}
+```
+]
+.rc[
+- Can read `p.name` and `p.songs` directly
+- Without `friend`, those would be inaccessible
+- Same pattern every iostream extension uses
+]
+
+---
+# Friend Classes
+.lc[
+```cpp
+class Playlist {
+    std::vector<std::string> songs;
+    friend class DJ;
+public:
+    Playlist(const std::string &n);
+};
+
+class DJ {
+public:
+    void swap(Playlist &p) {
+        // can access p.songs directly
+        std::string t = p.songs.front();
+        p.songs.front() = p.songs.back();
+        p.songs.back() = t;
+    }
+};
+```
+]
+.rc[
+- `friend class DJ;` grants every member of `DJ` access
+- Friendship is **one-directional**: `DJ` sees `Playlist`, not the other way
+]
+
+---
+# Rules of Friendship
+
+- **Granted, not taken** --- the class declares its own friends
+- **Not mutual** --- `A` friending `B` does not make `B` friend `A`
+- **Not inherited** --- derived classes do not inherit friendship
+- **Not transitive** --- `A` friend of `B`, `B` friend of `C` does not make `A` friend of `C`
+
+**Tip:** Use `friend` sparingly. Every friend couples outside code to your private representation.
+
+---
+# Why does vector copy instead of move this?
+.lc[
+```cpp
+class Track {
+    std::string title;
+    std::vector<int> samples;
+public:
+    Track(const std::string &t)
+        : title(t) {}
+
+    Track(Track &&other)
+        : title(std::move(other.title)),
+          samples(std::move(other.samples))
+    {}
+};
+```
+]
+.rc[
+1. Missing copy constructor
+1. Move constructor is not marked `noexcept`
+1. `std::move` is not allowed in initializer lists
+1. `std::vector` always copies
+1. Ben got this wrong
+]
+
+---
+# If A friend of B, B friend of C, can C access A?
+
+1. Yes, friendship is transitive
+1. No, friendship is not transitive
+1. Only if `A` is also a friend of `B`
+1. Only for public members
+1. Ben got this wrong
+
+---
+# How many special members needed?
+
+A class has `std::string name`, `std::vector<int> scores`, and `int id`.
+
+1. 5
+1. 3
+1. 2
+1. 1
+1. 0
+
+---
+# Key Points
+
+- Five special members: dtor, copy ctor, copy assign, move ctor, move assign
+- **Rule of Five**: write one, write all five
+- **Rule of Zero**: use well-behaved members, write none
+- `= default` restores the compiler's version; `= delete` forbids a call
+- Mark move operations `noexcept` so containers use them
+- `friend` grants access; use it sparingly
+
+**Optional reading:** chapter 15 of *Starting C++* (odds and ends: `exit()`, `extern "C"`, casting, `<chrono>`, `<random>`). Not required for the final exam --- reference material you will see in real code.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

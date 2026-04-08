@@ -1,0 +1,259 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 19
+
+shared_ptr and Move Semantics
+
+---
+# What is wrong with this code?
+.lc[
+```cpp
+int *volumes = new int[3];
+delete volumes;
+```
+]
+.rc[
+1. Missing `<memory>`
+1. `delete` should be `delete[]`
+1. `volumes` must be `const`
+1. `new int[3]` is invalid
+1. Ben got this wrong
+]
+
+---
+# Learning Objectives
+
+- Use `std::shared_ptr` with `std::make_shared`
+- Explain reference counting
+- Get a raw pointer with `.get()` without transferring ownership
+- Use `std::move` to transfer resources
+- Describe the valid-but-unspecified state of a moved-from object
+
+---
+# std::shared_ptr
+.lc[
+```cpp
+#include <memory>
+#include <string>
+
+auto song1 =
+    std::make_shared<std::string>(
+        "Under the Bridge");
+
+auto song2 = song1;
+// both own the same string
+```
+]
+.rc[
+- What if multiple parts of your code need to own the same object?
+- **Reference counting** --- memory is freed when the **last** `shared_ptr` is destroyed
+]
+
+---
+# Inspecting the Count
+.lc[
+```cpp
+std::cout << song1.use_count();
+// 2
+
+song1.reset();
+// song1 gives up ownership
+
+std::cout << song2.use_count();
+// 1
+```
+]
+.rc[
+- `.use_count()` returns the current reference count
+- `.reset()` releases this `shared_ptr`'s ownership
+
+**Tip:** Use `shared_ptr` only when you truly need shared ownership. `unique_ptr` is simpler.
+]
+
+---
+# Getting a Raw Pointer
+.lc[
+```cpp
+auto song =
+    std::make_unique<std::string>(
+        "Under the Bridge");
+
+std::string *raw = song.get();
+
+std::cout << *raw << "\n";
+// song still owns the memory
+// do NOT delete raw
+```
+]
+.rc[
+- `.get()` returns the raw pointer **without** releasing ownership
+- For C library functions that expect raw pointers
+
+**Trap:** **Never `delete`** a pointer from `.get()` --- double free.
+]
+
+---
+# Move Semantics
+.lc[
+```cpp
+#include <string>
+
+std::string a = "Nothing Compares 2 U";
+std::string b = std::move(a);
+
+std::cout << "a: " << a << "\n";
+// empty!
+
+std::cout << "b: " << b << "\n";
+// "Nothing Compares 2 U"
+```
+]
+.rc[
+- **Transfers** the contents instead of copying
+- The actual buffer moves, not a duplicate
+- `a` is left in a **valid but unspecified** state
+
+**Trap:** After moving from an object, do not use it unless you reassign first.
+]
+
+---
+# What std::move Actually Does
+
+`std::move` does **not** actually move anything!
+
+- It casts its argument to an **rvalue reference**
+- Tells the compiler "it is OK to move from this"
+- The actual move is performed by the receiving object's **move constructor** or **move assignment operator**
+- You will learn about the Rule of Five next lecture
+
+---
+# Moving a unique_ptr
+.lc[
+```cpp
+auto a =
+    std::make_unique<Song>(
+        "Don't Speak", "No Doubt");
+
+auto b = std::move(a);
+// a is empty; b owns the Song
+```
+]
+.rc[
+- This is the **only** way to transfer ownership between `unique_ptr`s
+- After the move, `a` is `nullptr`
+- `b` owns the heap object now
+]
+
+---
+# Try It --- Full Example
+.lc[
+```cpp
+class Song {
+public:
+    Song(const std::string &t)
+        : title(t) {
+        std::cout << "on: "
+                  << title << "\n";
+    }
+    ~Song() {
+        std::cout << "off: "
+                  << title << "\n";
+    }
+    std::string title;
+};
+```
+]
+.rc[
+Walk through scopes carefully:
+
+- `unique_ptr` frees when it leaves the scope
+- `shared_ptr` frees when the last one leaves
+- Destructor output tells you exactly when
+
+Full program in lecture18+19.md.
+]
+
+---
+# What does this print?
+.lc[
+```cpp
+auto p = std::make_shared<int>(99);
+auto q = p;
+auto r = p;
+
+std::cout << p.use_count() << "\n";
+q.reset();
+std::cout << p.use_count() << "\n";
+r.reset();
+std::cout << p.use_count() << "\n";
+```
+]
+.rc[
+1. `3 3 3`
+1. `3 2 1`
+1. `1 1 1`
+1. `1 2 3`
+1. Ben got this wrong
+]
+
+---
+# After std::move(a), what is the state of a?
+
+Where `a` is a `std::unique_ptr<int>`:
+
+1. Contains the same value as before
+1. Contains garbage
+1. Empty (`nullptr`); unsafe to dereference, safe to reassign
+1. Has been deleted; the program crashes
+1. Ben got this wrong
+
+---
+# Why NOT delete a pointer from .get()?
+
+1. `.get()` returns `nullptr`
+1. The smart pointer still owns the memory; a double-free follows
+1. `delete` does not work on raw pointers
+1. You would leak memory
+1. Ben got this wrong
+
+---
+# Key Points
+
+- `shared_ptr` uses reference counting --- last one out frees
+- `.get()` yields a raw pointer; **do not delete** it
+- `std::move` casts to rvalue reference; the target's move constructor does the work
+- A moved-from object is **valid but unspecified**
+- Prefer `unique_ptr` unless sharing is required
+
+**Read:** chapter 14 of *Starting C++* (Special Members and Friends).
+**Do:** exercises 1-9.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
