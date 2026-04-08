@@ -465,3 +465,5 @@ Why is writing tests after the code is finished less effective?
 
     Write a class `App` that takes a `Logger&` and has a `run()` method that calls `log("Starting")`.
     Test that `run()` calls `log` exactly once with the message "Starting".
+
+\printindex

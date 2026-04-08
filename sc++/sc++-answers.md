@@ -960,7 +960,160 @@ inline int double_it(int n) {
 The compiler produces a warning because `compute` is marked `[[nodiscard]]` and the return value of `compute(6, 7)` is discarded.
 The program still compiles, but the warning tells you that ignoring the result is almost certainly a bug.
 
-# Chapter 7: Containers
+# Chapter 7: Numbers
+
+**1. Convert the decimal number `200` to binary, hexadecimal, and octal by hand. Verify with a C++ program.**
+
+- Binary: 200 = 128 + 64 + 8 = 2^7^ + 2^6^ + 2^3^ = `11001000`
+- Hex: 200 = 12 * 16 + 8 = `C8`
+- Octal: 200 = 3 * 64 + 1 * 8 + 0 = `310`
+
+```cpp
+#include <print>
+
+int main() {
+    int n = 200;
+    std::println("Binary: {:b}", n);   // 11001000
+    std::println("Hex:    {:x}", n);   // c8
+    std::println("Octal:  {:o}", n);   // 310
+}
+```
+
+**2. What does this print?**
+
+```cpp
+int x = 0b1100;
+int y = 052;
+std::println("{}", x + y);
+```
+
+`x` is binary `1100` = 12, and `y` is octal `52` = 5*8 + 2 = 42.
+The program prints `54`.
+
+**3. Think about it: In an 8-bit two's complement system, the most negative value is `-128` but the most positive value is only `127`. Why isn't the range symmetric?**
+
+With 8 bits there are 2^8^ = 256 distinct bit patterns to share between positive and negative values.
+Zero takes one of those slots and counts as a non-negative value, leaving 127 patterns for the strictly positive numbers (1 to 127) and 128 patterns for the negative numbers (-128 to -1).
+The asymmetry is the price you pay for having exactly one representation of zero.
+
+**4. Where is the bug? This loop is supposed to count down from 10 to 0, but it never terminates. Why?**
+
+```cpp
+unsigned int count = 10;
+while (count >= 0) {
+    std::println("{}", count);
+    --count;
+}
+```
+
+`count` is unsigned, so it can never be negative.
+When `count` reaches `0` and you decrement, it underflows and wraps around to `UINT_MAX` (about 4.3 billion), which is still `>= 0`, so the loop continues forever.
+For an unsigned variable, the condition `count >= 0` is always true.
+Fix it by using a signed type (`int`), or by writing `while (count-- > 0)` to decrement after the test.
+
+**5. Using two's complement with 8 bits, compute `100 - 75` by hand.**
+
+```
+ 100 = 0110 0100
+  75 = 0100 1011
+
+Two's complement of 75:
+       0100 1011
+       1011 0100   (flip bits)
+     + 0000 0001   (add 1)
+       ---------
+ -75 = 1011 0101
+
+Add 100 + (-75):
+       0110 0100   (100)
+     + 1011 0101   (-75)
+     -----------
+     1 0001 1001
+     ^
+     overflow bit (discarded in 8 bits)
+```
+
+The result is `0001 1001` = 25, which is the correct answer for 100 - 75.
+
+**6. What values do `a`, `b`, and `c` hold after these statements execute?**
+
+```cpp
+int a = 1 << 10;
+int b = 100 >> 3;
+int c = (1 << 4) - 1;
+```
+
+- `a` = `1 << 10` = 2^10^ = `1024`
+- `b` = `100 >> 3` = 100 / 8 = `12` (integer division discards the remainder)
+- `c` = `(1 << 4) - 1` = 16 - 1 = `15` (a common idiom for "n low bits all set")
+
+**7. Where is the bug? A programmer wrote this code and expected it to print `700`. What value does it actually print, and why?**
+
+```cpp
+int permissions = 0700;
+std::println("Permissions: {}", permissions);
+```
+
+The leading `0` makes `0700` an **octal** literal, not decimal.
+`0700` in octal equals 7 * 64 + 0 * 8 + 0 = `448` in decimal, so the program prints `Permissions: 448`.
+To get decimal 700, drop the leading zero: `int permissions = 700;`.
+
+**8. What does this print? What is wrong with this code?**
+
+```cpp
+int big = 2'000'000'000;
+int doubled = big * 2;
+std::println("{} * 2 = {}", big, doubled);
+```
+
+`big` fits in `int` (max is about 2.1 billion), but `big * 2` is 4 billion, which does **not** fit.
+This is **signed integer overflow** --- undefined behavior.
+In practice many compilers will wrap to a negative value (you might see something like `-294967296`), but the standard does not require any particular result, and the compiler is free to do something else entirely.
+Use `long long` (or `int64_t`) for values that might exceed `int` range.
+
+**9. Write a program that reads a hexadecimal color code (like `"FF8000"`), converts it to its red, green, and blue components, and prints each component in decimal and binary.**
+
+```cpp
+#include <iostream>
+#include <print>
+#include <string>
+
+int main() {
+    std::print("Enter a hex color (e.g., FF8000): ");
+    std::string color;
+    std::cin >> color;
+
+    int r = std::stoi(color.substr(0, 2), nullptr, 16);
+    int g = std::stoi(color.substr(2, 2), nullptr, 16);
+    int b = std::stoi(color.substr(4, 2), nullptr, 16);
+
+    std::println("Red:   {:>3} ({:08b})", r, r);
+    std::println("Green: {:>3} ({:08b})", g, g);
+    std::println("Blue:  {:>3} ({:08b})", b, b);
+}
+```
+
+**10. Without running it, determine the output of this program.**
+
+```cpp
+uint8_t a = 250;
+uint8_t b = 20;
+uint8_t sum = a + b;
+std::println("{} + {} = {}", a, b, sum);
+```
+
+Numerically, `a + b` is 270, but `sum` is `uint8_t` (8 bits, max 255), so the result wraps: 270 - 256 = `14`.
+There is also a display surprise: `std::println` with `{}` formats `uint8_t` (which is `unsigned char`) as a **character**, not a number.
+So instead of seeing `250 + 20 = 14`, you see the characters with codes 250, 20, and 14, which print as garbage or control characters on most terminals.
+To get numeric output, use `{:d}` or cast to `int`:
+
+```cpp
+std::println("{} + {} = {}",
+    static_cast<int>(a), static_cast<int>(b), static_cast<int>(sum));
+// 250 + 20 = 14
+```
+
+# Chapter 8: Containers
 
 **1. Think about it: Why does `std::array` require the size as part of its type while `std::vector` does not? What trade-off does this create?**
 
@@ -1129,7 +1282,7 @@ It prints: `20 25 30 40 50`
 The size is 3 (three elements were added).
 The capacity is at least 100 (the `reserve` call preallocated room for 100 elements, and adding 3 elements does not exceed that, so no reallocation occurs).
 
-# Chapter 8: I/O Streams
+# Chapter 9: I/O Streams
 
 **1. What does the following program print?**
 
@@ -1315,7 +1468,7 @@ The loop iterates **5** times, and the final value of `count` is **5**.
 `iss >> word` reads one whitespace-delimited token per iteration: "Closing", "Time", "1998", "Smooth", "1999".
 The `>>` operator splits on whitespace, so each word and number is a separate token.
 
-# Chapter 9: std::format and std::print
+# Chapter 10: std::format and std::print
 
 **1. What does `std::format("{:>8.2f}", 3.1)` produce? How many characters wide is the result?**
 
@@ -1411,7 +1564,7 @@ int main()
 }
 ```
 
-# Chapter 10: Exceptions
+# Chapter 11: Exceptions
 
 **1. What does the following program print?**
 
@@ -1631,7 +1784,7 @@ sqrt(25) = 5
 Error: cannot take square root of negative number
 ```
 
-# Chapter 11: Classes
+# Chapter 12: Classes
 
 **1. What is the difference between a `struct` and a `class` in C++? Why would you choose one over the other?**
 
@@ -1939,7 +2092,7 @@ int main()
 }
 ```
 
-# Chapter 12: Memory Management
+# Chapter 13: Memory Management
 
 **1. What is the difference between stack and heap memory? Give one situation where you would need to use the heap.**
 
@@ -2110,7 +2263,7 @@ ptr->title     // arrow operator — same thing, cleaner
 Both expressions access the `title` member of the `Song` that `ptr` points to.
 `ptr->title` is the preferred form.
 
-# Chapter 13: Special Members and Friends
+# Chapter 14: Special Members and Friends
 
 **1. Explain the difference between the Rule of Five and the Rule of Zero. Which one should you prefer and why?**
 
@@ -2290,7 +2443,7 @@ int main()
 }
 ```
 
-# Chapter 14: Odds and Ends
+# Chapter 15: Odds and Ends
 
 **1. What does the following program print if the file `data.txt` does not exist?**
 

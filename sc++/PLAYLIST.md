@@ -35,7 +35,10 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Fly --- Sugar Ray
 - Intergalactic --- Beastie Boys
 
-## Chapter 7: Containers
+## Chapter 7: Numbers
+- (none --- Spanish phrases only)
+
+## Chapter 8: Containers
 - Wannabe --- Spice Girls
 - No Diggity --- Blackstreet
 - Oasis (band name used in example)
@@ -44,42 +47,42 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Linger --- The Cranberries
 - Possum Kingdom --- Toadies
 
-## Chapter 8: I/O Streams
+## Chapter 9: I/O Streams
 - Closing Time --- Semisonic
 - Smooth --- Santana ft. Rob Thomas
 - Tubthumping --- Chumbawamba
 
-## Chapter 9: std::format and std::print
-- Santana (artist name reused from ch08 intro example)
+## Chapter 10: std::format and std::print
+- Santana (artist name reused from ch09 intro example)
 - Wonderwall --- Oasis
 - Jumper --- Third Eye Blind
 - Say My Name --- Destiny's Child
 - You Get What You Give --- New Radicals
 
-## Chapter 10: Exceptions
+## Chapter 11: Exceptions
 - The Freshmen --- The Verve Pipe
 - Save Tonight --- Eagle-Eye Cherry
 
-## Chapter 11: Classes
+## Chapter 12: Classes
 - Enter Sandman --- Metallica
 - Black Hole Sun --- Soundgarden
 - All Star --- Smash Mouth
 - Basket Case --- Green Day
 - Virtual Insanity --- Jamiroquai
 
-## Chapter 12: Memory Management
+## Chapter 13: Memory Management
 - Under the Bridge --- Red Hot Chili Peppers
 - Nothing Compares 2 U --- Sinead O'Connor
 - Don't Speak --- No Doubt
 - Popular --- Nada Surf
 
-## Chapter 13: Special Members and Friends
+## Chapter 14: Special Members and Friends
 - Torn --- Natalie Imbruglia
 - Kiss from a Rose --- Seal
 - I'll Be There for You --- The Rembrandts
 - Vogue --- Madonna
 
-## Chapter 14: Odds and Ends
+## Chapter 15: Odds and Ends
 - La Copa de la Vida --- Ricky Martin
 - Believe --- Cher
 - "Cinco tracks al azar" (Spanish phrase used in random numbers example)

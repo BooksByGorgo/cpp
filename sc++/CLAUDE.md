@@ -58,7 +58,7 @@ No previous programming experience is assumed.
 - place `\index{term}` at the primary introduction/definition of a term, not inside code blocks
 - use `\index{parent!child}` for sub-entries (e.g., `\index{pointer!arithmetic}`)
 - in `\index{}`, escape double quotes by doubling them (e.g., `\index{extern ""C""}`)
-- `\printindex` goes only in ch14.md (the last chapter) --- do not add it to other chapters
+- `\printindex` goes only in ch15.md (the last chapter) --- do not add it to other chapters
 
 ## 90s References
 
@@ -120,14 +120,23 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - structures can be problematic to pass by value
     - recursive functions
     - function pointers (basics, typedef, callbacks)
-7. Containers
+7. Numbers
+    - bases: decimal, binary, hex, octal
+    - integer literals in other bases (`0b`, `0x`, `0`) and digit separators
+    - printing in other bases with `std::format` / `std::println`
+    - strings to/from numbers (`std::stoi`, `std::stod`, `std::to_string`)
+    - two's complement
+    - integer sizes, ranges, signed vs unsigned, overflow
+    - binary addition and subtraction
+    - shift operators (`<<`, `>>`)
+8. Containers
     - std::array
     - std::vector
     - iterating through containers
-8. I/O streams
+9. I/O streams
     - string streams
     - file streams
-9. std::format and std::print
+10. std::format and std::print
     - formatted I/O with std::format and std::print
     - Header: `#include <format>` or `#include <print>`
     - Implicit: `std::format("{},{}", 1, "hi")` -> `1,hi`
@@ -145,7 +154,7 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
         - `width`: minimum field width
         - `prec`: fixed floats: # of digits after . else precision; strings: max len 
         - `type`: `d` (decimal), `x` (hex), `f` (fixed-point), `s` (string), `p` pointer, etc.
-10. Exceptions
+11. Exceptions
     - try/catch/throw
     - standard exception types (std::exception, std::runtime_error, std::logic_error)
     - throwing and catching exceptions
@@ -153,22 +162,22 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - noexcept
     - std::expected (C++23) as an alternative to exceptions
     - when to use exceptions vs std::expected
-11. Classes
+12. Classes
     - constructors/destructors
     - member methods
-12. Memory Management
+13. Memory Management
     - new/delete
     - don't use new/delete use std::unique_ptr
     - std::shared_ptr
     - move
-13. Special Members and Friends
+14. Special Members and Friends
     - special member functions and the Rule of Five
     - defaulted and deleted functions
     - the Rule of Zero
     - friends
-14. Odds and Ends
+15. Odds and Ends
     - explain exit() and when it might be more useful than return
     - explain using extern "C" to use c functions from c++
-    - numbers and casting (chars as numbers, bit widths, static_cast, dynamic_cast, const_cast, reinterpret_cast)
+    - casting (static_cast, dynamic_cast, const_cast, reinterpret_cast)
     - time
     - random numbers

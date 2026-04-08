@@ -62,7 +62,7 @@ This book covers all the topics that a good C++ programmer uses in daily life in
 - place `\index{term}` at the primary introduction/definition of a term, not inside code blocks
 - use `\index{parent!child}` for sub-entries (e.g., `\index{pointer!arithmetic}`)
 - in `\index{}`, escape double quotes by doubling them (e.g., `\index{extern ""C""}`)
-- `\printindex` goes only in ch12.md (the last numbered chapter) --- do not add it to other chapters or appendices
+- `\printindex` goes only in appB.md (the last file built into the book) --- do not add it to other chapters or appendices
 
 ## 2000s References
 
