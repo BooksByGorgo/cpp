@@ -6,12 +6,17 @@ nav_order: 1
 
 # Intro to Programming
 
+<div style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin: 1.5rem 0; flex-wrap: wrap;">
+  <img src="{{ '/images/gorgo-with-badge.png' | relative_url }}" alt="Gorgo, Queen of Sparta --- mascot of Intro to Programming" style="width: 40%; max-width: 260px;">
+  <div style="max-width: 360px; min-width: 220px;">
+    <p style="margin: 0; font-size: 1.05rem;">Free, evolving C and C++ programming textbooks, watched over by <strong>Gorgo, Queen of Sparta</strong>.</p>
+  </div>
+</div>
+
 <div style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin: 1rem 0;">
   <img src="{{ '/images/c++books++.png' | relative_url }}" alt="C++ Books" style="width: 45%; max-width: 300px;">
   <img src="{{ '/images/mehc++book.png' | relative_url }}" alt="Meh C++ Book" style="width: 45%; max-width: 300px;">
 </div>
-
-Free, evolving C and C++ programming textbooks.
 
 There are lots of programming textbooks out there, but they're either mediocre, super advanced, or out of date.
 We believe there will always be a niche for free programming textbooks that evolve with the languages.
