@@ -1,0 +1,269 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+/* Two-column layout */
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 12
+
+Mutation and Iteration
+
+---
+# A vector has size 3 and capacity 8. How many more push_backs before it reallocates?
+
+1. 3
+1. 5
+1. 7
+1. 8
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Use `insert` and `erase` to modify a vector at any position
+- Preallocate with `reserve` and shrink with `shrink_to_fit`
+- Iterate with range-based `for` using `const auto&` and `auto&`
+- Use iterators and `.begin()` / `.end()`
+- Recognize iterator invalidation after insert/erase
+
+---
+# Insert and Erase
+.lc[
+```cpp
+std::vector<std::string> lista =
+    {"Creep", "No Rain", "Linger"};
+
+lista.insert(
+    lista.begin() + 1,
+    "Possum Kingdom");
+
+lista.erase(lista.begin());
+```
+]
+.rc[
+- Position is an **iterator** --- `begin() + n` means "index n"
+- `insert` places the new element **before** the given position
+- `erase` removes one (or a range)
+]
+
+---
+# Why Insert/Erase Are Slower
+
+- Inserting in the middle shifts every following element over
+- Erasing shifts every following element back
+- Both are O(n) in the worst case
+- Prefer `push_back`/`pop_back` when you can
+
+**Trap:** insert/erase **invalidate** iterators, pointers, and references. Get fresh ones afterward.
+
+---
+# reserve and shrink_to_fit
+.lc[
+```cpp
+std::vector<int> v;
+v.reserve(1000);
+// v.size() == 0
+// v.capacity() >= 1000
+
+// later:
+v.shrink_to_fit();
+```
+]
+.rc[
+- `reserve(n)` preallocates
+- Avoid repeated reallocations when you know the size
+- `shrink_to_fit` is a **non-binding** request --- the implementation may ignore it
+]
+
+---
+# Range-Based for Loop
+.lc[
+```cpp
+std::vector<std::string> songs =
+    {"Wannabe", "No Diggity"};
+
+for (const auto& song : songs) {
+    std::cout << song << "\n";
+}
+```
+]
+.rc[
+- `auto` --- let the compiler deduce the type
+- `&` --- reference, no copy
+- `const` --- promise not to modify
+]
+
+---
+# Modifying Elements
+.lc[
+```cpp
+std::vector<int> values =
+    {1, 2, 3, 4, 5};
+
+for (auto& v : values) {
+    v *= 10;
+}
+// {10, 20, 30, 40, 50}
+```
+]
+.rc[
+- Drop `const` when you need to modify
+- Keep the `&` to avoid copies
+
+**Tip:** Prefer `const auto&` to read. Use `auto&` to modify. **Avoid** plain `auto` for anything larger than a primitive.
+]
+
+---
+# Iterators
+.lc[
+```cpp
+std::vector<std::string> canciones =
+    {"Wannabe", "No Diggity"};
+
+for (auto it = canciones.begin();
+     it != canciones.end();
+     ++it)
+{
+    std::cout << *it << "\n";
+}
+```
+]
+.rc[
+- `.begin()` --- iterator to the first element
+- `.end()` --- iterator **one past** the last
+- `*it` dereferences (like a pointer)
+- `++it` advances
+]
+
+---
+# The Half-Open Interval
+.lc[
+```cpp
+for (auto it = v.begin();
+     it != v.end();
+     ++it) {
+    // use *it
+}
+```
+]
+.rc[
+**Wut:** `.end()` points **past** the last element, not at it.
+
+- Valid range is `[begin, end)`
+- Makes loops cleaner and avoids off-by-one errors
+- Common C++ convention you will see everywhere
+]
+
+---
+# auto with Iterators
+.lc[
+```cpp
+// without auto
+std::vector<std::string>::iterator it =
+    canciones.begin();
+
+// with auto
+auto it = canciones.begin();
+```
+]
+.rc[
+- `auto` shines with iterators
+- Iterator types are long and obvious from context
+- One of the best uses of `auto`
+]
+
+---
+# Why Use Iterators Directly?
+
+- Standard library algorithms require them (`std::sort`, `std::find`, ...)
+- You can iterate backward (`rbegin`/`rend`)
+- You can erase while iterating safely
+- Range-based `for` is a convenience wrapper over iterators
+
+---
+# What does this print?
+.lc[
+```cpp
+std::vector<int> v =
+    {10, 20, 30, 40, 50};
+v.insert(v.begin() + 2, 25);
+v.erase(v.begin());
+for (const auto& n : v)
+    std::cout << n << " ";
+```
+]
+.rc[
+1. `10 20 25 30 40 50`
+1. `20 25 30 40 50`
+1. `20 25 30 40`
+1. `10 25 30 40 50`
+1. Ben got this wrong
+]
+
+---
+# Where is the bug?
+.lc[
+```cpp
+std::vector<int> scores =
+    {95, 87, 91};
+for (int i = 0;
+     i <= scores.size(); i++)
+{
+    std::cout << scores[i] << "\n";
+}
+```
+]
+.rc[
+1. `scores` cannot be iterated
+1. `[]` does not work on vector
+1. `<=` reads one past the end
+1. `i` should be `size_t`
+1. Both C and D
+]
+
+---
+# Why is for (auto x : vec) wrong for vector<string>?
+
+1. It does not compile
+1. It **copies** every string on each iteration
+1. It modifies the original vector
+1. It only works for `vector<int>`
+1. Ben got this wrong
+
+---
+# Key Points
+
+- `insert`/`erase` shift elements; prefer end operations
+- Insert/erase **invalidate** iterators
+- Range-based `for` with `const auto&` is the default
+- `.end()` is **one past** the last; `[begin, end)` half-open interval
+- `auto` saves you from verbose iterator types
+
+**Read:** chapter 9 of *Starting C++* (I/O streams).
+**Do:** exercises 1-9.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
