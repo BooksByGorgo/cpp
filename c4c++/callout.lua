@@ -14,10 +14,12 @@ local tcb = "colback=black!5, colframe=black!20, " ..
   "top=4pt, bottom=4pt, fontupper=\\small"
 
 -- sidebyside splits the box into two columns. lefthand width sets the
--- width of the icon column; the rest goes to the text column.
+-- width of the icon column; the rest goes to the text column. The
+-- lower separated=false option suppresses tcolorbox's default thin
+-- rule between the upper (icon) and lower (text) segments.
 local tcb_icon = tcb ..
   ", sidebyside, sidebyside align=top, sidebyside gap=8pt, " ..
-  "lefthand width=0.45in"
+  "lefthand width=0.45in, lower separated=false"
 
 local html_style = "background-color: #f5f5f5; border: 1px solid #ccc; " ..
   "border-radius: 4px; padding: 12px 16px; margin: 1em 0; font-size: 0.95em;"
