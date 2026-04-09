@@ -72,11 +72,12 @@ function Div(el)
   elseif fmt:match("html") then
     local blocks = pandoc.List({})
     if kind then
-      -- Flexbox: fixed-width icon column, text fills the rest. align-items
-      -- flex-start keeps the icon pinned to the top of the box.
+      -- Flexbox: fixed-width icon column, text fills the rest.
+      -- align-items: center vertically centers the icon relative to the
+      -- text column so it sits at the middle of the callout.
       blocks:insert(pandoc.RawBlock("html",
         '<div style="' .. html_style ..
-        ' display: flex; gap: 12px; align-items: flex-start;">'))
+        ' display: flex; gap: 12px; align-items: center;">'))
       blocks:insert(pandoc.RawBlock("html",
         '<img src="../images/' .. kind .. '-callout.png" ' ..
         'style="width: 48px; flex-shrink: 0;">'))
