@@ -1,13 +1,23 @@
 -- Callout filter: handles ::: {.tip} divs and differentiates Tip / Trap /
--- Wut by inspecting the bold label on the first line of the content. Each
--- variant gets its own icon image, placed at the top-left of the callout
--- box. The path ../images/<kind>.png works for both LaTeX (from the book
--- dir, pointing at the top-level images/) and HTML (from a Jekyll chapter
--- page at /<book>/chNN.html, pointing at /images/ under docs/).
+-- Wut by inspecting the bold label on the first line of the content. The
+-- box is split into two columns: the icon sits in a narrow left column
+-- and the text fills the right column, so the text does not wrap around
+-- the icon. We point at the -callout.png downsized variants (256x256,
+-- ~100KB each) so chapter PDFs do not bloat the way they would if we
+-- embedded the 1024x1024 source PNGs. The path ../images/<kind>-callout
+-- .png works for both LaTeX (from the book dir, pointing at the top-
+-- level images/) and HTML (from a Jekyll chapter page at
+-- /<book>/chNN.html, pointing at /images/ under docs/).
 
 local tcb = "colback=black!5, colframe=black!20, " ..
   "boxrule=0.4pt, arc=2pt, left=5pt, right=5pt, " ..
   "top=4pt, bottom=4pt, fontupper=\\small"
+
+-- sidebyside splits the box into two columns. lefthand width sets the
+-- width of the icon column; the rest goes to the text column.
+local tcb_icon = tcb ..
+  ", sidebyside, sidebyside align=top, sidebyside gap=8pt, " ..
+  "lefthand width=0.45in"
 
 local html_style = "background-color: #f5f5f5; border: 1px solid #ccc; " ..
   "border-radius: 4px; padding: 12px 16px; margin: 1em 0; font-size: 0.95em;"
@@ -33,32 +43,55 @@ function Div(el)
 
   if fmt:match("latex") then
     local blocks = pandoc.List({})
-    blocks:insert(pandoc.RawBlock("latex",
-      "\\begin{tcolorbox}[" .. tcb .. "]"))
-    if kind and el.content[1] and el.content[1].t == "Para" then
-      el.content[1].content:insert(1, pandoc.RawInline("latex",
-        "\\raisebox{-0.35\\height}{\\includegraphics[height=2em]{../images/"
-        .. kind .. ".png}}\\hspace{0.5em}"))
+    if kind then
+      -- Two-column box: icon in the left column, pandoc-emitted content
+      -- (everything between \tcblower and \end{tcolorbox}) in the right.
+      blocks:insert(pandoc.RawBlock("latex",
+        "\\begin{tcolorbox}[" .. tcb_icon .. "]"))
+      blocks:insert(pandoc.RawBlock("latex",
+        "\\includegraphics[width=\\linewidth]{../images/"
+        .. kind .. "-callout.png}"))
+      blocks:insert(pandoc.RawBlock("latex", "\\tcblower"))
+      for _, cb in ipairs(el.content) do
+        blocks:insert(cb)
+      end
+      blocks:insert(pandoc.RawBlock("latex", "\\end{tcolorbox}"))
+    else
+      -- No recognized label --- fall back to the plain single-column box.
+      blocks:insert(pandoc.RawBlock("latex",
+        "\\begin{tcolorbox}[" .. tcb .. "]"))
+      for _, cb in ipairs(el.content) do
+        blocks:insert(cb)
+      end
+      blocks:insert(pandoc.RawBlock("latex", "\\end{tcolorbox}"))
     end
-    for _, cb in ipairs(el.content) do
-      blocks:insert(cb)
-    end
-    blocks:insert(pandoc.RawBlock("latex", "\\end{tcolorbox}"))
     return blocks
 
   elseif fmt:match("html") then
     local blocks = pandoc.List({})
-    blocks:insert(pandoc.RawBlock("html",
-      '<div style="' .. html_style .. '">'))
-    if kind and el.content[1] and el.content[1].t == "Para" then
-      el.content[1].content:insert(1, pandoc.RawInline("html",
-        '<img src="../images/' .. kind .. '.png" ' ..
-        'style="height:1.5em;vertical-align:-0.3em;margin-right:0.4em;">'))
+    if kind then
+      -- Flexbox: fixed-width icon column, text fills the rest. align-items
+      -- flex-start keeps the icon pinned to the top of the box.
+      blocks:insert(pandoc.RawBlock("html",
+        '<div style="' .. html_style ..
+        ' display: flex; gap: 12px; align-items: flex-start;">'))
+      blocks:insert(pandoc.RawBlock("html",
+        '<img src="../images/' .. kind .. '-callout.png" ' ..
+        'style="width: 48px; flex-shrink: 0;">'))
+      blocks:insert(pandoc.RawBlock("html",
+        '<div style="flex: 1; min-width: 0;">'))
+      for _, cb in ipairs(el.content) do
+        blocks:insert(cb)
+      end
+      blocks:insert(pandoc.RawBlock("html", '</div></div>'))
+    else
+      blocks:insert(pandoc.RawBlock("html",
+        '<div style="' .. html_style .. '">'))
+      for _, cb in ipairs(el.content) do
+        blocks:insert(cb)
+      end
+      blocks:insert(pandoc.RawBlock("html", '</div>'))
     end
-    for _, cb in ipairs(el.content) do
-      blocks:insert(cb)
-    end
-    blocks:insert(pandoc.RawBlock("html", '</div>'))
     return blocks
   end
 end
