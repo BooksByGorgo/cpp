@@ -336,6 +336,17 @@ This is well-defined behavior for unsigned types --- the standard guarantees the
 
 The `static_cast<int>(x)` is just so `std::cout` prints `x` as a number instead of as a character; without it, `x` would be printed as the unprintable character with code 4.
 
+**13. What does the `char a = 'a'; char b = a + 4;` example print?**
+
+It prints `e 101`.
+
+From the ASCII table, `'a'` is 97.
+`a + 4` is 101, which the ASCII table maps to `'e'`.
+When `b` is sent to `std::cout` as a `char`, it is displayed as the glyph `e`.
+When `static_cast<int>(b)` is sent, it is displayed as the number `101`.
+
+Same byte, two different displays --- the type controls which one you see.
+
 # Chapter 3: Strings
 
 **1. What is the difference between `std::cin >> str` and `std::getline(std::cin, str)`? When would you use each one?**
