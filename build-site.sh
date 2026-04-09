@@ -51,7 +51,8 @@ build_book_pdfs() {
     echo "building PDFs in $src_dir"
     # -k: keep going after an error so one bad target (e.g. a chapter with
     # a LaTeX-incompatible Unicode char) doesn't block the other PDFs.
-    if ! (cd "$src_dir" && make -k all chapters); then
+    # -j4: build up to four PDF targets in parallel within this book.
+    if ! (cd "$src_dir" && make -k -j4 all chapters); then
         echo "warning: one or more PDF targets failed for $src_dir — site will use whatever PDFs were produced" >&2
     fi
 }
@@ -264,21 +265,29 @@ build_lectures() {
     } > "$index_dest"
 }
 
-build_book sc++  starting-cpp   "Gorgo Starting C++"          "sc++"
-build_lectures sc++/lectures starting-cpp/lectures "Gorgo Starting C++"
-build_book cc++  continuing-cpp "Gorgo Continuing C++"        "cc++"
-build_book c4c++ c-for-cpp      "Gorgo C for C++ Programmers" "c4c++"
+# Build the three books, the sc++ lectures, and the extras in parallel so
+# at least four top-level jobs are running at any given time. Combined with
+# make -j4 inside each book's PDF build, peak parallelism is ~12 concurrent
+# pandoc+lualatex runs during the PDF phase.
+build_book sc++  starting-cpp   "Gorgo Starting C++"          "sc++" &
+build_lectures sc++/lectures starting-cpp/lectures "Gorgo Starting C++" &
+build_book cc++  continuing-cpp "Gorgo Continuing C++"        "cc++" &
+build_book c4c++ c-for-cpp      "Gorgo C for C++ Programmers" "c4c++" &
 
-# extras
-for name in operators numbers; do
-    md="$name.md"
-    title=$(sed -n 's/^title: *"\(.*\)"/\1/p' "$name/$md")
-    [ -z "$title" ] && title=$(get_heading "$name/$md")
-    case "$name" in
-        operators) order=1 ;;
-        *)         order=2 ;;
-    esac
-    convert_chapter "$name" "$md" "$DOCS/extras/${name}.html" "$title" "Extras" "$order"
-done
+# extras --- run in parallel with the book builds.
+(
+    for name in operators numbers; do
+        md="$name.md"
+        title=$(sed -n 's/^title: *"\(.*\)"/\1/p' "$name/$md")
+        [ -z "$title" ] && title=$(get_heading "$name/$md")
+        case "$name" in
+            operators) order=1 ;;
+            *)         order=2 ;;
+        esac
+        convert_chapter "$name" "$md" "$DOCS/extras/${name}.html" "$title" "Extras" "$order"
+    done
+) &
+
+wait
 
 echo "site built successfully"
