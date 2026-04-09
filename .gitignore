@@ -1,0 +1,16 @@
+# Generated book PDFs --- built by each book's Makefile from the .md sources.
+# Should never be committed; build-site.sh regenerates them in CI.
+sc++/*.pdf
+cc++/*.pdf
+c4c++/*.pdf
+
+# LaTeX auxiliary files from pandoc + latexmk builds.
+sc++/*.idx
+sc++/*.ilg
+sc++/*.ind
+cc++/*.idx
+cc++/*.ilg
+cc++/*.ind
+c4c++/*.idx
+c4c++/*.ilg
+c4c++/*.ind
