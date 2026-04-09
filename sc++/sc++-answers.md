@@ -145,6 +145,27 @@ With `std::getline(std::cin, greeting);` the program prints `[Como estas]`.
 
 Use `>>` when you want to read one whitespace-delimited token; use `std::getline` when you want a whole line of input including any internal spaces.
 
+**11. Where is the bug? `"He said "wassup" and left."` will not compile.**
+
+The compiler reads a string literal as everything between an opening `"` and the next `"`.
+Given `"He said "wassup" and left."` it sees the string `"He said "`, then a stray identifier `wassup`, then another string `" and left."`, and gets confused.
+The inner double quotes need to be escaped so they become part of the string instead of ending it:
+
+```cpp
+std::cout << "He said \"wassup\" and left." << std::endl;
+```
+
+That prints `He said "wassup" and left.` as intended.
+
+**12. What does `std::cout << "a\\b\tc\nd" << std::endl;` print?**
+
+```
+a\b	c
+d
+```
+
+`\\` is a single backslash, `\t` is a tab, and `\n` is a newline, so the string is six characters: `a`, `\`, `b`, tab, `c`, newline, `d`, and then `std::endl` adds another newline.
+
 # Chapter 2: Variables
 
 **1. On a system where `int` is 4 bytes, what is `sizeof(scores)` for `int scores[10]`?**
