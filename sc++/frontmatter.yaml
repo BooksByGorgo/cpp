@@ -3,8 +3,8 @@ title: "Gorgo Starting C++"
 toc: true
 toc-depth: 2
 colorlinks: true
-mainfont: "Noto Serif CJK JP"
-monofont: "Noto Sans Mono CJK JP"
+mainfont: "TeX Gyre Pagella"
+monofont: "JetBrains Mono"
 header-includes:
   - \usepackage[most]{tcolorbox}
   - \usepackage{makeidx}
@@ -14,11 +14,17 @@ header-includes:
   - \posttitle{\par\end{center}\vskip 0.5em}
   - |
     ```{=latex}
-    \directlua{luaotfload.add_fallback("unicode_fallback", {
+    \directlua{luaotfload.add_fallback("main_fallback", {
+      "NotoSerifCJKJP:mode=harf;",
       "DejaVuSerif:mode=harf;",
       "NotoColorEmoji:mode=harf;",
     })}
-    \setmainfont{Noto Serif CJK JP}[RawFeature={fallback=unicode_fallback}]
-    \setmonofont{Noto Sans Mono CJK JP}[RawFeature={fallback=unicode_fallback}]
+    \directlua{luaotfload.add_fallback("mono_fallback", {
+      "NotoSansMonoCJKJP:mode=harf;",
+      "DejaVuSansMono:mode=harf;",
+      "NotoColorEmoji:mode=harf;",
+    })}
+    \setmainfont{TeX Gyre Pagella}[RawFeature={fallback=main_fallback}]
+    \setmonofont{JetBrains Mono}[Scale=MatchLowercase, RawFeature={-calt,-liga,-dlig,fallback=mono_fallback}]
     ```
 ---

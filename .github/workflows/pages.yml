@@ -35,6 +35,7 @@ jobs:
             fonts-noto-cjk \
             fonts-noto-color-emoji \
             fonts-dejavu \
+            fonts-jetbrains-mono \
             lmodern
 
       - name: Build chapter HTML and PDFs

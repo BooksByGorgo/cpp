@@ -50,7 +50,7 @@ No previous programming experience is assumed.
 - Uses `pandoc` with `--lua-filter=callout.lua` and `--pdf-engine=latexmk --pdf-engine-opt=-lualatex`
 - `latexmk` handles the multi-pass build needed for the index; `-lualatex` routes it through lualatex so non-ASCII Unicode (CJK, polytonic Greek, emoji) renders correctly
 - Requires `header-includes` for `\usepackage[most]{tcolorbox}` and `\usepackage{makeidx}` (already in frontmatter)
-- Unicode font stack lives in `frontmatter.yaml`: `mainfont: Noto Serif CJK JP`, `monofont: Noto Sans Mono CJK JP`, with a luaotfload fallback chain (`DejaVu Serif` for polytonic Greek, `Noto Color Emoji:mode=harf` for color emoji) defined in a raw `{=latex}` header block
+- Font stack in `frontmatter.yaml`: `mainfont: TeX Gyre Pagella` (Palatino clone) for body text, `monofont: JetBrains Mono` for code with `-calt,-liga,-dlig` to disable code ligatures. luaotfload fallback chains in a raw `{=latex}` header block cover what the primary fonts do not: `main_fallback` adds `NotoSerifCJKJP` (CJK), `DejaVuSerif` (polytonic Greek), and `NotoColorEmoji:mode=harf` (color emoji); `mono_fallback` adds `NotoSansMonoCJKJP`, `DejaVuSansMono`, and `NotoColorEmoji`
 
 ## Table of Contents and Index
 

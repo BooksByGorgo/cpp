@@ -1,6 +1,8 @@
 ---
 title: "Gorgo C for C++ Programmers"
 colorlinks: true
+mainfont: "TeX Gyre Pagella"
+monofont: "JetBrains Mono"
 header-includes:
   - \usepackage[most]{tcolorbox}
   - \usepackage{makeidx}
@@ -8,4 +10,19 @@ header-includes:
   - \usepackage{titling}
   - \pretitle{\begin{center}\includegraphics[width=0.35\textwidth]{../images/gorgo-with-badge.png}\par\vspace{1em}\LARGE}
   - \posttitle{\par\end{center}\vskip 0.5em}
+  - |
+    ```{=latex}
+    \directlua{luaotfload.add_fallback("main_fallback", {
+      "NotoSerifCJKJP:mode=harf;",
+      "DejaVuSerif:mode=harf;",
+      "NotoColorEmoji:mode=harf;",
+    })}
+    \directlua{luaotfload.add_fallback("mono_fallback", {
+      "NotoSansMonoCJKJP:mode=harf;",
+      "DejaVuSansMono:mode=harf;",
+      "NotoColorEmoji:mode=harf;",
+    })}
+    \setmainfont{TeX Gyre Pagella}[RawFeature={fallback=main_fallback}]
+    \setmonofont{JetBrains Mono}[Scale=MatchLowercase, RawFeature={-calt,-liga,-dlig,fallback=mono_fallback}]
+    ```
 ---
