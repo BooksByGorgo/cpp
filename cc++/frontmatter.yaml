@@ -7,4 +7,7 @@ header-includes:
   - \usepackage[most]{tcolorbox}
   - \usepackage{makeidx}
   - \makeindex
+  - \usepackage{titling}
+  - \pretitle{\begin{center}\includegraphics[width=0.35\textwidth]{../images/gorgo-with-badge.png}\par\vspace{1em}\LARGE}
+  - \posttitle{\par\end{center}\vskip 0.5em}
 ---
