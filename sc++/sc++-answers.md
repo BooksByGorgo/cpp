@@ -614,18 +614,18 @@ if (x == 10) {
 **6. Where is the bug?**
 
 ```cpp
-int flags = 0b1010;
-if (flags & 0b0010 == 0b0010) {
+int flags = 10;
+if (flags & 2 == 2) {
     std::cout << "bit is set" << std::endl;
 }
 ```
 
 The `==` operator has higher precedence than `&`.
-So the expression is parsed as `flags & (0b0010 == 0b0010)`, which evaluates to `flags & 1`, not `(flags & 0b0010) == 0b0010`.
+So the expression is parsed as `flags & (2 == 2)`, which evaluates to `flags & 1`, not `(flags & 2) == 2`.
 The fix is to add parentheses:
 
 ```cpp
-if ((flags & 0b0010) == 0b0010) {
+if ((flags & 2) == 2) {
 ```
 
 **7. What does this code print?**
@@ -649,13 +649,7 @@ B
 The first condition `score >= 90` is false, so it moves to the next.
 The second condition `score >= 80` is true, so `grade` is set to `"B"`.
 
-**8. What is `0b1100 & 0b1010`? What is `0b1100 | 0b1010`? What is `0b1100 ^ 0b1010`?**
-
-- `0b1100 & 0b1010` = `0b1000` (AND: a bit is 1 only if both bits are 1)
-- `0b1100 | 0b1010` = `0b1110` (OR: a bit is 1 if either bit is 1)
-- `0b1100 ^ 0b1010` = `0b0110` (XOR: a bit is 1 if the bits are different)
-
-**9. Write a short program that asks the user for an integer and prints whether it is even or odd, positive or negative (or zero).**
+**8. Write a short program that asks the user for an integer and prints whether it is even or odd, positive or negative (or zero).**
 
 ```cpp
 #include <iostream>
@@ -685,7 +679,7 @@ int main()
 }
 ```
 
-**10. What does the compound-assignment example print?**
+**9. What does the compound-assignment example print?**
 
 It prints `0`.
 
@@ -702,7 +696,7 @@ Wait --- 6 % 5 is 1, not 0.
 Trace it again carefully: 10 + 5 = 15, 15 * 2 = 30, 30 - 3 = 27, 27 / 4 = 6 (integer division drops the remainder), 6 % 5 = 1.
 The program prints `1`.
 
-**11. Think about it: precedence of `a < b && c == d || !e`.**
+**10. Think about it: precedence of `a < b && c == d || !e`.**
 
 Operator precedence in this expression, from highest to lowest:
 
