@@ -52,6 +52,8 @@ PANDOC_OPTS := $(FILTER) \
 
 # Lulu Executive wraparound cover (15.123in x 10.25in with bleed).
 COVER_IMG := ../images/c++c-gorgo-cover.png
+COVER_BADGE := ../images/c++c-gorgo-with-badge.png
+COVER_BG := \#152844
 
 all: lulu-sc++c.pdf lulu-cover.pdf
 
@@ -76,6 +78,9 @@ lulu-sc++c.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/iee
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
 
 # --- Cover ---
+
+$(COVER_IMG): $(COVER_BADGE)
+	convert "$<" -background '$(COVER_BG)' -alpha remove -alpha off "$@"
 
 .commit-date.tex: FORCE
 	@printf '\\def\\CommitDate{%s}\n' '$(DATE)' > $@
