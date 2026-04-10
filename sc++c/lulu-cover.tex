@@ -223,8 +223,32 @@
   \bottomrule
   \end{tabular}
 
+  \vspace{0.25in}
+
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries Common Container Methods}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from Starting C++, Ch.~3 \& Ch.~8}\\[2pt]
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{1.55in}@{}}
+  \toprule
+  \textbf{Container} & \textbf{Include} & \textbf{Key Methods} \\
+  \midrule
+  \op{string}
+    & \op{<string>}
+    & \op{.size()} \op{.empty()} \op{.find()} \op{.substr()} \op{.replace()} \op{.at()} \op{[]} \op{+} \op{+=} \\
+  \op{vector<T>}
+    & \op{<vector>}
+    & \op{.push\_back()} \op{.pop\_back()} \op{.insert()} \op{.erase()} \op{.size()} \op{.empty()} \op{.clear()} \op{.at()} \op{[]} \op{.front()} \op{.back()} \op{.reserve()} \\
+  \op{array<T,N>}
+    & \op{<array>}
+    & \op{.size()} \op{.at()} \op{[]} \op{.front()} \op{.back()} \op{.fill()} \\
+  \bottomrule
+  \end{tabular}
   \end{minipage}
 };
+
+% ---- URL at bottom left of back cover ----
+\node[anchor=south west, text=muted] at ($(O)+(0.75,0.75)$)
+  {\fontsize{10}{12}\selectfont\ttfamily https://gorgo.dev/c++};
 
 \end{tikzpicture}
 \end{document}
