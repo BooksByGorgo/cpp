@@ -6,8 +6,6 @@ colorlinks: true
 mainfont: "TeX Gyre Pagella"
 monofont: "JetBrains Mono"
 header-includes:
-  - \usepackage{fvextra}
-  - \fvset{breaklines=true, breakanywhere=true}
   - \usepackage[most]{tcolorbox}
   - \usepackage{imakeidx}
   - \makeindex[intoc]
