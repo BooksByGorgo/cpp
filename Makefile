@@ -19,6 +19,18 @@ C4_CHAPTERS := c4c++/ch00.md c4c++/ch01.md c4c++/ch02.md c4c++/ch03.md \
                c4c++/ch12.md
 C4_BIBL := c4c++/bibliography.md
 
+# PNGs that get embedded in the lulu PDF. Lulu rejects transparent PNGs,
+# so we composite them onto white into .lulu-img/images/. The .lulu-img/sub/
+# stub directory exists so the \graphicspath trick in frontmatter-lulu.yaml
+# can resolve the callout's raw \includegraphics{../images/foo.png} paths
+# (.lulu-img/sub/../images/foo.png -> .lulu-img/images/foo.png).
+LULU_IMG_DIR := .lulu-img/images
+LULU_IMG_STUB := .lulu-img/sub
+LULU_IMG_PNGS := $(LULU_IMG_DIR)/c++-gorgo-with-badge.png \
+                 $(LULU_IMG_DIR)/tip-callout.png \
+                 $(LULU_IMG_DIR)/trap-callout.png \
+                 $(LULU_IMG_DIR)/wut-callout.png
+
 SRCS := $(FRONTMATTER) \
         $(SC_PART) $(SC_AUTHOR) $(SC_CHAPTERS_PRE15) $(SC_CH15) \
         $(C4_PART) $(C4_AUTHOR) $(C4_CHAPTERS) $(C4_BIBL)
@@ -47,10 +59,17 @@ all: lulu-sc++c.pdf
 .lulu-c4-author.md: c4c++/author-intro.md
 	sed '1{/^\\newpage$$/d;}' $< > $@
 
-lulu-sc++c.pdf: $(SRCS) sc++/callout.lua c4c++/references.bib c4c++/ieee.csl
+$(LULU_IMG_DIR) $(LULU_IMG_STUB):
+	mkdir -p $@
+
+$(LULU_IMG_DIR)/%.png: images/%.png | $(LULU_IMG_DIR) $(LULU_IMG_STUB)
+	convert "$<" -background white -alpha remove -alpha off "$@"
+
+lulu-sc++c.pdf: $(SRCS) sc++/callout.lua c4c++/references.bib c4c++/ieee.csl $(LULU_IMG_PNGS)
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
 
 clean:
 	rm -f lulu-sc++c.pdf .lulu-ch15.md .lulu-sc-author.md .lulu-c4-author.md *.idx *.ilg *.ind
+	rm -rf .lulu-img
 
 .PHONY: all clean
