@@ -1,1 +1,1 @@
-\part{Gorgo C for C++ Programmers}
+\bookpart{Gorgo C for C++ Programmers}

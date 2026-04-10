@@ -11,6 +11,12 @@ header-includes:
   - \makeindex[intoc]
   - \usepackage{titlesec}
   - \newcommand{\sectionbreak}{\clearpage}
+  - \newif\ifskipnextsectionbreak
+  - \skipnextsectionbreakfalse
+  - \let\origsectionbreak\sectionbreak
+  - \renewcommand{\sectionbreak}{\ifskipnextsectionbreak\skipnextsectionbreakfalse\else\origsectionbreak\fi}
+  - '\newcommand{\bookpart}[1]{\clearpage\phantomsection\addcontentsline{toc}{part}{#1}\begin{center}{\Huge\bfseries #1\par}\end{center}\vspace{2em}\skipnextsectionbreaktrue}'
+  - \AtBeginDocument{\pagenumbering{gobble}}
   - \usepackage{graphicx}
   - \graphicspath{{./}{sc++/}{c4c++/}}
   - \usepackage{titling}
@@ -31,4 +37,8 @@ header-includes:
     \setmainfont{TeX Gyre Pagella}[RawFeature={fallback=main_fallback}]
     \setmonofont{JetBrains Mono}[Scale=MatchLowercase, RawFeature={-calt,-liga,-dlig,fallback=mono_fallback}]
     ```
+include-before:
+  - \clearpage
+  - \thispagestyle{empty}\null\clearpage
+  - \pagenumbering{arabic}
 ---
