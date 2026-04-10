@@ -3,7 +3,7 @@
 
 DATE := $(shell git -C .. log -1 --format="%ad" --date=format:"%B %d, %Y")
 
-COVER_IMG := ../images/c++c-gorgo-with-badge.png
+COVER_IMG := ../images/c++c-gorgo-cover.png
 
 .PHONY: all clean
 
