@@ -1,0 +1,230 @@
+% lulu-cover.tex --- Lulu Executive wraparound cover for "Gorgo C++ and C".
+%
+% Total trim (with bleed): 15.123in x 10.25in
+% Book trim: 7in x 10in
+% Bleed: 0.125in
+% Spine width: 0.873in (361 pages)
+%
+% Horizontal layout (left to right, in inches):
+%   left bleed : [0.000, 0.125]
+%   back trim  : [0.125, 7.125]
+%   spine      : [7.125, 7.998]
+%   front trim : [7.998, 14.998]
+%   right bleed: [14.998, 15.123]
+%
+% Vertical:
+%   bottom bleed: [0.000, 0.125]
+%   trim        : [0.125, 10.125]
+%   top bleed   : [10.125, 10.25]
+%
+% Safety margin: 0.5in inside the trim edge on each side.
+
+\documentclass[11pt]{article}
+
+\usepackage[paperwidth=15.123in,paperheight=10.25in,margin=0pt]{geometry}
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usetikzlibrary{calc,positioning}
+
+% Color palette
+\definecolor{bgcolor}{HTML}{0d1b2a}    % deep navy
+\definecolor{panelbg}{HTML}{152844}    % slightly lighter panel
+\definecolor{textcolor}{HTML}{f2ece1}  % cream
+\definecolor{accent}{HTML}{e0aa3e}     % gold
+\definecolor{muted}{HTML}{a9b4c2}      % muted slate
+\definecolor{rulecolor}{HTML}{5a7899}
+
+\setmainfont{TeX Gyre Pagella}
+\setmonofont{JetBrains Mono}[Scale=0.85,RawFeature={-calt,-liga,-dlig}]
+
+\graphicspath{{../images/}}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+% Commit date is supplied by the Makefile via .commit-date.tex.
+\IfFileExists{.commit-date.tex}{\input{.commit-date.tex}}{\providecommand{\CommitDate}{unknown date}}
+
+\arrayrulecolor{rulecolor}
+
+% Shortcut for monospace table cells (always in \texttt, always cream-colored)
+\newcommand{\op}[1]{\texttt{#1}}
+
+\begin{document}
+\begin{tikzpicture}[
+  remember picture,
+  overlay,
+  x=1in,y=1in,
+  every node/.style={inner sep=0pt, outer sep=0pt},
+]
+
+% Anchor: lower-left corner of the page
+\coordinate (O) at (current page.south west);
+
+% ============================================================
+% FULL-BLEED BACKGROUND
+% ============================================================
+\fill[bgcolor] (O) rectangle ($(O)+(15.123,10.25)$);
+
+% Subtle panel behind front cover for depth
+\fill[panelbg] ($(O)+(7.998,0.125)$) rectangle ($(O)+(14.998,10.125)$);
+
+% ============================================================
+% FRONT COVER  (right side)
+% x in [7.998, 14.998], center x = 11.498
+% ============================================================
+
+% Gorgo image, centered, 4.5in wide
+\node[anchor=center] at ($(O)+(11.498,6.85)$)
+  {\includegraphics[width=4.5in]{c++c-gorgo-with-badge.png}};
+
+% Title
+\node[anchor=center, text=textcolor, align=center] at ($(O)+(11.498,3.55)$)
+  {\fontsize{34}{40}\selectfont\bfseries Gorgo Starting C++ and C};
+
+% Rule under title
+\draw[accent, line width=1.2pt] ($(O)+(9.2,3.1)$) -- ($(O)+(13.8,3.1)$);
+
+% Subtitle: commit date
+\node[anchor=center, text=accent] at ($(O)+(11.498,2.75)$)
+  {\fontsize{18}{22}\selectfont\itshape \CommitDate};
+
+% Author line
+\node[anchor=center, text=textcolor] at ($(O)+(11.498,1.25)$)
+  {\fontsize{15}{18}\selectfont\scshape Ben Reed};
+
+% ============================================================
+% SPINE  (middle)
+% x in [7.125, 7.998], center = 7.5615
+% Title centered along spine, "Gorgo Book" at the base
+% ============================================================
+
+% Main spine title (centered vertically along the 10in spine)
+\node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.5615,5.125)$)
+  {\fontsize{13}{15}\selectfont\bfseries Gorgo Starting C++ and C};
+
+% "Gorgo Book" at the base of the spine
+\node[anchor=center, rotate=-90, text=accent] at ($(O)+(7.5615,1.25)$)
+  {\fontsize{10}{12}\selectfont\scshape Gorgo Book};
+
+% ============================================================
+% BACK COVER  (left side)
+% x in [0.125, 7.125], safe x in [0.625, 6.625], safe y in [0.625, 9.625]
+% Barcode exclusion: x in ~[0.5, 4.25], y in ~[0.5, 1.9]  --- leave empty.
+% ============================================================
+
+% Heading
+\node[anchor=center, text=accent] at ($(O)+(3.625,9.15)$)
+  {\fontsize{28}{34}\selectfont\bfseries Cheat Sheet};
+\node[anchor=center, text=muted] at ($(O)+(3.625,8.70)$)
+  {\fontsize{11}{13}\selectfont\itshape a quick reference for C and C++};
+
+% Accent rule under heading
+\draw[accent, line width=0.8pt] ($(O)+(1.3,8.45)$) -- ($(O)+(5.95,8.45)$);
+
+% ---- Left column: Printf, Bitwise, Compound Assignment ----
+% Stacked above the barcode exclusion zone.
+\node[anchor=north west, text=textcolor] at ($(O)+(0.70,8.20)$) {%
+  \begin{minipage}{2.80in}
+  \color{textcolor}
+  \fontsize{8.5}{10.5}\selectfont
+  \renewcommand{\arraystretch}{1.05}
+
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries printf Format Specifiers}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ programmers, Ch.~1}\\[2pt]
+  \begin{tabular}{@{}l l l@{}}
+  \toprule
+  \textbf{Spec} & \textbf{Type} & \textbf{Example output} \\
+  \midrule
+  \op{\%d}  & \op{int} (decimal)        & \op{42}        \\
+  \op{\%x}  & \op{int} (hex lower)      & \op{ff}        \\
+  \op{\%X}  & \op{int} (hex upper)      & \op{FF}        \\
+  \op{\%f}  & \op{double}               & \op{3.140000}  \\
+  \op{\%e}  & \op{double} (sci.)        & \op{3.14e+00}  \\
+  \op{\%c}  & \op{char}                 & \op{A}         \\
+  \op{\%s}  & \op{char\ *}              & \op{hola}      \\
+  \op{\%p}  & pointer                   & \op{0x7ffd...} \\
+  \op{\%zu} & \op{size\_t}              & \op{4}         \\
+  \bottomrule
+  \end{tabular}
+
+  \vspace{0.22in}
+
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries Bitwise Operators}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ programmers, Ch.~4}\\[2pt]
+  \begin{tabular}{@{}c l l l@{}}
+  \toprule
+  \textbf{Op} & \textbf{Meaning} & \textbf{Example} & \textbf{Result} \\
+  \midrule
+  \op{\&}              & bitwise AND & \op{0xF0 \& 0x3C} & \op{0x30}    \\
+  \op{|}               & bitwise OR  & \op{0xF0 | 0x0F}  & \op{0xFF}    \\
+  \op{\^{}}            & bitwise XOR & \op{0xFF \^{} 0x0F} & \op{0xF0}  \\
+  \op{\textasciitilde} & bitwise NOT & \op{\textasciitilde 0x00} & \op{0xFF} \\
+  \op{<<}              & left shift  & \op{1 << 3}       & \op{8}       \\
+  \op{>>}              & right shift & \op{16 >> 2}      & \op{4}       \\
+  \bottomrule
+  \end{tabular}
+
+  \vspace{0.22in}
+
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries std::format Specifiers}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from Starting C++, Ch.~10}\\[2pt]
+  \begin{tabular}{@{}>{\ttfamily}l l l@{}}
+  \toprule
+  \textbf{\rmfamily Spec} & \textbf{Meaning} & \textbf{Example output} \\
+  \midrule
+  \{:d\}   & decimal integer    & \op{42}         \\
+  \{:x\}   & hex (lowercase)    & \op{ff}         \\
+  \{:o\}   & octal              & \op{10}         \\
+  \{:b\}   & binary             & \op{1010}       \\
+  \{:f\}   & fixed-point        & \op{3.140000}   \\
+  \{:.2f\} & precision          & \op{3.14}       \\
+  \{:e\}   & scientific         & \op{3.14e+00}   \\
+  \{:>10\} & right align, w=10  & \op{\ \ \ \ \ \ hola} \\
+  \{:\#x\} & alt form (0x)      & \op{0xff}       \\
+  \bottomrule
+  \end{tabular}
+  \end{minipage}
+};
+
+% ---- Right column: Operator Precedence ----
+\node[anchor=north west, text=textcolor] at ($(O)+(3.80,8.20)$) {%
+  \begin{minipage}{2.80in}
+  \color{textcolor}
+  \fontsize{8.5}{10.5}\selectfont
+  \renewcommand{\arraystretch}{1.15}
+
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries Operator Precedence}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont highest to lowest --- C for C++ programmers, Ch.~4}\\[2pt]
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}c >{\raggedright\arraybackslash}p{1.48in} l@{}}
+  \toprule
+  \textbf{Lvl} & \textbf{Operators} & \textbf{Meaning} \\
+  \midrule
+  1  & \op{()} \op{[]} \op{->} \op{.}                                & grouping / access \\
+  2  & \op{!} \op{\textasciitilde} \op{++} \op{--} \op{+} \op{-} \op{*} \op{\&} \op{(type)} \op{sizeof} & unary \\
+  3  & \op{*} \op{/} \op{\%}                                         & mul, div, rem    \\
+  4  & \op{+} \op{-}                                                 & add, sub          \\
+  5  & \op{<<} \op{>>}                                               & bitwise shifts    \\
+  6  & \op{<} \op{<=} \op{>} \op{>=}                                 & relational        \\
+  7  & \op{==} \op{!=}                                               & equality          \\
+  8  & \op{\&}                                                       & bitwise AND       \\
+  9  & \op{\^{}}                                                     & bitwise XOR       \\
+  10 & \op{|}                                                        & bitwise OR        \\
+  11 & \op{\&\&}                                                     & logical AND       \\
+  12 & \op{||}                                                       & logical OR        \\
+  13 & \op{?} \op{:}                                                 & ternary           \\
+  14 & \op{=} \op{+=} \op{-=} \ldots                                 & assignment        \\
+  15 & \op{,}                                                        & comma             \\
+  \bottomrule
+  \end{tabular}
+
+  \end{minipage}
+};
+
+\end{tikzpicture}
+\end{document}
