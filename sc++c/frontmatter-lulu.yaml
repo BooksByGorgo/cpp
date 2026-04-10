@@ -18,7 +18,7 @@ header-includes:
   - '\newcommand{\bookpart}[2]{\clearpage\phantomsection\addcontentsline{toc}{part}{#1}\begin{center}\includegraphics[width=0.35\textwidth]{#2}\par\vspace{1em}{\Huge\bfseries #1\par}\end{center}\vspace{2em}\skipnextsectionbreaktrue}'
   - \AtBeginDocument{\pagenumbering{gobble}}
   - \usepackage{graphicx}
-  - \graphicspath{{.lulu-img/sub/}{.lulu-img/}{./}{../sc++/}{../c4c++/}}
+  - \graphicspath{{./}{../sc++/}{../c4c++/}}
   - \usepackage{titling}
   - \pretitle{\begin{center}\includegraphics[width=0.35\textwidth]{../images/c++c-gorgo.png}\par\vspace{1em}\LARGE}
   - \posttitle{\par\end{center}\vskip 0.5em}
@@ -44,16 +44,16 @@ include-before:
     \thispagestyle{empty}
     \vspace*{\fill}
     \begin{center}
-    Dear reader, we hope you find this book useful in your hero's journey
+    dear reader, we hope you find this book useful in your hero's journey
     to awesome developer!
 
     \medskip
-    This is an open source book.
-    If you find something that can be improved, please take a moment to go to
-    \url{https://gorgo.dev/c++}, open an issue, and we will try to fix it.
+    this is an open source book.
+    if you find something that can be improved, please take a moment to go to
+    \url{https://gorgo.dev/c++} and open an issue. we will try to fix it.
 
     \medskip
-    \textbf{May the source be with you! Always!}
+    \textbf{may the source be with you! always}
     \end{center}
     \vspace*{\fill}
     \clearpage

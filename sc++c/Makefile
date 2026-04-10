@@ -19,19 +19,14 @@ C4_CHAPTERS := ../c4c++/ch00.md ../c4c++/ch01.md ../c4c++/ch02.md ../c4c++/ch03.
                ../c4c++/ch12.md
 C4_BIBL := ../c4c++/bibliography.md
 
-# PNGs that get embedded in the lulu PDF. Lulu rejects transparent PNGs,
-# so we composite them onto white into .lulu-img/images/. The .lulu-img/sub/
-# stub directory exists so the \graphicspath trick in frontmatter-lulu.yaml
-# can resolve the callout's raw \includegraphics{../images/foo.png} paths
-# (.lulu-img/sub/../images/foo.png -> .lulu-img/images/foo.png).
-LULU_IMG_DIR := .lulu-img/images
-LULU_IMG_STUB := .lulu-img/sub
-LULU_IMG_PNGS := $(LULU_IMG_DIR)/c++c-gorgo.png \
-                 $(LULU_IMG_DIR)/c++-gorgo.png \
-                 $(LULU_IMG_DIR)/c-gorgo.png \
-                 $(LULU_IMG_DIR)/tip-callout.png \
-                 $(LULU_IMG_DIR)/trap-callout.png \
-                 $(LULU_IMG_DIR)/wut-callout.png
+# Ghostscript flags to flatten transparency and cap image resolution at 600 PPI.
+# LuaTeX embeds the original transparent PNGs despite \graphicspath, so we
+# post-process the PDF instead.
+GS_LULU := gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite \
+           -dCompatibilityLevel=1.3 \
+           -dDownsampleColorImages=true -dColorImageResolution=600 \
+           -dDownsampleGrayImages=true -dGrayImageResolution=600 \
+           -dDownsampleMonoImages=true -dMonoImageResolution=600
 
 SRCS := $(FRONTMATTER) \
         $(SC_PART) $(SC_AUTHOR) $(SC_CHAPTERS_PRE15) $(SC_CH15) \
@@ -68,13 +63,10 @@ all: lulu-sc++c.pdf lulu-cover.pdf
 .lulu-c4-author.md: ../c4c++/author-intro.md
 	sed '1{/^\\newpage$$/d;}' $< > $@
 
-$(LULU_IMG_DIR) $(LULU_IMG_STUB):
-	mkdir -p $@
+lulu-sc++c.pdf: .lulu-sc++c-raw.pdf
+	$(GS_LULU) -sOutputFile=$@ $<
 
-$(LULU_IMG_DIR)/%.png: ../images/%.png | $(LULU_IMG_DIR) $(LULU_IMG_STUB)
-	convert "$<" -background white -alpha remove -alpha off "$@"
-
-lulu-sc++c.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/ieee.csl $(LULU_IMG_PNGS)
+.lulu-sc++c-raw.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/ieee.csl
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
 
 # --- Cover ---
@@ -85,17 +77,19 @@ $(COVER_IMG): $(COVER_BADGE)
 .commit-date.tex: FORCE
 	@printf '\\def\\CommitDate{%s}\n' '$(DATE)' > $@
 
-lulu-cover.pdf: lulu-cover.tex .commit-date.tex $(COVER_IMG)
-	latexmk -lualatex -interaction=nonstopmode lulu-cover.tex
-	latexmk -c lulu-cover.tex
+lulu-cover.pdf: lulu-cover-raw.pdf
+	$(GS_LULU) -sOutputFile=$@ $<
+
+lulu-cover-raw.pdf: lulu-cover.tex .commit-date.tex $(COVER_IMG)
+	latexmk -lualatex -interaction=nonstopmode -jobname=lulu-cover-raw lulu-cover.tex
+	latexmk -c -jobname=lulu-cover-raw lulu-cover.tex
 
 # --- Clean ---
 
 clean:
-	rm -f lulu-sc++c.pdf .lulu-ch15.md .lulu-sc-author.md .lulu-c4-author.md *.idx *.ilg *.ind
-	rm -rf .lulu-img
-	-latexmk -C lulu-cover.tex
-	rm -f .commit-date.tex lulu-cover.aux lulu-cover.log lulu-cover.fls lulu-cover.fdb_latexmk
+	rm -f lulu-sc++c.pdf .lulu-sc++c-raw.pdf .lulu-ch15.md .lulu-sc-author.md .lulu-c4-author.md *.idx *.ilg *.ind
+	rm -f lulu-cover.pdf lulu-cover-raw.pdf
+	rm -f .commit-date.tex lulu-cover-raw.aux lulu-cover-raw.log lulu-cover-raw.fls lulu-cover-raw.fdb_latexmk
 
 .PHONY: all clean FORCE
 FORCE:

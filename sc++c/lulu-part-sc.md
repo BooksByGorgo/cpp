@@ -1,1 +1,1 @@
-\bookpart{Gorgo Starting C++}{images/c++-gorgo.png}
+\bookpart{Gorgo Starting C++}{../images/c++-gorgo.png}
