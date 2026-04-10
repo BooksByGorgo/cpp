@@ -24,6 +24,8 @@ C4_BIBL := ../c4c++/bibliography.md
 # post-process the PDF instead.
 GS_LULU := gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite \
            -dCompatibilityLevel=1.3 \
+           -dAutoFilterColorImages=false -dColorImageFilter=/FlateEncode \
+           -dAutoFilterGrayImages=false -dGrayImageFilter=/FlateEncode \
            -dDownsampleColorImages=true -dColorImageResolution=600 \
            -dDownsampleGrayImages=true -dGrayImageResolution=600 \
            -dDownsampleMonoImages=true -dMonoImageResolution=600
