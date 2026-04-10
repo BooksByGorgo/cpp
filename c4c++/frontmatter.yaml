@@ -12,7 +12,7 @@ header-includes:
   - \usepackage{titlesec}
   - \newcommand{\sectionbreak}{\clearpage}
   - \usepackage{titling}
-  - \pretitle{\begin{center}\includegraphics[width=0.35\textwidth]{../images/gorgo-with-badge.png}\par\vspace{1em}\LARGE}
+  - \pretitle{\begin{center}\includegraphics[width=0.35\textwidth]{../images/c++-gorgo-with-badge.png}\par\vspace{1em}\LARGE}
   - \posttitle{\par\end{center}\vskip 0.5em}
   - |
     ```{=latex}
