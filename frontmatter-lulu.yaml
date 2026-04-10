@@ -39,6 +39,24 @@ header-includes:
     ```
 include-before:
   - \clearpage
-  - \thispagestyle{empty}\null\clearpage
+  - |
+    ```{=latex}
+    \thispagestyle{empty}
+    \vspace*{\fill}
+    \begin{center}
+    Dear reader, we hope you find this book useful in your hero's journey
+    to awesome developer!
+
+    \medskip
+    This is an open source book.
+    If you find something that can be improved, please take a moment to go to
+    \url{https://gorgo.dev/c++}, open an issue, and we will try to fix it.
+
+    \medskip
+    \textbf{May the source be with you! Always!}
+    \end{center}
+    \vspace*{\fill}
+    \clearpage
+    ```
   - \pagenumbering{arabic}
 ---
