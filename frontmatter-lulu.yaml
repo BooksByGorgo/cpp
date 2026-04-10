@@ -15,12 +15,12 @@ header-includes:
   - \skipnextsectionbreakfalse
   - \let\origsectionbreak\sectionbreak
   - \renewcommand{\sectionbreak}{\ifskipnextsectionbreak\skipnextsectionbreakfalse\else\origsectionbreak\fi}
-  - '\newcommand{\bookpart}[1]{\clearpage\phantomsection\addcontentsline{toc}{part}{#1}\begin{center}{\Huge\bfseries #1\par}\end{center}\vspace{2em}\skipnextsectionbreaktrue}'
+  - '\newcommand{\bookpart}[2]{\clearpage\phantomsection\addcontentsline{toc}{part}{#1}\begin{center}\includegraphics[width=0.35\textwidth]{#2}\par\vspace{1em}{\Huge\bfseries #1\par}\end{center}\vspace{2em}\skipnextsectionbreaktrue}'
   - \AtBeginDocument{\pagenumbering{gobble}}
   - \usepackage{graphicx}
   - \graphicspath{{.lulu-img/sub/}{.lulu-img/}{./}{sc++/}{c4c++/}}
   - \usepackage{titling}
-  - \pretitle{\begin{center}\includegraphics[width=0.35\textwidth]{images/c++-gorgo-with-badge.png}\par\vspace{1em}\LARGE}
+  - \pretitle{\begin{center}\includegraphics[width=0.35\textwidth]{images/c++c-gorgo.png}\par\vspace{1em}\LARGE}
   - \posttitle{\par\end{center}\vskip 0.5em}
   - |
     ```{=latex}

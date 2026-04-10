@@ -26,7 +26,9 @@ C4_BIBL := c4c++/bibliography.md
 # (.lulu-img/sub/../images/foo.png -> .lulu-img/images/foo.png).
 LULU_IMG_DIR := .lulu-img/images
 LULU_IMG_STUB := .lulu-img/sub
-LULU_IMG_PNGS := $(LULU_IMG_DIR)/c++-gorgo-with-badge.png \
+LULU_IMG_PNGS := $(LULU_IMG_DIR)/c++c-gorgo.png \
+                 $(LULU_IMG_DIR)/c++-gorgo.png \
+                 $(LULU_IMG_DIR)/c-gorgo.png \
                  $(LULU_IMG_DIR)/tip-callout.png \
                  $(LULU_IMG_DIR)/trap-callout.png \
                  $(LULU_IMG_DIR)/wut-callout.png
