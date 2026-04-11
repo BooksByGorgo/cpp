@@ -11,7 +11,7 @@ PANDOC_OPTS="-f markdown -t html5 --highlight-style=pygments --wrap=none --email
 PDF_ICON_SVG='<svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>'
 
 get_heading() {
-    grep -m1 '^#\+ ' "$1" | sed 's/^#\+ //'
+    grep -m1 '^#\+ ' "$1" | sed -e 's/^#\+ //' -e 's/[[:space:]]*{[^}]*}[[:space:]]*$//'
 }
 
 # Extract the topic line from a remark.js lecture slide deck. The title slide
@@ -37,6 +37,44 @@ convert_chapter() {
         printf '%s\n\n' "---"
         printf '{%% raw %%}\n'
         (cd "$src_dir" && pandoc "$md_base" $PANDOC_OPTS $filter_opt)
+        printf '\n{%% endraw %%}\n'
+    } > "$dest"
+}
+
+# Render bibliography.md as a standalone HTML page. Citeproc alone would leave
+# the #refs div empty because bibliography.md has no explicit citations, so we
+# prepend a nocite="@*" YAML metadata block to pull every .bib entry in. The
+# raw LaTeX (\newpage, \printindex) in the source drops out naturally on HTML
+# output.
+convert_bibliography() {
+    local src_dir="$1" dest="$2" title="$3" parent="$4" nav_order="$5"
+
+    mkdir -p "$(dirname "$dest")"
+
+    local filter_opt=""
+    [ -f "$src_dir/callout.lua" ] && filter_opt="--lua-filter=callout.lua"
+
+    local -a cite_opts=()
+    if [ -f "$src_dir/references.bib" ]; then
+        cite_opts+=(--citeproc --bibliography=references.bib)
+        [ -f "$src_dir/ieee.csl" ] && cite_opts+=(--csl=ieee.csl)
+    fi
+
+    {
+        printf '%s\n' "---"
+        printf 'layout: default\n'
+        printf 'title: "%s"\n' "$title"
+        printf 'parent: "%s"\n' "$parent"
+        printf 'nav_order: %s\n' "$nav_order"
+        printf '%s\n\n' "---"
+        printf '{%% raw %%}\n'
+        (
+            cd "$src_dir"
+            {
+                printf -- '---\nnocite: "@*"\n---\n\n'
+                cat bibliography.md
+            } | pandoc $PANDOC_OPTS $filter_opt "${cite_opts[@]}"
+        )
         printf '\n{%% endraw %%}\n'
     } > "$dest"
 }
@@ -121,6 +159,16 @@ build_book() {
 
         printf '<ul class="chapter-list">\n'
 
+        # Author intro (if present) renders before chapter 0.
+        if [ -f "$src_dir/author-intro.md" ]; then
+            local author_title author_dest
+            author_title=$(get_heading "$src_dir/author-intro.md")
+            author_dest="$DOCS/$dest_subdir/author-intro.html"
+            convert_chapter "$src_dir" "author-intro.md" "$author_dest" \
+                "$author_title" "$parent" "-1"
+            emit_chapter_entry "$dest_subdir" "author-intro" "$author_title" "no"
+        fi
+
         for md in "$src_dir"/ch*.md; do
             local base num title html_dest pdf_src pdf_dst include_pdf
             base=$(basename "$md")
@@ -157,6 +205,15 @@ build_book() {
 
             emit_chapter_entry "$dest_subdir" "${base%.md}" "$title" "$include_pdf"
         done
+
+        if [ -f "$src_dir/bibliography.md" ]; then
+            local biblio_title biblio_dest
+            biblio_title=$(get_heading "$src_dir/bibliography.md")
+            biblio_dest="$DOCS/$dest_subdir/bibliography.html"
+            convert_bibliography "$src_dir" "$biblio_dest" \
+                "$biblio_title" "$parent" "150"
+            emit_chapter_entry "$dest_subdir" "bibliography" "$biblio_title" "no"
+        fi
 
         printf '</ul>\n'
 
