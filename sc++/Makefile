@@ -1,12 +1,13 @@
 DATE := $(shell git log -1 --format="%ad" --date=format:"%B %d, %Y")
 FILTER := --lua-filter=callout.lua
-PANDOC_OPTS := $(FILTER) --pdf-engine=latexmk --pdf-engine-opt=-lualatex -M subtitle="$(DATE)" -V geometry:margin=1in
+PANDOC_OPTS := $(FILTER) --pdf-engine=latexmk --pdf-engine-opt=-lualatex --citeproc --bibliography=references.bib --csl=ieee.csl -M subtitle="$(DATE)" -V geometry:margin=1in
 
 PDFS := sc++.pdf sc++-answers.pdf
 
 CHAPTERS := frontmatter.yaml author-intro.md \
 	ch00.md ch01.md ch02.md ch03.md ch04.md ch05.md ch06.md ch07.md \
-	ch08.md ch09.md ch10.md ch11.md ch12.md ch13.md ch14.md ch15.md
+	ch08.md ch09.md ch10.md ch11.md ch12.md ch13.md ch14.md ch15.md \
+	bibliography.md
 
 CH_SRCS := $(filter ch%.md,$(CHAPTERS))
 CH_PDFS := $(CH_SRCS:.md=.pdf)

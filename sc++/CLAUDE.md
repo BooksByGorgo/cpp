@@ -59,7 +59,7 @@ No previous programming experience is assumed.
 - place `\index{term}` at the primary introduction/definition of a term, not inside code blocks
 - use `\index{parent!child}` for sub-entries (e.g., `\index{pointer!arithmetic}`)
 - in `\index{}`, escape double quotes by doubling them (e.g., `\index{extern ""C""}`)
-- `\printindex` goes only in ch15.md (the last chapter) --- do not add it to other chapters
+- `\printindex` goes at the end of `bibliography.md` (after the `#refs` div), so the index renders after the references at the very end of the book --- do not add it to chapter files
 
 ## 90s References
 
