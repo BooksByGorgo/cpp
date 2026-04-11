@@ -8,7 +8,7 @@ has_toc: false
 
 # Gorgo Starting C++
 
-<div style="float: right; margin: 0 0 1rem 1.5rem; max-width: 200px;">
+<div style="float: left; margin: 0 0 1rem 1.5rem; max-width: 200px;">
   <img src="{{ '/images/c++-gorgo-with-badge.png' | relative_url }}" alt="Gorgo, Queen of Sparta, holding a C++ book" style="width: 100%;">
 </div>
 
