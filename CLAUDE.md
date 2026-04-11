@@ -60,4 +60,6 @@ when committing a change based on an issue (or set of issues)
 
 # making changes
 
-whenever you finish making changes automatically commit to git
+- whenever you finish making changes automatically commit to git
+- if there are changes that haven't been pushed, amend the commit to the latest local only commit
+
