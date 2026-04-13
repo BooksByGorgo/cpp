@@ -1624,7 +1624,7 @@ It could also be acceptable if you intentionally need a copy to modify independe
 **7. Where is the bug?**
 
 ```cpp
-std::vector<std::string> playlist = {"Wannabe", "No Diggity"};
+std::vector<std::string> playlist = {"Wannabe", "A Little Respect"};
 std::cout << playlist.at(2) << "\n";
 ```
 

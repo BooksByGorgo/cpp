@@ -43,7 +43,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 
 ## Chapter 8: Containers
 - Wannabe --- Spice Girls
-- No Diggity --- Blackstreet
+- A Little Respect --- Erasure
 - Oasis (band name used in example)
 - Creep --- Radiohead
 - No Rain --- Blind Melon

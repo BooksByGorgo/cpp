@@ -108,7 +108,7 @@ std::vector<int> empty;                // size 0
 std::vector<int> zeros(5);             // 5 zeros
 std::vector<int> fives(5, 42);         // 5 copies of 42
 std::vector<std::string> songs =
-    {"Wannabe", "No Diggity"};         // initializer list
+    {"Wannabe", "A Little Respect"};         // initializer list
 ```
 
 - The workhorse container of C++ --- use it for almost everything
@@ -119,7 +119,7 @@ std::vector<std::string> songs =
 std::vector<std::string> playlist;
 
 playlist.push_back("Wannabe");
-playlist.push_back("No Diggity");
+playlist.push_back("A Little Respect");
 std::cout << playlist.size() << "\n";   // 2
 
 playlist.pop_back();
@@ -339,7 +339,7 @@ v.shrink_to_fit();   // non-binding request to match capacity to size
 ## 3. Range-Based `for` Loop (15 min)
 
 ```cpp
-std::vector<std::string> songs = {"Wannabe", "No Diggity"};
+std::vector<std::string> songs = {"Wannabe", "A Little Respect"};
 
 for (const auto& song : songs) {
     std::cout << song << "\n";
@@ -372,7 +372,7 @@ for (auto& v : values) {
 Under the hood, range-based `for` uses **iterators**.
 
 ```cpp
-std::vector<std::string> canciones = {"Wannabe", "No Diggity"};
+std::vector<std::string> canciones = {"Wannabe", "A Little Respect"};
 
 for (auto it = canciones.begin(); it != canciones.end(); ++it) {
     std::cout << *it << "\n";
