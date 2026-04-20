@@ -1,0 +1,316 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 2
+
+Strings
+
+---
+# Review: What does this print?
+
+```c
+printf("%05d %x\n", 42, 255);
+```
+
+1. `00042 ff`
+1. `42 255`
+1. `   42  ff`
+1. `00042 FF`
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Describe a C string as `char[]` + `'\0'`
+- Distinguish `char s[]` from `const char *p`
+- Use the `<string.h>` staples
+- Concatenate safely
+- `strdup` / `strtok` pitfalls
+- Classify characters with `<ctype.h>`
+
+---
+# What Is a C String?
+
+- No `std::string` in C
+- Just a `char` array ending in `'\0'`
+- Functions find the end by searching for `'\0'`
+- `"hello"` is **6 bytes**, not 5
+
+```c
+char greeting[] = "Hola, mundo";  // 12 bytes
+char band[20]   = "Depeche Mode"; // 20 buf, 13 used
+```
+
+---
+# Literal vs Array
+.lc[
+```c
+char arr[] =
+    "I Can't Drive 55";
+const char *ptr =
+    "I Can't Drive 55";
+```
+]
+.rc[
+- `arr[0] = 'i';` --- OK
+- `ptr[0] = 'i';` --- compile error
+- `char *bad = "...";` --- compiles, but **UB** to modify
+- Habit: `const char *` for every literal
+]
+
+---
+# strlen and strcpy
+.lc[
+```c
+char s[] = "Take On Me";
+size_t n = strlen(s);      // 10
+size_t sz = sizeof(s);     // 11
+
+char dest[20];
+strcpy(dest, s);
+```
+]
+.rc[
+- `strlen` counts **before** `'\0'`
+- Array size includes `'\0'`
+- `strcpy` trusts dest is big enough
+- `strncpy` may *not* null-terminate
+]
+
+---
+# strcmp: 0 Means Equal
+.lc[
+```c
+char a[] = "Rush";
+char b[] = "Rush";
+
+if (a == b) { /* addresses */ }
+
+if (strcmp(a, b) == 0) {
+    puts("Same band!");
+}
+```
+]
+.rc[
+- Think "difference" --- `0` = no difference
+- Negative: first < second
+- Positive: first > second
+- `strncmp(a, b, n)` for prefix match
+]
+
+---
+# Finding Characters / Substrings
+.lc[
+```c
+char *p;
+
+p = strchr(s, 'o');   // first 'o'
+p = strrchr(s, 'o');  // last  'o'
+p = strstr(h, "Run"); // substring
+```
+]
+.rc[
+- All three return `NULL` when not found
+- Compute index with `p - s`
+- Print it with `%td` (`ptrdiff_t`)
+]
+
+---
+# strcat --- The Danger Zone
+.lc[
+```c
+char buf[12] = "Buenas ";
+// 8 used, 4 left
+strcat(buf, "noches");
+// needs 7 --- OVERFLOW
+```
+]
+.rc[
+- `strcat` has no size parameter
+- Overflow = crashes, exploits, or mysterious bugs
+- Use `strncat` with the remaining space
+- Leave one byte for `'\0'`
+]
+
+---
+# Safe Concatenation
+
+```c
+char buf[20] = "Hello";
+strncat(buf, ", World!",
+        sizeof(buf) - strlen(buf) - 1);
+```
+
+**Trap:** The third argument is the **max to append**, not the buffer size.
+
+Leave room for `'\0'`.
+
+---
+# strdup and free
+.lc[
+```c
+char *copy = strdup(
+    "Video Killed "
+    "the Radio Star");
+
+puts(copy);
+free(copy);
+```
+]
+.rc[
+- Allocates via `malloc` internally
+- You own the memory
+- Forget `free` = leak
+- POSIX (C23 in standard)
+]
+
+---
+# strtok: Destructive and Not Thread-Safe
+.lc[
+```c
+char line[] =
+    "Girls Just Want "
+    "to Have Fun";
+
+char *t = strtok(line, " ");
+while (t) {
+    puts(t);
+    t = strtok(NULL, " ");
+}
+```
+]
+.rc[
+- Overwrites delimiters with `'\0'`
+- Hidden static state
+- Can't tokenize two strings at once
+- Prefer `strtok_r` / `strtok_s`
+]
+
+---
+# <ctype.h>
+.lc[
+| Predicate | True when |
+|:---|:---|
+| `isalpha(c)` | letter |
+| `isdigit(c)` | digit |
+| `isalnum(c)` | either |
+| `isspace(c)` | whitespace |
+| `isupper` / `islower` | case |
+
+`toupper(c)` / `tolower(c)`
+]
+.rc[
+**Wut:** argument type is `int`.
+
+On signed-char platforms, high bytes turn into negative ints --- UB.
+
+Cast first:
+```c
+toupper((unsigned char)c)
+```
+]
+
+---
+# Live Coding
+.lc[
+```c
+char song[] = "Sweet Dreams";
+printf("'%s' (%zu)\n",
+       song, strlen(song));
+
+char greet[30] = "Buenos ";
+strncat(greet, "dias",
+  sizeof(greet)
+  - strlen(greet) - 1);
+puts(greet);
+
+char *d = strdup("...");
+puts(d); free(d);
+```
+]
+.rc[
+- `cc -Wall -Wextra -pedantic`
+- Swap `strncat` for `strcat` and read the warning
+- Try modifying a literal and feel the compiler stop you
+]
+
+---
+# What does this print?
+
+```c
+char s[] = "Ghostbusters";
+printf("%zu %zu\n",
+       strlen(s), sizeof(s));
+```
+
+1. `12 12`
+1. `12 13`
+1. `13 12`
+1. `13 13`
+1. Ben got this wrong
+
+---
+# Where is the bug?
+
+```c
+char *greeting = "We Got the Beat";
+greeting[0] = 'w';
+printf("%s\n", greeting);
+```
+
+1. `printf` needs `&greeting`
+1. Strings cannot be lowercase
+1. Modifying a string literal is UB
+1. `greeting` needs to be `char[]`
+1. Both C and D
+
+---
+# What does strcmp("A", "B") return?
+
+1. `0`
+1. A positive number
+1. A negative number
+1. `-1` exactly
+1. Ben got this wrong
+
+---
+# Key Points
+
+- C string = `char[]` + `'\0'`
+- Always leave room for the null terminator
+- `const char *` for literals
+- `==` compares addresses; use `strcmp`
+- `strncpy` / `strncat` over `strcpy` / `strcat`
+- `strdup` needs `free`
+- `strtok` is destructive; prefer `strtok_r`
+- `(unsigned char)` before `<ctype.h>`
+
+**Read:** chapter 6 of *Gorgo C for C++ Programmers*. **Do:** exercises 1, 2, 3, 4, 5, 6, 7.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

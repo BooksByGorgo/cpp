@@ -1,0 +1,274 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 1
+
+Introduction to C
+
+---
+# Learning Objectives
+
+- Describe how C and modern C++ differ
+- Compile a C program with `cc`
+- Use the core `printf` format specifiers
+- Control width, precision, and zero-fill
+- Use `scanf` with `%d` and `%s`
+- Avoid the common `printf`/`scanf` traps
+
+---
+# Why Learn C?
+
+- `cfront` originally translated C++ into C
+- Modern C++ has drifted far from C
+- Operating systems, firmware, databases, runtimes are all C
+- You *will* meet C in a C++ job
+
+---
+# C++ vs C (1 of 2)
+.lc[
+| C++ | C |
+|:---|:---|
+| `std::string` | `char[]` + `'\0'` |
+| `std::vector` | arrays / `malloc` |
+| `std::cout` | `printf` |
+| `std::cin` | `scanf` |
+| `new` / `delete` | `malloc` / `free` |
+]
+.rc[
+- No classes in C
+- No templates in C
+- No exceptions in C
+- No smart pointers in C
+]
+
+---
+# C++ vs C (2 of 2)
+.lc[
+| C++ | C |
+|:---|:---|
+| smart pointers | raw pointers |
+| classes | structs + functions |
+| references (`&`) | pointers (`*`) |
+| `bool` built-in | `<stdbool.h>` |
+| `// comments` | `/* ... */` (C89) |
+]
+.rc[
+- `//` comments OK since C99
+- `_Bool` is the C89 keyword
+- References look like addresses --- confusing
+]
+
+---
+# Hello, World
+.lc[
+```c
+#include <stdio.h>
+
+int main(void) {
+    printf("hello, world\n");
+    return 0;
+}
+```
+]
+.rc[
+- `.c` extension, not `.cpp`
+- Compile: `cc hello.c`
+- `printf` lives in `<stdio.h>`
+- `\n` is yours to add --- `printf` won't
+]
+
+---
+# Core Format Specifiers
+.lc[
+| Spec | For | Example |
+|:---|:---|:---|
+| `%d` | `int` | `42` |
+| `%x` `%X` | `int` hex | `ff` / `FF` |
+| `%f` | `double` | `3.140000` |
+| `%e` | `double` sci | `3.14e+00` |
+| `%c` | `char` | `A` |
+| `%s` | `char *` | `hola` |
+| `%p` | pointer | `0x7ffd...` |
+| `%zu` | `size_t` | `4` |
+]
+.rc[
+- Cast pointer to `void *` before `%p`
+- `%zu` for `sizeof` and `strlen`
+- Mismatch between specifier and type is **undefined behavior**
+]
+
+---
+# Width, Precision, Zero-Fill
+.lc[
+```c
+printf("%f\n",   98.6);   // 98.600000
+printf("%.2f\n", 98.6);   // 98.60
+printf("%02d\n", 3);      // 03
+printf("%06X\n", 0xFF8800);
+                           // FF8800
+printf("%d%%\n", 95);     // 95%
+```
+]
+.rc[
+- `.N` sets precision
+- Leading `0` pads with zeros instead of spaces
+- `%%` prints a literal `%`
+- Same syntax works in `fprintf`, `snprintf`
+]
+
+---
+# printf Traps
+
+- **Format string attack:** never write `printf(user_str)`
+- Always: `printf("%s", user_str)`
+- Mismatched specifier + type is undefined behavior
+- `-Wall -Wformat` catches many cases --- use them
+
+---
+# scanf Basics
+.lc[
+```c
+int age;
+scanf("%d", &age);
+
+char name[50];
+scanf("%49s", name);
+```
+]
+.rc[
+- `scanf` fills variables, so it needs addresses
+- `&` gets the address of a scalar
+- Arrays already are addresses
+- Always cap `%s` with a width
+]
+
+---
+# Reading Multiple Items
+.lc[
+```c
+int track;
+char name[50];
+
+if (scanf("%d %s",
+          &track, name) != 2) {
+    printf("I needed "
+           "a number and a name\n");
+}
+```
+]
+.rc[
+- `scanf` returns items read
+- `EOF` when input is exhausted
+- `%s` stops at the first whitespace
+- Think of `scanf` as a rough parser, not a safe one
+]
+
+---
+# scanf Traps
+
+- Missing `&`: `scanf("%d", age);` --- compiles with a warning, crashes at runtime
+- Unbounded `%s`: `scanf("%s", name);` can overflow your buffer
+- Fix: `scanf("%49s", name);` for a 50-byte buffer
+
+**Trap:** `scanf` does no bounds checking --- bound it yourself.
+
+---
+# Live Coding: Try It
+.lc[
+```c
+int num;
+printf("Enter a number: ");
+scanf("%d", &num);
+
+printf("%d  %x  %X\n",
+       num, num, num);
+printf("%c\n", num);
+
+for (int i = 1; i <= 3; i++)
+    printf("Track %02d\n", i);
+
+printf("Pi: %.2f\n", 3.14159);
+printf("100%% complete\n");
+```
+]
+.rc[
+- Compile with `cc -Wall -Wextra -pedantic`
+- Intentionally swap `%d` for `%f` and show the warning
+- Drop the `\n` from the prompt and discuss buffering (preview)
+]
+
+---
+# What does this print?
+
+```c
+printf("%05d %x\n", 42, 255);
+```
+
+1. `00042 ff`
+1. `42 255`
+1. `   42  ff`
+1. `00042 FF`
+1. Ben got this wrong
+
+---
+# Where is the bug?
+
+```c
+int count;
+scanf("%d", count);
+```
+
+1. `%d` is wrong for `int`
+1. Missing `&` before `count`
+1. `count` is uninitialized
+1. Missing semicolon
+1. Ben got this wrong
+
+---
+# Why pick printf for a log file?
+
+1. printf is slower, which gives prettier output
+1. Format strings make the message template visible and easy to translate
+1. printf never fails
+1. std::cout does not support integers
+1. Ben got this wrong
+
+---
+# Key Points
+
+- C and C++ are different languages
+- `.c` + `cc`; `<stdio.h>` replaces `<iostream>`
+- Specifiers must match argument types
+- `scanf` needs `&` on scalars, not arrays
+- Always cap `%s` with a width
+- Never `printf(user_string)`
+
+**Read:** chapter 3 of *Gorgo C for C++ Programmers*. **Do:** exercises 1, 2, 4, 5, 7, 8.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
