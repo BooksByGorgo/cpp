@@ -1,0 +1,294 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 5
+
+Memory Lifetimes and malloc
+
+---
+# Review: What does this print?
+
+```c
+void mystery(int x) { x = x * 2; }
+
+int val = 5;
+mystery(val);
+printf("%d\n", val);
+```
+
+1. `10`
+1. `5`
+1. Undefined
+1. Depends on compiler
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Distinguish global, local, static-local, and heap lifetimes
+- Know where each kind of variable lives
+- Recognize the dangling-local bug
+- Use `malloc` / `free` safely
+- Check for allocation failure
+
+---
+# Why Lifetimes Matter
+
+- Every variable lives somewhere
+- Visibility, lifetime, who frees it --- all depend on kind
+- Wrong lifetime = crashes, leaks, exploits
+- Java and Rust exist to dodge this
+
+---
+# Global Variables
+.lc[
+```c
+int high_score = 0;
+
+void update(int points) {
+    if (points > high_score)
+        high_score = points;
+}
+```
+]
+.rc[
+- Born at program start
+- Dies at program exit
+- Visible to every function in the file
+- Any function can scribble on it
+
+**Tip:** Use sparingly.
+]
+
+---
+# Local Variables
+.lc[
+```c
+void greet(void) {
+    char msg[] = "Hola";
+    puts(msg);
+}
+// msg is gone now
+```
+]
+.rc[
+- Born on the stack at call
+- Dies on return
+- Automatic cleanup
+- Stack = one pointer move = fast
+]
+
+---
+# Dangling Pointer
+
+```c
+int *bad(void) {
+    int x = 42;
+    return &x;   // BUG
+}
+```
+
+- Stack frame is reclaimed on return
+- Returned pointer points at trash
+- Fix: return value, out-param, or `malloc` (next)
+
+---
+# Static Local
+.lc[
+```c
+void count_calls(void) {
+    static int n = 0;
+    n++;
+    printf("%d\n", n);
+}
+```
+]
+.rc[
+- Scope of a local
+- Lifetime of a global
+- Lives in the data segment
+- Initialized **once**
+- "Remember across calls"
+]
+
+---
+# malloc / free
+
+```c
+void *malloc(size_t size);
+void  free(void *ptr);
+```
+
+- `#include <stdlib.h>`
+- Returns a `void *` to `size` bytes on the heap
+- Returns `NULL` on failure
+- No cast needed in C (unlike C++)
+
+---
+# Using malloc
+.lc[
+```c
+int *nums =
+    malloc(5 * sizeof(int));
+
+if (nums == NULL) return 1;
+
+for (int i = 0; i < 5; i++)
+    nums[i] = (i + 1) * 10;
+
+free(nums);
+```
+]
+.rc[
+- Always check for `NULL`
+- Every successful `malloc` needs one `free`
+- Access via `nums[i]` --- just a pointer
+- Never `free(nums)` twice
+]
+
+---
+# Heap Rules
+
+- `malloc` needs exactly one `free`
+- Use-after-free: **UB**
+- Double-free: **UB**
+- Forgot to free: **leak**
+- No smart pointers, no RAII, no GC
+- You are the memory manager
+
+---
+# NULL-Check Debate
+
+- *For:* safety, predictable failure
+- *Against:* checks clutter code that almost never trigger
+- Safety-critical systems: ban dynamic allocation entirely
+
+Rule of thumb: for this class, check.
+
+---
+# Where Variables Live
+
+| Kind | Where | Lifetime |
+|:---|:---|:---|
+| Global | data segment | program |
+| Local | stack | function |
+| Static local | data segment | program |
+| Dynamic | heap | until `free` |
+
+---
+# Live Coding
+.lc[
+```c
+int total = 0;
+
+void add(int n) {
+    total += n;
+}
+
+int main(void) {
+    add(10); add(20);
+    printf("%d\n", total);
+
+    int *d = malloc(3*sizeof(int));
+    if (!d) return 1;
+    d[0]=1985; d[1]=1986; d[2]=1987;
+    // ...
+    free(d);
+}
+```
+]
+.rc[
+- Compile with `-Wall -Wextra -pedantic`
+- Comment out the `free` --- mention valgrind/ASan
+- Return `&local` --- watch the warning
+]
+
+---
+# What does this print?
+
+```c
+void counter(void) {
+    static int n = 0;
+    n++;
+    printf("%d ", n);
+}
+
+int main(void) {
+    counter();
+    counter();
+    counter();
+}
+```
+
+1. `0 0 0`
+1. `1 1 1`
+1. `1 2 3`
+1. `3 3 3`
+1. Ben got this wrong
+
+---
+# Where is the bug?
+
+```c
+int *p = malloc(10 * sizeof(int));
+for (int i = 0; i < 10; i++)
+    p[i] = i;
+free(p);
+printf("%d\n", p[0]);
+```
+
+1. `malloc` missing a cast
+1. Use-after-free on `p`
+1. `p[0]` should be `*p`
+1. `printf` should use `%zu`
+1. Ben got this wrong
+
+---
+# Calculation
+
+`malloc(5 * sizeof(int))` on a 32-bit-int system asks for:
+
+1. `5`
+1. `10`
+1. `16`
+1. `20`
+1. `32`
+
+---
+# Key Points
+
+- Four lifetimes: global, local, static-local, dynamic
+- Local = stack; dynamic = heap
+- Every successful `malloc` needs one `free`
+- No cast on `malloc` in C
+- `NULL`-check unless you have a reason not to
+
+**Read:** chapter 8 of *Gorgo C for C++ Programmers* (second half --- `calloc`, `realloc`, `memcpy`, `memset`). **Do:** exercises 1, 2, 3, 6.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

@@ -1,0 +1,365 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 4
+
+Functions
+
+---
+# Review: What does this print?
+
+```c
+int a[] = {10, 20, 30, 40, 50};
+int *p = a + 2;
+printf("%d %d %d\n",
+       *p, *(p - 1), p[1]);
+```
+
+1. `30 20 40`
+1. `20 10 30`
+1. `3 1 4`
+1. `30 40 20`
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- Prototype vs definition
+- `()` vs `(void)` --- it matters in C
+- No overloading, no defaults, no references
+- `const` parameters
+- Pass structs by `const T *`
+- Recursion and stack depth
+- Function pointers and callbacks
+
+---
+# Declaration vs Definition
+.lc[
+```c
+// declaration (prototype)
+int add(int a, int b);
+
+// definition
+int add(int a, int b) {
+    return a + b;
+}
+```
+]
+.rc[
+- Prototypes go in `.h` files
+- Definition in one `.c` file
+- Always have a prototype in scope before calling
+- Every translation unit sees the prototype
+]
+
+---
+# () vs (void)
+
+```c
+int get_score(void);   // really no params
+int get_score();       // UNSPECIFIED params
+```
+
+- In C++, `()` means "no parameters."
+- In C, `()` turns off parameter checking entirely.
+- Always write `(void)`.
+
+**Tip:** `int main(void)` for this exact reason.
+
+---
+# No Overloading, No Defaults
+
+- `max(int, int)` and `max(double, double)` cannot coexist.
+- Library convention: `abs`, `fabs`, `labs`, `llabs`.
+- No default arguments --- every call passes every arg.
+- Upside: when you see `add(x, y)`, there's only one `add`.
+
+---
+# Pass by Value
+
+- Every parameter is copied.
+- A "swap" that takes `int a, int b` cannot affect the caller.
+- Use pointers for output parameters.
+- Already covered in lecture 3.
+
+---
+# const Parameters
+.lc[
+```c
+void print_name(
+    const char *name)
+{
+    printf("I am %s\n", name);
+    // name[0] = 'X';  // ERROR
+}
+```
+]
+.rc[
+- Documents intent
+- Enforced by the compiler
+- Caller can pass literals and writable buffers
+- Library is full of `const char *`: `strlen`, `strcmp`, `printf`
+]
+
+---
+# Passing Structures
+.lc[
+```c
+struct hero {
+    char name[40];
+    int  power;
+};
+
+void by_value(struct hero h);
+
+void by_ptr(
+    const struct hero *h);
+```
+]
+.rc[
+- Small structs: by value is fine
+- Large structs: `const T *`
+- 8-byte pointer beats 44-byte copy
+- Drop `const` when modifying
+]
+
+---
+# Recursion: Factorial
+.lc[
+```c
+long factorial(int n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+```
+]
+.rc[
+- Each call has its own locals on the stack
+- Base case is critical
+- C has no stack-overflow exception
+- Deep recursion = crash
+]
+
+---
+# Recursion: Fibonacci
+.lc[
+```c
+int fib(int n) {
+    if (n <= 0) return 0;
+    if (n == 1) return 1;
+    return fib(n-1) + fib(n-2);
+}
+```
+]
+.rc[
+**Trap:** Exponential time. `fib(50)` takes minutes.
+
+Real-world fixes:
+- Iteration
+- Memoization
+]
+
+---
+# Function Pointers
+
+```c
+int (*fp)(int, int);
+```
+
+Read from the inside out: `fp` is a pointer to a function taking `(int, int)` and returning `int`.
+
+**Wut:** Parentheses are load-bearing.
+
+```c
+int *fp(int, int);   // function returning int*
+```
+
+---
+# Assigning and Calling
+.lc[
+```c
+int add(int a, int b) {
+    return a + b;
+}
+int multiply(int a, int b) {
+    return a * b;
+}
+
+int (*op)(int, int);
+
+op = add;
+printf("%d\n", op(3, 4));  // 7
+
+op = multiply;
+printf("%d\n", op(3, 4));  // 12
+```
+]
+.rc[
+- Function name decays to a pointer
+- Call through the pointer just like a function
+- No ambiguity, because C has no overloading
+]
+
+---
+# typedef to the Rescue
+.lc[
+```c
+typedef int
+    (*binop_fn)(int, int);
+
+int add(int, int);
+int sub(int, int);
+
+void apply(binop_fn fn,
+           int x, int y)
+{
+    printf("%d\n", fn(x, y));
+}
+```
+]
+.rc[
+- `binop_fn` = "pointer to (int,int) -> int"
+- Use it for parameters, locals, struct fields, arrays
+- Use it everywhere --- raw syntax is noisy
+]
+
+---
+# Callbacks
+
+- Pass a function pointer to another function.
+- The receiver decides when to call it.
+- C's replacement for lambdas and `std::function`.
+- Canonical example: `qsort`.
+
+---
+# Live Coding
+.lc[
+```c
+typedef int
+    (*math_fn)(int, int);
+
+int sumar(int a, int b) {
+    return a + b;
+}
+int restar(int a, int b) {
+    return a - b;
+}
+
+void compute(math_fn fn,
+             int x, int y)
+{
+    printf("%d\n", fn(x, y));
+}
+```
+]
+.rc[
+```c
+compute(sumar, 8, 3);
+compute(restar, 8, 3);
+```
+
+- `cc -Wall -Wextra -pedantic`
+- Try assigning a function with the wrong signature and read the error
+]
+
+---
+# What does this print?
+
+```c
+void mystery(int x) {
+    x = x * 2;
+}
+
+int val = 5;
+mystery(val);
+printf("%d\n", val);
+```
+
+1. `10`
+1. `5`
+1. Undefined
+1. Depends on compiler
+1. Ben got this wrong
+
+---
+# Where is the bug?
+
+```c
+int count_chars(const char *s) {
+    int count;
+    while (*s != '\0') {
+        count++;
+        s++;
+    }
+    return count;
+}
+```
+
+1. Missing `const`
+1. `count` not initialized
+1. Should compare with NULL
+1. `s++` in a loop is UB
+1. Ben got this wrong
+
+---
+# What does this print?
+
+```c
+int mul(int a, int b) {
+    return a * b;
+}
+int apply(int (*fn)(int, int),
+          int a, int b) {
+    return fn(a, b);
+}
+
+printf("%d\n", apply(mul, 6, 7));
+```
+
+1. `13`
+1. `42`
+1. `67`
+1. Compile error
+1. Ben got this wrong
+
+---
+# Key Points
+
+- `(void)` for empty parameter lists
+- No overloading, no defaults
+- Every parameter is pass by value
+- `const T *` for read-only pointer params
+- Pass large structs by `const T *`
+- Recursion has no safety net
+- Function pointers are C's lambdas
+- `typedef` tames the syntax
+
+**Read:** chapter 8 of *Gorgo C for C++ Programmers* (first half, through `malloc`/`free`). **Do:** exercises 2, 3, 4, 5.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

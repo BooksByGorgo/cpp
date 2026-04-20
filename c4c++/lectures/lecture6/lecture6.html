@@ -1,0 +1,259 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 6
+
+calloc, realloc, and Raw Memory
+
+---
+# Review: Where is the bug?
+
+```c
+int *p = malloc(10 * sizeof(int));
+for (int i = 0; i < 10; i++)
+    p[i] = i;
+free(p);
+printf("%d\n", p[0]);
+```
+
+1. `malloc` missing a cast
+1. Use-after-free on `p`
+1. `p[0]` should be `*p`
+1. `printf` should use `%zu`
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- `calloc` vs `malloc`
+- Safe `realloc`
+- `memset`, `memcpy`, `memmove`
+- Aliasing and double-free
+
+---
+# calloc
+.lc[
+```c
+int *a = calloc(
+    5, sizeof(int));
+// 5 ints, all zero
+```
+]
+.rc[
+- `calloc(count, size)`
+- Allocates **and zeroes** the bytes
+- Equivalent to `malloc` + `memset(0)`
+- Clearer intent; sometimes faster on fresh pages
+]
+
+---
+# realloc
+
+```c
+void *realloc(void *ptr, size_t size);
+```
+
+- Grow or shrink an existing block.
+- Returns the same address, a new address, or `NULL` on failure.
+- On failure, the **original block is untouched**.
+
+---
+# realloc: The Classic Bug
+.lc[
+```c
+nums = realloc(nums,
+               10 * sizeof(int));
+```
+]
+.rc[
+**Trap:** If `realloc` fails:
+- Returns `NULL`
+- Original block survives
+- `nums` just overwrote itself with `NULL`
+- You lost the only pointer to the original --- leak!
+]
+
+---
+# realloc: The Safe Pattern
+.lc[
+```c
+int *tmp = realloc(
+    nums, 10 * sizeof(int));
+
+if (tmp == NULL) {
+    // handle error
+    // nums is still valid
+} else {
+    nums = tmp;
+}
+```
+]
+.rc[
+- Always use a temp pointer
+- Check the temp, then assign
+- Caller gets to keep the original on failure
+- Same pattern for every `realloc` in real code
+]
+
+---
+# memset and memcpy
+
+```c
+void *memset(void *s, int c, size_t n);
+void *memcpy(void *dest,
+             const void *src,
+             size_t n);
+```
+
+- Raw-byte operations
+- Do not stop at `'\0'`
+- You say how many bytes --- no guessing
+
+---
+# memset Trap
+.lc[
+```c
+int nums[10];
+memset(nums, 0, sizeof(nums));
+// OK --- all bytes 0 ==
+//       all ints 0
+
+memset(nums, 1, sizeof(nums));
+// NOT "every int is 1"
+// Every byte is 0x01
+// Every int is 0x01010101
+```
+]
+.rc[
+- `memset` fills **bytes**, not elements
+- Zeroing works because zero bytes = zero value for ints, floats, pointers
+- Any other value: use a loop
+]
+
+---
+# memcpy vs memmove
+.lc[
+```c
+int src[]  = {10, 20, 30};
+int dest[3];
+memcpy(dest, src, sizeof(src));
+```
+]
+.rc[
+- `memcpy` requires **no overlap**
+- Overlapping = UB
+- `memmove` handles overlap safely
+- Use `memmove` when shifting inside one array
+]
+
+---
+# Double-Free via Aliasing
+
+```c
+int *a = malloc(5 * sizeof(int));
+int *b = a;          // two names, one block
+free(a);
+free(b);             // UB
+```
+
+- `a` and `b` both name the same bytes
+- Ownership = *who frees it*, not *who has a pointer*
+- Pick one owner; document it
+
+---
+# Live Coding
+.lc[
+```c
+int *a = calloc(5, sizeof(int));
+// ...
+
+int *tmp = realloc(a,
+                   10*sizeof(int));
+if (!tmp) { free(a); return 1; }
+a = tmp;
+
+for (int i = 5; i < 10; i++)
+    a[i] = i * i;
+
+free(a);
+```
+]
+.rc[
+- Try `realloc(a, (size_t)-1)` to force failure
+- Try `memcpy` with overlap, then switch to `memmove`
+- Leak a buffer and run under valgrind
+]
+
+---
+# Why pick calloc over malloc + memset?
+
+1. calloc is always faster
+1. Clearer intent; the library can often skip the memset for fresh pages
+1. malloc cannot allocate arrays
+1. memset only works on chars
+1. Ben got this wrong
+
+---
+# Where is the bug?
+
+```c
+int *a = malloc(5 * sizeof(int));
+int *b = a;
+free(a);
+free(b);
+```
+
+1. Missing cast on malloc
+1. Double free: a and b name the same block
+1. `free(b)` should be `free(&b)`
+1. `b = a` should be `b = &a`
+1. Ben got this wrong
+
+---
+# What is unsafe about p = realloc(p, n)?
+
+1. realloc never fails
+1. On failure, p becomes NULL and the original block leaks
+1. realloc requires a cast in C
+1. realloc only grows, never shrinks
+1. Ben got this wrong
+
+---
+# Key Points
+
+- `calloc` for zeroed memory
+- `realloc` via a temp pointer
+- `memset` fills bytes (zero only is "safe")
+- `memcpy` copies bytes; `memmove` handles overlap
+- Two pointers, one block = double-free risk
+- Ownership means "who frees it"
+
+**Read:** chapter 9 of *Gorgo C for C++ Programmers*. **Do:** exercises 1, 2, 3, 4, 5.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>
