@@ -20,7 +20,6 @@
 ## No default arguments
 
 - Show a C++ prototype with a default argument and rewrite it as valid C.
-- How do C programmers typically simulate default arguments?
 
 ## Pass by value
 
@@ -65,7 +64,6 @@
 ### Simplifying with typedef
 
 - How does `typedef int (*binop_fn)(int, int);` change the way you write parameters and locals?
-- Where are you most likely to reach for such a typedef in real code?
 
 ## Callbacks
 

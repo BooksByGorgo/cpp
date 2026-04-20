@@ -12,20 +12,6 @@
 - Why does K&R's example end its string with `\n` even though C++ `std::println` does not require it?
 - What file extension should the source go in, and which compiler command should you use to build it?
 
-## Differences summary
-
-- For each row of the C++-vs-C table, explain in one sentence what you gain or lose moving from C++ to C:
-    - `std::string` vs `char` arrays with `'\0'`
-    - `std::vector` vs raw arrays or `malloc`
-    - `std::cout` / `std::println` vs `printf`
-    - `std::cin` vs `scanf`
-    - `new` / `delete` vs `malloc` / `free`
-    - smart pointers vs raw pointers
-    - classes and objects vs structs and functions
-    - references (`&`) vs pointers (`*`)
-    - `bool` (built-in) vs `_Bool` or `<stdbool.h>`
-    - `// comments` vs `/* comments */`
-
 ## `printf` basics
 
 - What is a *format string*, and what are *format specifiers*?
