@@ -64,8 +64,7 @@ Include `<format>`. Returns a `std::string`.
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string artist = "Santana";
     int year = 1999;
 
@@ -162,8 +161,7 @@ Include `<print>`. Combine `std::format` and `std::cout` in one call.
 ```cpp
 #include <print>
 
-int main()
-{
+int main() {
     std::println("You get what you give, don't let go");
     std::print("Track {:d}: {}", 1, "You Get What You Give");
     std::println("");
@@ -186,8 +184,7 @@ int main()
 #include <format>
 #include <iostream>
 
-int main()
-{
+int main() {
     std::cout << std::format("{:<20} {:>5} {:>8}\n", "Song", "Year", "Score");
     std::cout << std::string(35, '-') << "\n";
     std::cout << std::format("{:<20} {:>5} {:>8.1f}\n", "Wonderwall", 1995, 9.5);

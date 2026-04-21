@@ -223,8 +223,7 @@ if ((flags & 0x02) == 0x02) { ... }
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     int x = 10, y = 3;
     std::cout << "x + y = " << x + y << "\n";
     std::cout << "x / y = " << x / y << "\n";

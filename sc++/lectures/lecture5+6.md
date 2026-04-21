@@ -159,8 +159,7 @@ Live-code a simple guessing game:
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     int target = 42;
     int guess;
     std::cout << "Guess my number: ";
@@ -281,8 +280,7 @@ By the end of lecture 6, students should be able to:
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string input;
 
     do {

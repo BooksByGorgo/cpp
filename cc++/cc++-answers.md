@@ -643,18 +643,15 @@ Independent tests can run in any order and even in parallel.
 
 **2.**
 ```cpp
-TEST(PalindromeTest, Racecar)
-{
+TEST(PalindromeTest, Racecar) {
     EXPECT_TRUE(is_palindrome("racecar"));
 }
 
-TEST(PalindromeTest, Hello)
-{
+TEST(PalindromeTest, Hello) {
     EXPECT_FALSE(is_palindrome("hello"));
 }
 
-TEST(PalindromeTest, EmptyString)
-{
+TEST(PalindromeTest, EmptyString) {
     EXPECT_TRUE(is_palindrome(""));
 }
 ```
@@ -671,20 +668,16 @@ TDD is less useful for exploratory or prototype code where the API and behavior 
 
 **6.**
 ```cpp
-TEST_CASE("clamp restricts values to range", "[clamp]")
-{
-    SECTION("value below range returns lo")
-    {
+TEST_CASE("clamp restricts values to range", "[clamp]") {
+    SECTION("value below range returns lo") {
         REQUIRE(clamp(-5, 0, 100) == 0);
     }
 
-    SECTION("value in range returns value")
-    {
+    SECTION("value in range returns value") {
         REQUIRE(clamp(50, 0, 100) == 50);
     }
 
-    SECTION("value above range returns hi")
-    {
+    SECTION("value above range returns hi") {
         REQUIRE(clamp(200, 0, 100) == 100);
     }
 }
@@ -717,8 +710,7 @@ private:
     Logger& logger_;
 };
 
-TEST(AppTest, RunLogsStarting)
-{
+TEST(AppTest, RunLogsStarting) {
     MockLogger mock;
     EXPECT_CALL(mock, log("Starting")).Times(1);
 

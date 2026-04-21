@@ -195,8 +195,7 @@ v.clear();    // size -> 0
 #include <iostream>
 #include <vector>
 
-int main()
-{
+int main() {
     std::vector<int> v;
     for (int i = 0; i < 8; i++) {
         v.push_back(i);
@@ -412,8 +411,7 @@ auto it = canciones.begin();
 #include <iostream>
 #include <vector>
 
-int main()
-{
+int main() {
     std::vector<int> nums = {1, 2, 3, 4, 5};
 
     for (auto& n : nums) {

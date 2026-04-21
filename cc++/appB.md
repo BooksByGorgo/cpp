@@ -78,18 +78,15 @@ target_link_libraries(tests PRIVATE gtest_main)
 
 int add(int a, int b) { return a + b; }
 
-TEST(AddTest, PositiveNumbers)
-{
+TEST(AddTest, PositiveNumbers) {
     EXPECT_EQ(add(2, 3), 5);
 }
 
-TEST(AddTest, NegativeNumbers)
-{
+TEST(AddTest, NegativeNumbers) {
     EXPECT_EQ(add(-1, -2), -3);
 }
 
-TEST(AddTest, Zero)
-{
+TEST(AddTest, Zero) {
     EXPECT_EQ(add(0, 0), 0);
     EXPECT_EQ(add(5, 0), 5);
 }
@@ -123,8 +120,7 @@ When multiple tests need the same setup, use a **fixture**:
 ```cpp
 class PlaylistTest : public ::testing::Test {
 protected:
-    void SetUp() override
-    {
+    void SetUp() override {
         playlist.push_back("Hey Ya!");
         playlist.push_back("Toxic");
         playlist.push_back("Crazy");
@@ -133,13 +129,11 @@ protected:
     std::vector<std::string> playlist;
 };
 
-TEST_F(PlaylistTest, HasThreeSongs)
-{
+TEST_F(PlaylistTest, HasThreeSongs) {
     EXPECT_EQ(playlist.size(), 3);
 }
 
-TEST_F(PlaylistTest, ContainsToxic)
-{
+TEST_F(PlaylistTest, ContainsToxic) {
     auto it = std::find(playlist.begin(), playlist.end(), "Toxic");
     EXPECT_NE(it, playlist.end());
 }
@@ -184,8 +178,7 @@ target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
 int add(int a, int b) { return a + b; }
 
-TEST_CASE("add returns correct sums", "[add]")
-{
+TEST_CASE("add returns correct sums", "[add]") {
     REQUIRE(add(2, 3) == 5);
     REQUIRE(add(-1, -2) == -3);
     REQUIRE(add(0, 0) == 0);
@@ -198,18 +191,15 @@ Catch2's **sections** replace fixtures for many use cases.
 Each section runs with a fresh state:
 
 ```cpp
-TEST_CASE("Playlist operations", "[playlist]")
-{
+TEST_CASE("Playlist operations", "[playlist]") {
     std::vector<std::string> playlist = {"Hey Ya!", "Toxic"};
 
-    SECTION("adding a song increases size")
-    {
+    SECTION("adding a song increases size") {
         playlist.push_back("Crazy");
         REQUIRE(playlist.size() == 3);
     }
 
-    SECTION("clearing removes all songs")
-    {
+    SECTION("clearing removes all songs") {
         playlist.clear();
         REQUIRE(playlist.empty());
     }
@@ -262,8 +252,7 @@ Repeat for each new feature or behavior.
 **Step 1 --- Red:**
 
 ```cpp
-TEST(Factorial, BaseCase)
-{
+TEST(Factorial, BaseCase) {
     EXPECT_EQ(factorial(0), 1);
     EXPECT_EQ(factorial(1), 1);
 }
@@ -274,8 +263,7 @@ This fails because `factorial` does not exist.
 **Step 2 --- Green:**
 
 ```cpp
-int factorial(int n)
-{
+int factorial(int n) {
     if (n <= 1) return 1;
     return n * factorial(n - 1);
 }
@@ -287,8 +275,7 @@ Tests pass.
 Add the next test:
 
 ```cpp
-TEST(Factorial, LargerValues)
-{
+TEST(Factorial, LargerValues) {
     EXPECT_EQ(factorial(5), 120);
     EXPECT_EQ(factorial(10), 3628800);
 }
@@ -351,8 +338,7 @@ class MusicService {
 public:
     MusicService(Database& db) : db_(db) {}
 
-    std::string get_track_name(int id)
-    {
+    std::string get_track_name(int id) {
         return db_.lookup(id);
     }
 
@@ -361,8 +347,7 @@ private:
 };
 
 // The test
-TEST(MusicServiceTest, ReturnsTrackName)
-{
+TEST(MusicServiceTest, ReturnsTrackName) {
     MockDatabase mock_db;
     EXPECT_CALL(mock_db, lookup(1))
         .WillOnce(::testing::Return("Bohemian Like You"));
@@ -417,8 +402,7 @@ When would you choose one over the other?
 4. **Where is the bug?**
 
     ```cpp
-    TEST_F(PlaylistTest, CanRemoveSong)
-    {
+    TEST_F(PlaylistTest, CanRemoveSong) {
         playlist.erase(playlist.begin());
         ASSERT_EQ(playlist.size(), 2);
         EXPECT_EQ(playlist[0], "Toxic");
@@ -440,8 +424,7 @@ What happens if you try to mock a class with no virtual functions?
 8. **What does this test check?**
 
     ```cpp
-    TEST(StringTest, EmptyString)
-    {
+    TEST(StringTest, EmptyString) {
         std::string s;
         EXPECT_TRUE(s.empty());
         EXPECT_EQ(s.size(), 0);

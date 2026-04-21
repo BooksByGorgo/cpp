@@ -53,8 +53,7 @@ By the end of this lecture, students should be able to:
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string empty;                  // ""
     std::string greeting = "Hola";     // literal
     std::string copy = greeting;        // copy
@@ -238,8 +237,7 @@ std::cout << label << "\n";       // Track 7
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string song = "Bailamos";
     std::cout << song << " has " << song.size() << " characters\n";
 

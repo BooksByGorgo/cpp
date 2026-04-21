@@ -42,8 +42,7 @@ add_executable(myapp main.cpp)
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     std::cout << "Built with CMake!\n";
     return 0;
 }

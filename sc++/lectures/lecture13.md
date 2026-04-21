@@ -60,8 +60,7 @@ C++ solves all of this by reusing the same `<<` / `>>` interface you already kno
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string song;
     std::cout << "Favorite 90s song? ";
     std::getline(std::cin, song);
@@ -91,8 +90,7 @@ Before `std::format` (chapter 10), C++ formatted with **manipulators** from `<io
 #include <iomanip>
 #include <iostream>
 
-int main()
-{
+int main() {
     bool on_tour = true;
     std::cout << on_tour << "\n";                  // 1
     std::cout << std::boolalpha << on_tour << "\n"; // true
@@ -165,8 +163,7 @@ Include `<fstream>`. `std::ofstream` is an **output file stream**.
 #include <fstream>
 #include <iostream>
 
-int main()
-{
+int main() {
     std::ofstream outfile("setlist.txt");
     if (!outfile) {
         std::cerr << "Could not open file\n";
@@ -244,8 +241,7 @@ std::ofstream log("events.log", std::ios::out | std::ios::app);
 #include <sstream>
 #include <string>
 
-int main()
-{
+int main() {
     std::ofstream out("setlist.txt");
     out << "ClosingTime 1998\n";
     out << "Tubthumping 1997\n";
