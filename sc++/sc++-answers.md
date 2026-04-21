@@ -14,8 +14,7 @@ header-includes:
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     std::cout << "A" << "B" << std::endl;
     std::cout << "C" << std::endl;
     return 0;
@@ -37,8 +36,7 @@ The second line prints `"C"` on a new line.
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     std::cout << "Here we are now" << std::endl
     return 0;
 }
@@ -64,8 +62,7 @@ If you left it out, the compiler would use the default output name, which is typ
 ```cpp
 #include <iostream>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     std::cout << argv[2] << std::endl;
     return 0;
 }
@@ -91,8 +88,7 @@ The program might crash, print garbage, or do something else unpredictable.
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string name;
     int number;
 
@@ -178,8 +174,7 @@ Each `int` is 4 bytes, and the array has 10 elements, so `sizeof(scores)` is `4 
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     char c = 'C';
     c = c + 3;
     std::cout << c << std::endl;
@@ -234,8 +229,7 @@ struct Punto {
     int y;
 };
 
-int main()
-{
+int main() {
     Punto a = {3, 7};
     Punto b = a;
     b.x = 10;
@@ -278,8 +272,7 @@ struct Car {
     int year;
 };
 
-int main()
-{
+int main() {
     Car cars[3] = {
         {"Honda", "Civic", 1995},
         {"Toyota", "Corolla", 1998},
@@ -415,8 +408,7 @@ std::string greeting = std::string("Hello, ") + "world!";
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     int count;
     std::string name;
     std::cout << "how many? ";
@@ -474,8 +466,7 @@ The `'B'` is uppercase and not affected.
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string name;
 
     std::cout << "Enter your full name: ";
@@ -540,14 +531,12 @@ To compare case-insensitively you have to normalize the case yourself first --- 
 ```cpp
 #include <cctype>
 
-std::string lower(std::string s)
-{
+std::string lower(std::string s) {
     for (char &c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     return s;
 }
 
-bool equal_ignore_case(const std::string &x, const std::string &y)
-{
+bool equal_ignore_case(const std::string &x, const std::string &y) {
     return lower(x) == lower(y);
 }
 ```
@@ -681,8 +670,7 @@ The second condition `score >= 80` is true, so `grade` is set to `"B"`.
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     int n;
 
     std::cout << "Enter an integer: ";
@@ -889,8 +877,7 @@ This makes the loop safe even if `n` skips over the exact target.
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     int choice;
 
     do {
@@ -971,8 +958,7 @@ For a tiny type like `int` the copy is free and you can just write `int x : numb
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     int values[] = {3, 7, 2, -5, 4, -1};
     int size = sizeof(values) / sizeof(values[0]);
 
@@ -1513,8 +1499,7 @@ This is exactly why `long` should be avoided when you need a specific width --- 
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::print("Enter an integer: ");
     int n{};
     std::cin >> n;
@@ -1669,8 +1654,7 @@ It prints:
 #include <iostream>
 #include <vector>
 
-int main()
-{
+int main() {
     std::vector<int> numbers;
     int n;
 
@@ -1776,8 +1760,7 @@ The 1st through 8th calls only write into already-reserved storage, and the 10th
 #include <sstream>
 #include <iostream>
 
-int main()
-{
+int main() {
     std::ostringstream oss;
     oss << 10 << " + " << 20 << " = " << 10 + 20;
     std::cout << oss.str() << std::endl;
@@ -1801,8 +1784,7 @@ The expression `10 + 20` is evaluated to 30 before being streamed.
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::istringstream iss("100 hola 3.14");
     int n;
     std::string s;
@@ -1829,8 +1811,7 @@ The `cout` statement prints them in a different order: `d`, `n`, `s`.
 #include <fstream>
 #include <iostream>
 
-int main()
-{
+int main() {
     std::ifstream infile("data.txt");
     std::string line;
 
@@ -1859,8 +1840,7 @@ if (!infile) {
 ```cpp
 #include <fstream>
 
-int main()
-{
+int main() {
     std::ofstream out;
     out << "Yo me la paso bien" << std::endl;
     out.close();
@@ -1890,8 +1870,7 @@ This makes code more flexible and reusable.
 #include <sstream>
 #include <string>
 
-int main()
-{
+int main() {
     std::ostringstream oss;
 
     for (int i = 0; i < 3; i++) {
@@ -1984,8 +1963,7 @@ You cannot use `+` or `,` because those would either give the wrong numeric valu
 #include <string>
 #include <vector>
 
-int main()
-{
+int main() {
     std::ifstream in("oldies.txt");
     if (!in) {
         std::cerr << "could not open oldies.txt for reading\n";
@@ -2063,8 +2041,7 @@ std::string result = std::format("{0} scored {1} points", name, score);
 #include <sstream>
 #include <string>
 
-int main()
-{
+int main() {
     std::ofstream outfile("rankings.txt");
     if (!outfile) {
         std::cerr << "Could not open rankings.txt for writing" << std::endl;
@@ -2185,16 +2162,14 @@ So the string is first truncated to `"Smell"` and then placed in a 10-wide field
 #include <format>
 #include <string>
 
-void show(int n)
-{
+void show(int n) {
     std::string row = std::format(
         "{:>6d}  {:#010x}  {:#018b}",
         n, n, n);
     std::println("{}", row);
 }
 
-int main()
-{
+int main() {
     show(42);
     show(255);
     show(65'535);
@@ -2231,8 +2206,7 @@ void step3() { throw std::runtime_error("oops"); }
 void step2() { step3(); }
 void step1() { step2(); }
 
-int main()
-{
+int main() {
     try {
         step1();
         std::cout << "A" << std::endl;
@@ -2305,8 +2279,7 @@ void soundcheck() {
     throw std::runtime_error("feedback!");
 }
 
-int main()
-{
+int main() {
     try {
         soundcheck();
     } catch (...) {
@@ -2361,8 +2334,7 @@ std::expected<int, std::string> divide(int a, int b) {
     return a / b;
 }
 
-int main()
-{
+int main() {
     auto r1 = divide(10, 3);
     auto r2 = divide(10, 0);
 
@@ -2416,8 +2388,7 @@ std::expected<double, std::string> safe_sqrt(double x) {
     return std::sqrt(x);
 }
 
-int main()
-{
+int main() {
     auto r1 = safe_sqrt(25.0);
     if (r1) {
         std::cout << "sqrt(25) = " << *r1 << std::endl;
@@ -2473,8 +2444,7 @@ With this ordering, the program now prints `out_of_range: nope`.
 #include <stdexcept>
 #include <string>
 
-int parse_age(const std::string &s)
-{
+int parse_age(const std::string &s) {
     int n = 0;
     try {
         n = std::stoi(s);
@@ -2492,8 +2462,7 @@ int parse_age(const std::string &s)
     return n;
 }
 
-int main()
-{
+int main() {
     for (const std::string &s : {"42", "abc", "-1"}) {
         try {
             int age = parse_age(s);
@@ -2552,8 +2521,7 @@ public:
     }
 };
 
-int main()
-{
+int main() {
     Band a("Metallica", 1981);
     Band b("Soundgarden", 1984);
     std::cout << "show time" << std::endl;
@@ -2643,8 +2611,7 @@ public:
     }
 };
 
-int main()
-{
+int main() {
     Song a("All Star");
     Song b("All Star");
     Song c("Enter Sandman");
@@ -2712,8 +2679,7 @@ public:
     }
 };
 
-int main()
-{
+int main() {
     Radio r;
     r.play("Torn");
     r.play(98);
@@ -2808,8 +2774,7 @@ public:
     }
 };
 
-int main()
-{
+int main() {
     Counter a, b;
     a.increment();
     a.increment();
@@ -2886,8 +2851,7 @@ public:
     }
 };
 
-int main()
-{
+int main() {
     Builder b;
     b.add(1).add(2).add(3).add(4);
     b.print();   // 1 2 3 4
@@ -2931,8 +2895,7 @@ You would need the heap when you need memory to outlive the current scope (e.g.,
 #include <iostream>
 #include <memory>
 
-int main()
-{
+int main() {
     auto p = std::make_shared<int>(99);
     auto q = p;
     auto r = p;
@@ -3009,8 +2972,7 @@ For `std::unique_ptr`, the moved-from pointer is `nullptr`.
 #include <memory>
 #include <iostream>
 
-int main()
-{
+int main() {
     int *raw = new int(42);
     std::unique_ptr<int> a(raw);
     std::unique_ptr<int> b(raw);
@@ -3038,8 +3000,7 @@ The object is deleted when the last `shared_ptr` owning it is destroyed, which b
 #include <memory>
 #include <string>
 
-int main()
-{
+int main() {
     std::unique_ptr<std::string> first = std::make_unique<std::string>("Wannabe");
     std::cout << "first: " << *first << std::endl;
 
@@ -3092,8 +3053,7 @@ Calling it with `nullptr` reads from address 0, which is undefined behavior --- 
 The smallest safe change is to check the pointer at the top of the function and either return early or throw, so the program never dereferences a null pointer:
 
 ```cpp
-void play(Song *song)
-{
+void play(Song *song) {
     if (song == nullptr) {
         std::cout << "(no song)\n";
         return;
@@ -3139,8 +3099,7 @@ The correct fix is to stop using raw `new` for owning the heap object and let RA
 ```cpp
 #include <memory>
 
-void make_playlist()
-{
+void make_playlist() {
     auto fav = std::make_unique<std::string>("Wonderwall");
     if (fav->size() > 100) {
         return;        // unique_ptr's destructor frees the string here
@@ -3159,13 +3118,11 @@ That is the whole point of RAII.
 #include <iostream>
 #include <memory>
 
-void c_api(int *p)
-{
+void c_api(int *p) {
     *p += 1;
 }
 
-int main()
-{
+int main() {
     auto value = std::make_unique<int>(41);
 
     c_api(value.get());          // hand the raw pointer to the C function
@@ -3338,8 +3295,7 @@ void peek(const Vault &v) {
     std::cout << v.secret << std::endl;
 }
 
-int main()
-{
+int main() {
     Vault v("Vogue");
     peek(v);
     return 0;
@@ -3405,8 +3361,7 @@ std::ostream &operator<<(std::ostream &os, const Album &a) {
     return os;
 }
 
-int main()
-{
+int main() {
     Album a("Nevermind", "Nirvana", 12);
     Album b("Tragic Kingdom", "No Doubt", 14);
     Album c("Nevermind", "Nirvana", 12);
@@ -3433,26 +3388,22 @@ class Buffer {
     std::size_t len;
 public:
     explicit Buffer(std::size_t n)
-        : data(new char[n]), len(n)
-    {
+        : data(new char[n]), len(n) {
         std::cout << "default ctor (size " << len << ")\n";
     }
 
-    ~Buffer()
-    {
+    ~Buffer() {
         std::cout << "dtor (size " << len << ")\n";
         delete[] data;
     }
 
     Buffer(const Buffer &other)
-        : data(new char[other.len]), len(other.len)
-    {
+        : data(new char[other.len]), len(other.len) {
         std::memcpy(data, other.data, len);
         std::cout << "copy ctor\n";
     }
 
-    Buffer &operator=(const Buffer &other)
-    {
+    Buffer &operator=(const Buffer &other) {
         std::cout << "copy assign\n";
         if (this != &other) {
             delete[] data;
@@ -3464,15 +3415,13 @@ public:
     }
 
     Buffer(Buffer &&other) noexcept
-        : data(other.data), len(other.len)
-    {
+        : data(other.data), len(other.len) {
         other.data = nullptr;
         other.len  = 0;
         std::cout << "move ctor\n";
     }
 
-    Buffer &operator=(Buffer &&other) noexcept
-    {
+    Buffer &operator=(Buffer &&other) noexcept {
         std::cout << "move assign\n";
         if (this != &other) {
             delete[] data;
@@ -3485,8 +3434,7 @@ public:
     }
 };
 
-int main()
-{
+int main() {
     Buffer a(8);                  // default ctor
     Buffer b = a;                 // copy ctor
     Buffer c = std::move(a);      // move ctor
@@ -3618,8 +3566,7 @@ This is much clearer than passing a raw pointer, where it is ambiguous whether t
 #include <fstream>
 #include <iostream>
 
-void read_file()
-{
+void read_file() {
     std::ifstream f("data.txt");
     if (!f) {
         std::cout << "A" << std::endl;
@@ -3628,8 +3575,7 @@ void read_file()
     std::cout << "B" << std::endl;
 }
 
-int main()
-{
+int main() {
     read_file();
     std::cout << "C" << std::endl;
     return EXIT_SUCCESS;
@@ -3665,8 +3611,7 @@ Each function name is unique, so the compiler stores it as-is.
 
 void c_library_init();
 
-int main()
-{
+int main() {
     c_library_init();
     std::cout << "Ready" << std::endl;
     return 0;
@@ -3700,8 +3645,7 @@ For unsigned types, overflow wraps around: 260 % 256 = 4.
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     char c = 48;
     std::cout << c << std::endl;
     std::cout << static_cast<int>(c) << std::endl;
@@ -3761,8 +3705,7 @@ This allows the same header to work correctly in both C and C++ code.
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     int value = 65;
     char letter = 'Z';
 
@@ -3788,8 +3731,7 @@ char 'Z' as int: 90
 #include <chrono>
 #include <iostream>
 
-int main()
-{
+int main() {
     using namespace std::chrono;
 
     auto d = seconds(5) + milliseconds(750);
@@ -3822,8 +3764,7 @@ If `system_clock` jumps during your measurement, you could get a negative elapse
 #include <cstdlib>
 #include <iostream>
 
-int main()
-{
+int main() {
     int r = rand() % 100 + 1;
     std::cout << r << std::endl;
 
@@ -3844,8 +3785,7 @@ The proper C++ approach is to use `<random>` with `std::mt19937` and `std::unifo
 #include <iostream>
 #include <random>
 
-int main()
-{
+int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> die(1, 6);
@@ -3882,8 +3822,7 @@ Roll 10: 4 + 5 = 9
 #include <iostream>
 #include <random>
 
-int main()
-{
+int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::normal_distribution<double> dist(100.0, 15.0);
@@ -3934,15 +3873,13 @@ The fact that it "seems to work" today does not make it legal.
 The right fix is not a bigger cast --- it is to remove the `const` from the *original* object, or to make `uppercase_first` take its argument by non-`const` reference and let the caller pass a real mutable string:
 
 ```cpp
-void uppercase_first(std::string &s)
-{
+void uppercase_first(std::string &s) {
     if (!s.empty()) {
         s[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(s[0])));
     }
 }
 
-int main()
-{
+int main() {
     std::string title = "wonderwall";   // not const
     uppercase_first(title);
     std::cout << title << "\n";         // Wonderwall
@@ -3990,8 +3927,7 @@ struct Local {
     ~Local() { std::cout << "dtor " << name << "\n"; }
 };
 
-int main()
-{
+int main() {
     Local a{"a"};
     Local b{"b"};
 
@@ -4021,8 +3957,7 @@ Prefer `return` from `main` whenever possible, and reserve `std::exit` for cases
 #include <iostream>
 #include <random>
 
-int main()
-{
+int main() {
     std::random_device rd;
     std::mt19937 rng(rd());
     std::uniform_int_distribution<int> dist(1, 100);

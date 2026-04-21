@@ -212,8 +212,7 @@ For prettier output, use `std::format` (chapter 10).
 #include <iostream>
 #include <print>
 
-int main()
-{
+int main() {
     std::print("Enter a number: ");
     int val{};
     std::cin >> val;

@@ -43,8 +43,7 @@ Live-code this with the class typing along:
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }
@@ -134,8 +133,7 @@ Chain output to mix strings and numbers:
 ```cpp
 #include <iostream>
 
-int main()
-{
+int main() {
     std::cout << "Come as you are" << ", " << "as you were" << std::endl;
     std::cout << "The year is " << 1991 << std::endl;
     return 0;
@@ -152,8 +150,7 @@ int main()
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string name;
 
     std::cout << "What is your name? ";
@@ -189,8 +186,7 @@ Programs can also receive input when they launch:
 ```cpp
 #include <iostream>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cout << "USAGE: " << argv[0] << " <name>" << std::endl;
         return 1;
@@ -223,8 +219,7 @@ Live-code the `Try It` example from the chapter:
 #include <iostream>
 #include <string>
 
-int main()
-{
+int main() {
     std::string song;
     int year;
 

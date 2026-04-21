@@ -100,8 +100,7 @@ auto initial = 'T';       // char
 #include <iostream>
 #include <limits>
 
-int main()
-{
+int main() {
     std::cout << "int: " << sizeof(int) << " bytes\n";
     std::cout << "int max: " << std::numeric_limits<int>::max() << "\n";
     std::cout << "double max: " << std::numeric_limits<double>::max() << "\n";
@@ -236,8 +235,7 @@ struct Cancion {
     int anio;
 };
 
-int main()
-{
+int main() {
     Cancion playlist[3] = {
         {"Waterfalls", "TLC", 1995},
         {"No Scrubs", "TLC", 1999},
