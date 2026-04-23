@@ -36,6 +36,7 @@ a collection of programming texts --- focused on C++ for the moment --- suitable
 
 - opening `{` of a function goes on the same line as the function head (K&R style), including constructors with initializer lists and `requires`-constrained templates
 - this applies to all code examples across books, answer keys, and lecture notes --- the only exceptions are intentional bug demos and scope-limiting blocks (e.g. RAII lock guards)
+- when a run of consecutive code lines each end in a trailing `//` comment, align the `//` markers to a common column so the comments line up visually
 
 ## extra content
 
@@ -48,6 +49,8 @@ when committing a change based on an issue (or set of issues)
 
 - the issue reporter is the author of the change
 - list everyone else who contributed to the issues and text developement as coauthors
+- `gh issue view N` currently fails on this repo with a "Projects (classic) is being deprecated" GraphQL error --- use `gh api repos/BooksByGorgo/cpp/issues/N --jq '...'` to read issue details instead
+- end the commit message body with `Closes #N` so merging the PR closes the issue
 
 ## validating chapters
 
@@ -68,4 +71,16 @@ when committing a change based on an issue (or set of issues)
 
 - whenever you finish making changes automatically commit to git
 - if there are changes that haven't been pushed, amend the commit to the latest local only commit
+
+## pr and merge workflow
+
+- the repo on github allows rebase merges only --- no merge commits and no squash merges
+- to turn a local commit on main into a merged pr:
+    1. `git branch <feature-branch>` to preserve the commit
+    2. `git reset --hard origin/main` to move main back to its pushed tip
+    3. `git push -u origin <feature-branch>`
+    4. `gh pr create --base main --head <feature-branch> --title ... --body ...`
+    5. `gh pr merge <pr#> --rebase --delete-branch`
+    6. `git fetch origin && git pull --ff-only origin main`
+- only run this workflow when the user asks for a pr; just committing to main locally is the default
 
