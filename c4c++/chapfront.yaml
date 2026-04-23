@@ -1,6 +1,8 @@
 ---
 title: "Gorgo C for C++ Programmers"
 colorlinks: true
+numbersections: true
+secnumdepth: 0
 mainfont: "TeX Gyre Pagella"
 monofont: "JetBrains Mono"
 header-includes:
