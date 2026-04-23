@@ -43,6 +43,8 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 
 ## Chapter 7: Functions
 - Iron Man --- Black Sabbath
+- She-Ra: Princess of Power (1985 cartoon)
+- He-Man and the Masters of the Universe (1983 cartoon)
 
 ## Chapter 9: Numbers and Casting
 - Danger Zone --- Kenny Loggins
