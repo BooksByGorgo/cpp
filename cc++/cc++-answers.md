@@ -646,6 +646,37 @@ The parentheses in the macro protect against precedence issues, so this one work
 **10.** (Program exercise --- no single answer.
 The program should define `music::rock::top_song()` and `music::pop::top_song()`, use `using`, and include an anonymous namespace helper.)
 
+**11. Output: `<Mr. Brightside>`**.
+
+The compiler resolves the unqualified `<<` by **argument-dependent lookup** (ADL).
+The right operand of `<<` has type `mylib::Track`, so the compiler also searches `mylib` for an `operator<<` that takes `(std::ostream&, const Track&)`.
+It finds `mylib::operator<<` and uses it.
+
+Without ADL, you would have to write `mylib::operator<<(std::cout, t)` every time you wanted to print a `Track`, or pull the operator into the global namespace --- both worse than the rule we have.
+
+**12. Bug: ADL needs a named namespace.**
+
+The program *does* compile because the anonymous namespace's contents are also injected into the enclosing namespace (the global one here).
+The `operator<<` is therefore visible to ordinary unqualified lookup at the call site, with no ADL needed.
+
+If you move the operator into a named namespace `silent { ... }`, ordinary lookup at the call site no longer sees it, and ADL cannot help either: ADL searches the namespaces of the *argument types*.
+The argument type is `Loud`, which is in the *global* namespace --- not in `silent`.
+So neither lookup pathway finds the operator, and the call fails to compile.
+
+The lesson is the same one the chapter recommends: define a type's free-function operators (and other functions you intend ADL to find) in the *same namespace as the type*.
+For a global type, you can define them globally; for a namespaced type, define them in that namespace.
+
+**13. Why hidden friends speed up compilation.**
+
+When `operator<<` is a free function in some namespace, every translation unit that does `std::cout << x` for *any* type considers every visible `operator<<` overload during overload resolution.
+A namespace with hundreds of streamable types contributes hundreds of candidates to that lookup, even though only one will match.
+The cost is paid at every call site, in every translation unit, on every compile.
+
+A hidden friend lives *inside* the class.
+It is invisible to ordinary lookup and only appears when ADL specifically searches the class's namespace because one of the arguments has that class's type.
+That means each `<<` call only sees the operators relevant to its argument types, not every operator the project has ever defined.
+On large codebases, the savings can be a measurable fraction of compile time --- this is the main reason the standard library and Boost moved to hidden friends in their own implementations.
+
 # Chapter 9: RAII and Resource Management
 
 **1.** RAII is important because C++ uses deterministic destruction --- destructors run at predictable times (scope exit), even during exception unwinding.
