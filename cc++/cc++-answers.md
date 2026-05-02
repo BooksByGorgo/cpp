@@ -718,6 +718,68 @@ This lets you store `shared_ptr`s with different deleters in the same container,
 **10.** (Program exercise --- no single answer.
 The program should use `unique_ptr<int, ...>` with a `free`-calling deleter for `malloc`'d memory.)
 
+**11. Where is the bug in `CacheError`?**
+
+It compiles but inherits from `std::exception` directly --- which means *you* are responsible for the `what()` plumbing and the storage for the message string.
+That works, but it duplicates code the standard library already wrote.
+
+The recommended form derives from `std::runtime_error`:
+
+```cpp
+class CacheError : public std::runtime_error {
+public:
+    explicit CacheError(const std::string& key)
+        : std::runtime_error("cache miss: " + key) {}
+};
+```
+
+What you bought:
+
+- The base class stores the message and implements `what()` --- no member, no override needed.
+- Callers can `catch (const std::runtime_error& e)` to grab any "expected at runtime" failure (network, cache, config) in one block, in addition to the original `catch (const CacheError& e)`.
+- The destructor is correctly `noexcept` for free.
+
+The original form is not *wrong*, just unnecessarily wordy.
+For domain-specific error data (a port number, a key, a status code), keep the extra members; just inherit from `std::runtime_error` for the boilerplate.
+
+**12. Why function-local `static` for the Meyers singleton?**
+
+Two reasons.
+
+First, **lazy initialization**.
+A namespace-scope `static Logger global_logger;` is constructed before `main` runs, regardless of whether anyone calls into the singleton.
+A function-local `static` is constructed the first time the function is called --- so a singleton you never reach pays no cost.
+
+Second, **predictable order**.
+Two namespace-scope `static`s in different translation units have unspecified relative initialization order ("static initialization order fiasco"); if one depends on the other, you can get a use-before-init crash that disappears as soon as you change the link order.
+Function-local `static`s are initialized in the order their functions are first called, so dependencies between singletons resolve naturally.
+
+C++11 added a third reason: the standard now *requires* function-local `static` initialization to be thread-safe.
+Two threads racing to call `instance()` for the first time will not produce two instances and will not corrupt the construction --- the language guarantees the first thread runs the initialization while the second waits.
+Before C++11, you needed double-checked locking; now you do not.
+
+**13. Output: `1 0 1 0`**.
+
+- `typeid(a1) == typeid(Cat)`: `a1` is a reference to a polymorphic type, so `typeid` reports the *dynamic* type, which is `Cat`. **1**.
+- `typeid(a1) == typeid(Dog)`: same `a1`, dynamic type is `Cat`, not `Dog`. **0**.
+- `typeid(*a2) == typeid(Dog)`: `*a2` dereferences the polymorphic pointer; dynamic type is `Dog`. **1**.
+- `typeid(a2) == typeid(Dog*)`: `a2` itself is *not* polymorphic (a pointer is not a polymorphic class type), so `typeid` reports the static type, which is `Animal*`, not `Dog*`. **0**.
+
+The fourth case is the trap: `typeid` only does runtime lookup when applied to a *polymorphic class* lvalue --- a pointer is not a polymorphic class, so the rule does not kick in.
+Dereferencing the pointer brings you back into polymorphic-class territory, which is why `*a2` works correctly.
+
+**14. Type deductions for `auto` and `decltype`.**
+
+| Variable                    | Type        | Why |
+|:----------------------------|:------------|:----|
+| (a) `auto a = cref;`        | `int`       | `auto` strips top-level `const` and `&`, so the deduced type is the bare `int`. |
+| (b) `auto& b = cref;`       | `const int&`| `auto&` only drops the deduced "value vs reference" wrapper; const is preserved through the explicit `&`. |
+| (c) `decltype(cref) c = cref;` | `const int&` | `decltype` of a *named* lvalue reference yields the reference type exactly as declared --- no stripping. |
+| (d) `decltype(x) d = cref;` | `int`       | `decltype(x)` is the type of the *declaration* of `x`, which is `int`. The initializer's type is irrelevant. |
+
+The rule of thumb: `auto` "thinks like a function parameter" (strips top-level cv and references), `decltype` "thinks like a type query" (preserves whatever the expression's type actually is).
+For perfectly-forward-style code where you need to capture the exact type of an expression --- including reference and const --- reach for `decltype`.
+
 # Chapter 10: Concurrency
 
 **1.** A joinable thread owns a system thread.
