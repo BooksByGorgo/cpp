@@ -110,6 +110,21 @@ There are 5 arguments: `1` (int), `"two"` (const char*), `3.0` (double), `'4'` (
 The program should define `Pair<T,U>` with `first`, `second`, a constructor, and `print()`.
 A deduction guide `Pair(const char*, int) -> Pair<std::string, int>` enables the CTAD usage shown.)
 
+**11. Leading vs trailing return type with reference returns.**
+
+Output: `99` (when the program compiles).
+
+`first_leading` uses leading-`auto` return-type deduction.
+The deduction rules for plain `auto` strip references: `v.front()` returns an `int&`, but `auto` deduces `int`, so the function returns by *value*.
+`first_leading(v) = 99;` therefore tries to assign to a temporary `int` --- a compile error in `(a)` ("assignment to rvalue").
+
+`first_trailing` spells the return type explicitly as `-> int&`, so it returns the actual reference into the vector.
+`first_trailing(v) = 99;` succeeds in `(b)` and writes `99` into the vector's first element.
+
+The lesson: when you want to return a reference (or any specific type that `auto` would strip or wrap), spell the return type out.
+The trailing form is one clean way to do that --- it lets the compiler tell you what is going on, instead of silently giving you a copy.
+You could also write the same intent with leading-form `auto&` or by spelling the type up front.
+
 # Chapter 3: The Standard Template Library
 
 **1.** `operator[]` inserts a default value because the alternative (throwing) would make the common pattern `map[key] = value` fail for new keys.
