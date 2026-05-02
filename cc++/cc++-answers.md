@@ -536,15 +536,31 @@ For larger returns or for types used across multiple functions, a named struct i
 **10.** (Program exercise --- no single answer.
 The program should parse "rgb(r,g,b)" and return `optional<tuple<int,int,int>>`.)
 
-**11. Output: `10 5`**.
+**11. Move-assign using `std::exchange`.**
 
-Read inside-out.
-The inner `std::exchange(a, 10)` writes `10` into `a` and returns the old value `5`.
-The outer `std::exchange(a, 5)` then writes the inner result (which is `5`) into `a` --- but the outer call also reads `a`'s value *before* its write to return, and that value is the `10` the inner `exchange` had just put there.
-So `a` ends up `5` and `prev` ends up `10`.
+```cpp
+#include <utility>
 
-That is exactly the kind of micro-puzzle `exchange` exists to make readable: it is two atomic-feeling "swap a value, hand me the old one" operations composed in one line.
-Real code uses it for move-assignment cleanups, where the shape is `this->ptr_ = std::exchange(other.ptr_, nullptr);` and there is no nesting.
+Buffer& move_assign(Buffer& dst, Buffer&& src) noexcept {
+    delete[] dst.data_;
+    dst.data_ = std::exchange(src.data_, nullptr);
+    dst.size_ = std::exchange(src.size_, 0);
+    return dst;
+}
+```
+
+`std::exchange` is cleaner than the read-then-write form because it makes the "take from `src` and reset `src`" intent obvious in one line, and it never names the temporary that holds the old value.
+The alternative is verbose:
+
+```cpp
+dst.data_ = src.data_;
+src.data_ = nullptr;
+dst.size_ = src.size_;
+src.size_ = 0;
+```
+
+That works but spreads the take-and-reset over two lines per field, and a careless reader might forget to reset one of them and leave a double-free landmine.
+With `exchange`, the reset *is* the assignment.
 
 **12. The thread copies the int.**
 
