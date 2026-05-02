@@ -292,6 +292,69 @@ Upfront processing would be better when you need all results and want to cache t
 **10.** (Program exercise --- no single answer.
 The program should sort, filter >70, compute average, and find min/max using algorithms and/or views.)
 
+**11. Output: `1 2 3 4 5 6 9`**.
+
+`std::unique` only collapses *adjacent* equal elements.
+After sorting, `v` becomes `{1, 1, 2, 3, 3, 4, 5, 5, 6, 9}` and the duplicates are now neighbors, so `unique` collapses them to `{1, 2, 3, 4, 5, 6, 9}` (with the tail still containing the old values until you `erase` it).
+
+If you delete the sort line, `unique` only collapses the *adjacent* `1, 1` (positions 3 and 4 in the original) and leaves every other duplicate alone --- you would end up with something like `{3, 1, 4, 1, 5, 9, 2, 6, 5, 3}` minus exactly one of the consecutive `1`s.
+The combination of "sort, then unique, then erase" is the canonical full-deduplication idiom.
+
+**12. Where is the bug in `std::remove`?**
+
+The program prints `1 3 4 4 ` (or similar --- the trailing element values are unspecified).
+`std::remove` does *not* shrink the container.
+It compacts the elements you keep to the front and returns an iterator at the new logical end.
+The space after that iterator still contains old values (or moved-from values), and `v.size()` is unchanged.
+
+The two canonical fixes:
+
+```cpp
+auto end = std::remove(v.begin(), v.end(), 2);
+v.erase(end, v.end());                        // erase-remove
+
+std::erase(v, 2);                             // C++20 one-liner
+```
+
+Modern code prefers the C++20 form because there is no temptation to forget the `erase` step.
+
+**13. Output: `3`**.
+
+`lower_bound(v, 3)` returns an iterator to the first element *not less than* 3 --- the first `3`.
+`upper_bound(v, 3)` returns an iterator to the first element *greater than* 3 --- the `5`.
+The distance between them is the count of `3`s in the sorted range, which is `3`.
+
+This is the same pair `std::map::equal_range` uses, and it is the standard way to find every occurrence of a value in a sorted range without writing a loop.
+
+**14. Calculation: sum of 1..10 via `iota` + `accumulate`.**
+
+```cpp
+#include <numeric>
+#include <vector>
+
+int main() {
+    std::vector<int> v(10);
+    std::iota(v.begin(), v.end(), 1);                    // 1, 2, ..., 10
+    int sum = std::accumulate(v.begin(), v.end(), 0);    // 55
+    return sum;
+}
+```
+
+`55` matches `n(n+1)/2 = 10 * 11 / 2 = 55`.
+That is Gauss's identity for the sum of the first `n` positive integers --- the program is just computing it the long way.
+
+**15. Output:**
+
+```
+0: Crazy
+1: Toxic
+2: Hey Ya
+```
+
+`views::enumerate` (C++23) produces, for each step, a tuple-like value of `(index, element)`.
+The structured binding `[i, name]` peels those two pieces apart into named variables.
+This replaces the older indexed-loop idiom (`for (int i = 0; i < v.size(); ++i)`) with something both safer (no off-by-one) and more composable (you can pipe `enumerate` into other views).
+
 # Chapter 5: Enums, constexpr, and Compile-Time Programming
 
 **1.** Requiring `static_cast` prevents accidental mixing of enums with integers.
