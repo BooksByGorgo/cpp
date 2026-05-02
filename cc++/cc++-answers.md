@@ -401,6 +401,44 @@ The code is valid C++17.
 **10.** (Program exercise --- no single answer.
 The program should define `constexpr` Fahrenheit-to-Celsius, use `static_assert` for 212->100 and 32->0, define `enum class Season`, and print temperatures.)
 
+**11. `<bit>` operations on `0xF0`.**
+
+`0xF0` in binary is `0000 0000 0000 0000 0000 0000 1111 0000` (32-bit unsigned).
+
+- `popcount` counts the 1-bits: `4`.
+- `countl_zero` counts leading zeros from the most significant bit: `24`.
+- `countr_zero` counts trailing zeros from the least significant bit: `4`.
+- `has_single_bit` is `true` only if exactly one bit is set; `0xF0` has four bits set, so the answer is `0`.
+
+Output: `4 24 4 0`.
+
+**12. `[[nodiscard]]` warning.**
+
+The compiler flags line `(a)`, the bare call `parse("123")`, because `parse` is marked `[[nodiscard]]` and the return value is being thrown away.
+Line `(b)` assigns the result to `n`, which counts as using it.
+
+If you genuinely need to discard the result --- for instance when calling a side-effect-only API for its other behavior --- the canonical silencer is to assign it to a `std::ignore`-style cast:
+
+```cpp
+(void) parse("123");           // explicit "I do not want this value"
+std::ignore = parse("123");    // C++ idiom in code that already uses tuples
+```
+
+Either form acknowledges the discard, which is what `[[nodiscard]]` is asking for.
+The warning is not asking you to *use* the value --- only to *say so* when you don't.
+
+**13. Why are `[[likely]]` / `[[unlikely]]` only hints?**
+
+Two reasons.
+
+First, the compiler knows things you do not.
+It can profile-guided-optimize from real run data (PGO) and re-pick the layout, knows the target CPU's branch prediction strategy, can see how the surrounding loop body interacts with cache lines, and may have inlined the function into a context where your hint is wrong.
+A "force" annotation would lock the compiler into a layout it has good reason to override.
+
+Second, the hints are mostly useful in inner loops where the cost of *being wrong* is small (a few extra branch mispredictions) but the cost of being *right* is real (better instruction layout, fewer cache misses).
+Trusting the user with a hard directive turns a small win into a possible regression every time the assumption ages out of date.
+Hints let the compiler use them when they help, and ignore them when they don't.
+
 # Chapter 6: Advanced Strings
 
 **1.** `string_view` is better because it works with both `std::string` and `const char*` without copies.
