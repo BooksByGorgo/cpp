@@ -11,6 +11,8 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Waterfalls --- TLC
 - No Scrubs --- TLC
 - Livin' La Vida Loca --- Ricky Martin
+- Wonderwall --- Oasis (designated-initializer example)
+- Middle of Nowhere --- Hanson (album example in exercises)
 
 ## Chapter 3: Strings
 - MMMBop --- Hanson

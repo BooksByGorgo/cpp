@@ -340,6 +340,69 @@ When `static_cast<int>(b)` is sent, it is displayed as the number `101`.
 
 Same byte, two different displays --- the type controls which one you see.
 
+**14. What does the static-counter program print?**
+
+It prints `1 2 3`.
+
+Each call to `counter()` runs `++n` and returns the new value, but `n` is `static` --- it is initialized to 0 only once, the first time `counter()` is called, and survives between calls.
+The three calls see `n` go 0→1, 1→2, 2→3.
+
+If `static` were removed, `n` would be a normal automatic variable created fresh on every call, initialized to 0 each time.
+The program would print `1 1 1`.
+
+**15. Why might you reach for `std::int32_t` instead of `int`?**
+
+`int` is only required to be at least 16 bits wide; on most desktop platforms it happens to be 32 bits, but the standard does not promise that.
+When you read raw bytes from a file --- where the file format says "this field is exactly 4 bytes" --- you want a type that is *guaranteed* to be 32 bits everywhere your code runs.
+`std::int32_t` from `<cstdint>` is exactly that.
+
+For the three initializations of `int x` from `3.7`:
+
+- `int x = 3.7;` --- compiles. `3.7` is implicitly converted to `int` and truncated to `3`. The compiler may warn, but the conversion is allowed.
+- `int x(3.7);` --- compiles. Same truncation; same warning behavior.
+- `int x{3.7};` --- ERROR. Brace initialization rejects the narrowing conversion at compile time, which catches the data loss before it can hide a bug.
+
+**16. Where is the bug in the `enum class Direction` program?**
+
+`Direction` is a *scoped* enumeration (`enum class`), so its enumerators do not leak into the surrounding scope.
+You must qualify the name: `Direction d = Direction::North;`.
+`North` by itself is not a name the compiler can find.
+
+The fixed program:
+
+```cpp
+enum class Direction { North, South, East, West };
+
+int main() {
+    Direction d = Direction::North;
+    return static_cast<int>(d);
+}
+```
+
+The `static_cast<int>(d)` is also necessary --- a scoped enum does not implicitly convert to `int`, even when returning from `main`.
+
+**17. Designated-initializer form for `Album smash`:**
+
+```cpp
+Album smash = {
+    .artist = "Hanson",
+    .title  = "Middle of Nowhere",
+    .year   = 1997,
+    .tracks = 13,
+};
+```
+
+For `Album partial = {.artist = "Hanson"};`, the omitted members are value-initialized --- `title` becomes the empty string `""`, and `year` and `tracks` become `0`.
+
+**18. Why does the lazy initialization of function-local `static` matter?**
+
+Two practical reasons:
+
+- **Startup cost**: a program with many functions does not pay the construction cost of every function-local `static` up front; it only pays for the ones that are actually reached at runtime.
+This keeps program startup fast even when the codebase is large.
+- **Order independence**: function-local `static`s avoid the so-called "static initialization order fiasco" --- the trap where two namespace-scope `static` objects in different translation units depend on each other and the construction order is implementation-defined.
+A function-local `static` is constructed the first time control reaches it, so the dependency is explicit and predictable.
+
 # Chapter 3: Strings
 
 **1. What is the difference between `std::cin >> str` and `std::getline(std::cin, str)`? When would you use each one?**
