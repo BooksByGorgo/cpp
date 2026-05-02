@@ -38,6 +38,8 @@ PANDOC_OPTS := $(FILTER) \
                --pdf-engine=latexmk --pdf-engine-opt=-lualatex \
                --citeproc --bibliography=../c4c++/references.bib --csl=../c4c++/ieee.csl \
                --resource-path=.:../sc++:../c4c++ \
+               --top-level-division=chapter \
+               -V documentclass=book \
                -M subtitle="$(DATE)" \
                -V geometry:"paperwidth=7in" \
                -V geometry:"paperheight=10in" \
@@ -65,10 +67,7 @@ all: lulu-sc++c.pdf lulu-cover.pdf
 .lulu-c4-author.md: ../c4c++/author-intro.md
 	sed '1{/^\\newpage$$/d;}' $< > $@
 
-lulu-sc++c.pdf: .lulu-sc++c-raw.pdf
-	$(GS_LULU) -sOutputFile=$@ $<
-
-.lulu-sc++c-raw.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/ieee.csl
+lulu-sc++c.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/ieee.csl
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
 
 # --- Cover ---
