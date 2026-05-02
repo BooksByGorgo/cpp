@@ -11,6 +11,8 @@ header-includes:
   - \usepackage[most]{tcolorbox}
   - \usepackage{imakeidx}
   - \makeindex[intoc]
+  - \usepackage{microtype}
+  - \setlength{\emergencystretch}{3em}
   - \setcounter{chapter}{-1}
   - \newcounter{gorgopart}
   - \AtBeginDocument{\renewcommand{\theHchapter}{P\thegorgopart.\arabic{chapter}}}
