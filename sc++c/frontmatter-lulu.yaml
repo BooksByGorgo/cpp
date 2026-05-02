@@ -12,7 +12,9 @@ header-includes:
   - \usepackage{imakeidx}
   - \makeindex[intoc]
   - \setcounter{chapter}{-1}
-  - '\newcommand{\bookpart}[2]{\clearpage\phantomsection\addcontentsline{toc}{part}{#1}\thispagestyle{empty}\markboth{#1}{#1}\begin{center}\includegraphics[width=0.35\textwidth]{#2}\par\vspace{1em}{\Huge\bfseries #1\par}\end{center}\vspace{2em}\setcounter{chapter}{-1}}'
+  - \newcounter{gorgopart}
+  - \AtBeginDocument{\renewcommand{\theHchapter}{P\thegorgopart.\arabic{chapter}}}
+  - '\newcommand{\bookpart}[2]{\clearpage\phantomsection\addcontentsline{toc}{part}{#1}\thispagestyle{empty}\markboth{#1}{#1}\begin{center}\includegraphics[width=0.35\textwidth]{#2}\par\vspace{1em}{\Huge\bfseries #1\par}\end{center}\vspace{2em}\stepcounter{gorgopart}\setcounter{chapter}{-1}}'
   - \AtBeginDocument{\pagenumbering{gobble}}
   - |
     ```{=latex}
