@@ -20,6 +20,8 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Baby One More Time --- Britney Spears
 - Bailamos --- Enrique Iglesias
 - Iris --- Goo Goo Dolls
+- Tearin' Up My Heart --- *NSYNC (multi-line literal example)
+- Weezer (band name in raw-string SQL example)
 
 ## Chapter 4: Expressions
 - Jump Around --- House of Pain
