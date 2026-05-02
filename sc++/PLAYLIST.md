@@ -29,6 +29,8 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Losing My Religion --- R.E.M.
 - Bitter Sweet Symphony --- The Verve
 - Zombie --- The Cranberries
+- Black Hole Sun --- Soundgarden (if-with-initializer example)
+- Mr. Jones --- Counting Crows (if-with-initializer exercise)
 
 ## Chapter 6: Functions
 - I Want It That Way --- Backstreet Boys

@@ -1112,6 +1112,28 @@ case 2:
 
 Without `[[fallthrough]]`, modern compilers warn about the missing `break` because that is almost always a bug.
 
+**13. What does the `if (auto pos = lyric.find("Jones"); pos != npos)` example print?**
+
+It prints `found at 4`.
+
+`lyric.find("Jones")` searches the string for `"Jones"` and returns the index where it starts --- in `"Mr. Jones and me, tell each other fairy tales"`, that is position `4`.
+The condition `pos != std::string::npos` is true, so the body runs.
+
+`pos` is in scope only inside the `if` (and its `else`, if there were one).
+Writing `std::cout << pos;` after the `if` is a compile error --- the name no longer exists.
+
+The version without the initializer would be:
+
+```cpp
+auto pos = lyric.find("Jones");
+if (pos != std::string::npos) {
+    std::cout << "found at " << pos << "\n";
+}
+```
+
+The original is better because it makes the intent visible: `pos` is only meaningful inside the `if`.
+The non-initializer version leaves `pos` lying around in the surrounding scope, where a later reader might accidentally read it (and get `npos` from a missing find) or reuse the name for something else.
+
 # Chapter 6: Functions
 
 **1. Think about it: Why does C++ pass arguments by value by default instead of by reference? What advantage does this give you?**
