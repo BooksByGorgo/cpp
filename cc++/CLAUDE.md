@@ -117,6 +117,7 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - std::any
     - std::tuple and structured bindings
     - std::pair revisited
+    - user-defined literals (`operator""`, standard library suffixes, custom unit-style suffixes)
 8. Namespaces and the preprocessor
     - namespace design and organization
     - anonymous namespaces

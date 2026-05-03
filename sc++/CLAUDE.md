@@ -86,7 +86,7 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - Intro to input and output using std::cin and std::cout
     - command-line arguments: `Hello ` argv[1] and USAGE messages
 2. Variables
-    - basic types: char, int, float, ...
+    - basic types: char, int, float, double, long double, ...
     - variables give a name to memory allocated to store the declared type
     - we can use [] to declare arrays of types
         - tricks to using multi dimensional arrays
@@ -100,6 +100,7 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
 3. Strings
     - std::string
     - Introduce common string operations
+    - the `s` literal suffix (turns a string literal into a `std::string`)
 4. Expressions
     - assignment operators
     - math operators
@@ -124,6 +125,7 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
 7. Numbers
     - bases: decimal, binary, hex, octal
     - integer literals in other bases (`0b`, `0x`, `0`) and digit separators
+    - numeric literal suffixes (`U`, `L`, `LL` for ints; `f`, `L` for floats) and what they prevent (the `s` suffix for `std::string` is in chapter 3)
     - printing in other bases with `std::format` / `std::println`
     - strings to/from numbers (`std::stoi`, `std::stod`, `std::to_string`)
     - two's complement

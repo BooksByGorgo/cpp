@@ -617,6 +617,63 @@ The Chapter 8 hidden-friends idiom takes the same `friend` declaration but place
 That keeps the function out of the surrounding namespace's lookup until ADL needs it (when someone writes `std::cout << t`), which dramatically improves overload-resolution times in big codebases.
 For new code, prefer hidden friends; the standalone non-member form is fine for textbooks and small programs.
 
+**15. Where is the bug? `wait_a_bit` with `std::chrono::milliseconds{500000}`.**
+
+The literal `500000` is a plain `int`, *not* a chrono duration --- the brace-construction wraps it as `500000` milliseconds, which is **500 seconds** (8 minutes 20 seconds), not half a second.
+The intent was `500ms`.
+
+The one-line fix is to use the chrono UDL, which removes the unit confusion at the call site:
+
+```cpp
+std::this_thread::sleep_for(500ms);   // requires using namespace std::chrono_literals;
+```
+
+Now the `ms` suffix makes the unit obvious and matches what the function expects.
+
+**16. What does this print, and which line fails?**
+
+```cpp
+auto a = 1s + 250ms;
+auto b = 24h - 30min;
+auto c = 5 + 250ms;            // ?
+```
+
+Lines `a` and `b` compile.
+`a` is `1250ms` (chrono converts `1s` to `1000ms` and adds), and `b` is `1410min` (chrono converts `24h` to `1440min` and subtracts).
+The `std::println` would print `1250 1410`.
+
+Line `c` does **not** compile.
+There is no `operator+` between a plain `int` and `std::chrono::milliseconds` --- the chrono types deliberately refuse to mix with raw numbers so that "5 *what*?" cannot slip through.
+To fix it you would have to spell out the unit: `5ms + 250ms` or `std::chrono::milliseconds{5} + 250ms`.
+
+**17. Write your own UDL for degrees.**
+
+```cpp
+#include <cmath>
+#include <numbers>
+#include <print>
+
+constexpr double operator""_deg(long double v) {
+    return static_cast<double>(v) * std::numbers::pi / 180.0;
+}
+
+int main() {
+    constexpr double right_angle = 90.0_deg;
+    std::println("sin(90 deg) = {}", std::sin(right_angle));   // 1
+}
+```
+
+The conversion happens at compile time because both `std::numbers::pi` and the operator function are `constexpr`, so `right_angle` is a compile-time constant equal to `pi / 2`.
+`std::sin` then evaluates to approximately `1.0` at run time.
+
+**18. Why does the leading `_` rule matter for forward compatibility?**
+
+The standard library reserves all UDL suffixes that do *not* start with an underscore.
+That reservation is what lets future C++ standards add new built-in suffixes (a future `_USD` for currency, say, or a `bits` literal for bitsets) without silently breaking existing user code.
+
+If your code defines `operator""USD` and a future standard adds `USD` to `std`, the two would collide --- and the language's lookup rules might pick the standard version, changing the behavior of your program.
+By forcing user-defined suffixes to start with `_`, the language guarantees that user-space and standard-library suffixes can never collide, no matter what new suffixes the standard adds.
+
 # Chapter 8: Namespaces and the Preprocessor
 
 **1.** `using namespace std;` in a header makes all of `std`'s names visible in every file that includes the header.

@@ -22,6 +22,8 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Iris --- Goo Goo Dolls
 - Tearin' Up My Heart --- *NSYNC (multi-line literal example)
 - Weezer (band name in raw-string SQL example)
+- Mambo No. 5 --- Lou Bega (string-suffix concatenation example)
+- Genie in a Bottle --- Christina Aguilera (string-suffix exercise)
 
 ## Chapter 4: Expressions
 - Jump Around --- House of Pain

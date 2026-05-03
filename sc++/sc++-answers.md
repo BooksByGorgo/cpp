@@ -603,6 +603,35 @@ The string has 4 visible characters but takes 5 bytes in UTF-8.
 `std::string::size()` always reports bytes, not characters.
 For a pure-ASCII string the two would be the same, but as soon as a non-ASCII character shows up, the byte count exceeds the human "character" count.
 
+**14. Where is the bug? Two string-concatenation lines.**
+
+```cpp
+auto a = "Genie "  + "in a bottle";
+auto b = "Genie "s + "in a bottle";
+```
+
+Line `a` does not compile: both operands are `const char*` (the type of a plain string literal), and there is no `operator+` for two raw character pointers.
+You cannot concatenate two C-style strings with `+`.
+
+Line `b` compiles.
+The `s` suffix turns `"Genie "` into a `std::string`, and `std::string` *does* overload `operator+` to accept a `const char*` on the right.
+The result is a `std::string` containing `"Genie in a bottle"`.
+
+**15. What does this print?**
+
+The program prints something like:
+
+```
+Bonjour is 8 bytes
+Adieu has 5 characters
+```
+
+`auto greeting = "Bonjour";` deduces `const char*` --- a *pointer*, not a string.
+`sizeof(greeting)` therefore reports the size of a pointer (8 bytes on a 64-bit system, 4 bytes on a 32-bit system) regardless of how long the actual text is.
+To get the character count of a string literal at compile time you would need an array (`auto greeting = "Bonjour";` is a pointer; `const char greeting[] = "Bonjour";` is an 8-byte array including the null terminator) or, easier, the `s` suffix.
+
+`auto farewell = "Adieu"s;` deduces `std::string`, so `farewell.size()` returns the actual number of characters: `5`.
+
 # Chapter 4: Expressions
 
 **1. What is the difference between `7 / 2` and `7.0 / 2` in C++? Why does it matter?**
@@ -1611,6 +1640,35 @@ int main() {
 
 The `#` flag adds the `0x`, `0`, and `0b` prefixes so the bases are obvious.
 `std::to_string` always produces the *decimal* string form of the number; if you want a hex string, use `std::format("{:x}", n)` instead.
+
+**16. Where is the bug? `long long ms_per_year = 365 * 24 * 60 * 60 * 1000;`**
+
+Every literal on the right side is an `int`, so the entire multiplication is done in `int` arithmetic.
+The true value (31,536,000,000) does not fit in 32 bits, so the multiplication overflows --- on most compilers it silently produces `1,471,228,928` instead.
+Assigning the result to a `long long` afterwards cannot undo the overflow that has already happened.
+
+The fix is to make at least the *first* operand wide enough to force the whole expression into `long long` arithmetic:
+
+```cpp
+long long ms_per_year = 365LL * 24 * 60 * 60 * 1000;
+```
+
+Once the leftmost operand is `long long`, the usual arithmetic conversions promote each subsequent `int` to `long long` before multiplying, and the answer fits.
+
+**17. What is the type of each variable?**
+
+```cpp
+auto a = 1;       // int
+auto b = 1U;      // unsigned int
+auto c = 1L;      // long
+auto d = 1ULL;    // unsigned long long
+auto e = 1.0;     // double
+auto f = 1.0f;    // float
+auto g = 1.0L;    // long double
+```
+
+Without a suffix, integer literals are `int` and floating-point literals are `double`.
+Each suffix selects a different type at compile time --- the value `1` is the same in every case, but the storage size and value range that the variable can later hold are different.
 
 # Chapter 8: Containers
 
