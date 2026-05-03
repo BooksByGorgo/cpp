@@ -80,6 +80,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - All Star --- Smash Mouth
 - Basket Case --- Green Day
 - Virtual Insanity --- Jamiroquai
+- Wonderwall --- Oasis (Playlist `private` exercise)
 
 ## Chapter 13: Memory Management
 - Under the Bridge --- Red Hot Chili Peppers
@@ -93,6 +94,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Black --- Pearl Jam (weak_ptr cycle example)
 - Karma Police --- Radiohead (weak_ptr lock example)
 - Doll Parts --- Hole (weak_ptr exercise)
+- Wonderwall --- Oasis (raw `new` answer-key example)
 
 ## Chapter 14: Special Members and Friends
 - Torn --- Natalie Imbruglia
@@ -101,8 +103,11 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Vogue --- Madonna
 - Only Happy When It Rains --- Garbage (move constructor exercise)
 - Standing Outside a Broken Phone Booth --- Primitive Radio Gods (move constructor exercise)
+- "Yo te quiero" (Spanish phrase in `Lyric` move-constructor example)
+- Tell Me Why --- Backstreet Boys (`Lyric` move-constructor example)
 
 ## Chapter 15: Odds and Ends
 - La Copa de la Vida --- Ricky Martin
 - Believe --- Cher
 - "Cinco tracks al azar" (Spanish phrase used in random numbers example)
+- Wonderwall --- Oasis (`const_cast` exercise)

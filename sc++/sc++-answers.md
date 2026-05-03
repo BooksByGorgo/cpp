@@ -160,7 +160,7 @@ a\b	c
 d
 ```
 
-`\\` is a single backslash, `\t` is a tab, and `\n` is a newline, so the string is six characters: `a`, `\`, `b`, tab, `c`, newline, `d`, and then `std::endl` adds another newline.
+`\\` is a single backslash, `\t` is a tab, and `\n` is a newline, so the string is seven characters: `a`, `\`, `b`, tab, `c`, newline, `d`, and then `std::endl` adds another newline.
 
 # Chapter 2: Variables
 
@@ -340,17 +340,7 @@ When `static_cast<int>(b)` is sent, it is displayed as the number `101`.
 
 Same byte, two different displays --- the type controls which one you see.
 
-**14. What does the static-counter program print?**
-
-It prints `1 2 3`.
-
-Each call to `counter()` runs `++n` and returns the new value, but `n` is `static` --- it is initialized to 0 only once, the first time `counter()` is called, and survives between calls.
-The three calls see `n` go 0→1, 1→2, 2→3.
-
-If `static` were removed, `n` would be a normal automatic variable created fresh on every call, initialized to 0 each time.
-The program would print `1 1 1`.
-
-**15. Why might you reach for `std::int32_t` instead of `int`?**
+**14. Why might you reach for `std::int32_t` instead of `int`?**
 
 `int` is only required to be at least 16 bits wide; on most desktop platforms it happens to be 32 bits, but the standard does not promise that.
 When you read raw bytes from a file --- where the file format says "this field is exactly 4 bytes" --- you want a type that is *guaranteed* to be 32 bits everywhere your code runs.
@@ -362,7 +352,7 @@ For the three initializations of `int x` from `3.7`:
 - `int x(3.7);` --- compiles. Same truncation; same warning behavior.
 - `int x{3.7};` --- ERROR. Brace initialization rejects the narrowing conversion at compile time, which catches the data loss before it can hide a bug.
 
-**16. Designated-initializer form for `Album smash`:**
+**15. Designated-initializer form for `Album smash`:**
 
 ```cpp
 Album smash = {
@@ -374,15 +364,6 @@ Album smash = {
 ```
 
 For `Album partial = {.artist = "Hanson"};`, the omitted members are value-initialized --- `title` becomes the empty string `""`, and `year` and `tracks` become `0`.
-
-**17. Why does the lazy initialization of function-local `static` matter?**
-
-Two practical reasons:
-
-- **Startup cost**: a program with many functions does not pay the construction cost of every function-local `static` up front; it only pays for the ones that are actually reached at runtime.
-This keeps program startup fast even when the codebase is large.
-- **Order independence**: function-local `static`s avoid the so-called "static initialization order fiasco" --- the trap where two namespace-scope `static` objects in different translation units depend on each other and the construction order is implementation-defined.
-A function-local `static` is constructed the first time control reaches it, so the dependency is explicit and predictable.
 
 # Chapter 3: Strings
 
@@ -769,7 +750,7 @@ int main() {
 
 **9. What does the compound-assignment example print?**
 
-It prints `0`.
+It prints `1`.
 
 | Line       | New value of `x` |
 |:-----------|:----------------:|
@@ -780,9 +761,8 @@ It prints `0`.
 | `x /= 4`   | 6 (integer div)  |
 | `x %= 5`   | 1                |
 
-Wait --- 6 % 5 is 1, not 0.
-Trace it again carefully: 10 + 5 = 15, 15 * 2 = 30, 30 - 3 = 27, 27 / 4 = 6 (integer division drops the remainder), 6 % 5 = 1.
-The program prints `1`.
+Integer division drops the remainder, so `27 / 4` is `6` rather than `6.75`.
+`6 % 5` is then `1`.
 
 **10. Think about it: precedence of `a < b && c == d || !e`.**
 
@@ -1558,10 +1538,13 @@ uint8_t sum = a + b;
 std::println("{} + {} = {}", a, b, sum);
 ```
 
+It prints `250 + 20 = 14`.
+
 Numerically, `a + b` is 270, but `sum` is `uint8_t` (8 bits, max 255), so the result wraps: 270 - 256 = `14`.
-There is also a display surprise: `std::println` with `{}` formats `uint8_t` (which is `unsigned char`) as a **character**, not a number.
-So instead of seeing `250 + 20 = 14`, you see the characters with codes 250, 20, and 14, which print as garbage or control characters on most terminals.
-To get numeric output, use `{:d}` or cast to `int`:
+
+C++23 settled how `std::format` (and therefore `std::println`) treats `unsigned char` and `signed char` with the default `{}` specifier: they print as integers, just like the wider integer types.
+On older standard library implementations the same code may treat `uint8_t` as a character and print the byte with code 14 instead of `14`, which usually shows up as garbage in a terminal.
+To force numeric output portably, use `{:d}` or cast to `int`:
 
 ```cpp
 std::println("{} + {} = {}",
@@ -1569,7 +1552,33 @@ std::println("{} + {} = {}",
 // 250 + 20 = 14
 ```
 
-**11. What does the digit-separator example print? Are the separators part of the value?**
+**11. Implement `bool is_set(int num, int bit)`.**
+
+Bit numbering follows the convention in the question: bit `0` is the least-significant bit, bit `1` is the next, and so on.
+To test bit `bit` of `num`, build a mask with that bit set (`1 << bit`) and AND it with `num`.
+If the result is non-zero, the bit was set.
+
+```cpp
+#include <print>
+
+bool is_set(int num, int bit) {
+    return (num & (1 << bit)) != 0;
+}
+
+int main() {
+    // 13 is 0b1101, so bits 0, 2, 3 are set; bit 1 is clear
+    std::println("is_set(13, 0) = {}", is_set(13, 0));   // true
+    std::println("is_set(13, 1) = {}", is_set(13, 1));   // false
+    std::println("is_set(13, 2) = {}", is_set(13, 2));   // true
+    std::println("is_set(13, 3) = {}", is_set(13, 3));   // true
+}
+```
+
+The `!= 0` makes the conversion to `bool` explicit; without it the function would still work because non-zero `int` converts to `true`, but the comparison reads more clearly.
+
+For values wider than `int`, widen the literal too: `1ULL << bit` if `num` is `unsigned long long`, otherwise the shift happens in `int` and overflows for `bit >= 32`.
+
+**12. What does the digit-separator example print? Are the separators part of the value?**
 
 It prints `1000000 16711935 61680`.
 
@@ -1577,7 +1586,7 @@ Digit separators (`'`) are *not* part of the stored value --- they exist purely 
 The compiler ignores them entirely, so `1'000'000` is exactly the same value as `1000000`, `0xFF'00'FF` is exactly the same as `0xFF00FF`, and so on.
 You can place them anywhere between digits and group however you like.
 
-**12. What does the `std::stoi` + `pos` chain print, and what is `pos` after each call?**
+**13. What does the `std::stoi` + `pos` chain print, and what is `pos` after each call?**
 
 It prints `42 100 255`.
 
@@ -1590,7 +1599,7 @@ It prints `42 100 255`.
 Each call skips leading whitespace, parses as much as it can, and stops at the first non-digit character.
 The `pos` parameter is how the caller learns where parsing stopped, which is what makes it possible to chain multiple parses through one string.
 
-**13. Calculation: bitwise on 8-bit values.**
+**14. Calculation: bitwise on 8-bit values.**
 
 ```
 0b1010'1100 & 0b1111'0000 = 0b1010'0000 = 160
@@ -1601,7 +1610,7 @@ The `pos` parameter is how the caller learns where parsing stopped, which is wha
 XOR with all-ones flips every bit --- it is the same as the bitwise complement (`~`) for that width.
 The result is the *one's complement* of the original value.
 
-**14. Calculation: `sizeof` and ranges on a typical 64-bit Linux system.**
+**15. Calculation: `sizeof` and ranges on a typical 64-bit Linux system.**
 
 | Type        | `sizeof` | Largest unsigned value |
 |:------------|:--------:|:-----------------------|
@@ -1614,7 +1623,7 @@ The result is the *one's complement* of the original value.
 Note that on Linux/macOS `long` is 8 bytes but on 64-bit Windows `long` is still 4 bytes.
 This is exactly why `long` should be avoided when you need a specific width --- use a fixed-width type like `int64_t` from `<cstdint>` instead.
 
-**15. Write a program that prints an integer in decimal, hex, octal, binary, and as a string.**
+**16. Write a program that prints an integer in decimal, hex, octal, binary, and as a string.**
 
 ```cpp
 #include <print>
@@ -1641,7 +1650,7 @@ int main() {
 The `#` flag adds the `0x`, `0`, and `0b` prefixes so the bases are obvious.
 `std::to_string` always produces the *decimal* string form of the number; if you want a hex string, use `std::format("{:x}", n)` instead.
 
-**16. Where is the bug? `long long ms_per_year = 365 * 24 * 60 * 60 * 1000;`**
+**17. Where is the bug? `long long ms_per_year = 365 * 24 * 60 * 60 * 1000;`**
 
 Every literal on the right side is an `int`, so the entire multiplication is done in `int` arithmetic.
 The true value (31,536,000,000) does not fit in 32 bits, so the multiplication overflows --- on most compilers it silently produces `1,471,228,928` instead.
@@ -1655,7 +1664,7 @@ long long ms_per_year = 365LL * 24 * 60 * 60 * 1000;
 
 Once the leftmost operand is `long long`, the usual arithmetic conversions promote each subsequent `int` to `long long` before multiplying, and the answer fits.
 
-**17. What is the type of each variable?**
+**18. What is the type of each variable?**
 
 ```cpp
 auto a = 1;       // int
@@ -2159,12 +2168,12 @@ Each flag is one bit in a `std::ios_base::openmode` bitmask, so combinations are
 You use `|` because that is the bitwise OR operator (the same one introduced in Chapter 7) --- it sets all the bits that are on in either operand, which is exactly what "this mode AND that mode" means.
 You cannot use `+` or `,` because those would either give the wrong numeric value or not produce a valid `openmode` at all.
 
-| Expression                                   | What it asks for                                            |
-|:---------------------------------------------|:------------------------------------------------------------|
-| `std::ios::out`                              | open for writing (the default for `ofstream`)               |
-| `std::ios::out | std::ios::app`              | open for writing in **append** mode (do not truncate)       |
-| `std::ios::out | std::ios::trunc`            | open for writing and **truncate** the file to zero length   |
-| `std::ios::in | std::ios::out | std::ios::binary` | open for reading **and** writing in **binary** mode (no newline translation) |
+| Expression                                            | What it asks for                                            |
+|:------------------------------------------------------|:------------------------------------------------------------|
+| `std::ios::out`                                       | open for writing (the default for `ofstream`)               |
+| `std::ios::out \| std::ios::app`                      | open for writing in **append** mode (do not truncate)       |
+| `std::ios::out \| std::ios::trunc`                    | open for writing and **truncate** the file to zero length   |
+| `std::ios::in \| std::ios::out \| std::ios::binary`   | open for reading **and** writing in **binary** mode (no newline translation) |
 
 **12. Write a program that reads `oldies.txt`, prints each line, and reports errors on `std::cerr`.**
 
@@ -3074,21 +3083,7 @@ int main() {
 If `add` returned `*this` by value, each call would build a fresh copy and the chain would be acting on temporary objects --- the original `b` would never get any of the values added past the first one.
 Returning a reference is what makes the fluent interface actually fluent.
 
-**16. Think about it: `explicit operator bool()`.**
-
-`operator bool` is marked `explicit` so the conversion only happens in places where the compiler is *expecting* a bool, not anywhere a `Volume` happens to be used in arithmetic or assignment.
-That avoids the classic "safe bool" footgun where a bool conversion accidentally enables nonsensical comparisons like `volume + 1` or `volume == otherVolume`.
-
-| Call                                          | Compiles? | Why                                                                             |
-|:----------------------------------------------|:---------:|:--------------------------------------------------------------------------------|
-| `(a) if (v) { ... }`                          | yes       | The condition of `if` is a "contextual" bool conversion, which `explicit` allows. |
-| `(b) bool b = v;`                             | **no**    | Implicit copy-initialization to `bool` is not contextual, so `explicit` blocks it. |
-| `(c) bool b2 = static_cast<bool>(v);`         | yes       | An explicit cast asks for the conversion by name, which is exactly what `explicit` permits. |
-| `(d) int n = v;`                              | **no**    | There is no `operator int`, only `operator bool`, and `bool` does not implicitly convert to `int` here without first going through the explicit cast. |
-
-So `explicit operator bool()` lets you write `if (v)`, `while (v)`, `!v`, and so on, while preventing the conversion from sneaking in where you didn't ask for it.
-
-**17. Where is the bug in the delegating-constructor `Album` example?**
+**16. Where is the bug in the delegating-constructor `Album` example?**
 
 The default constructor `Album()` tries to mix a member initializer (`artist("Unknown")`) with a delegating call to another constructor (`Album("Unknown", 0)`).
 That is not allowed: when one constructor delegates to another, the delegated-to call must be the *only* entry in the initializer list.
@@ -3107,6 +3102,20 @@ public:
 ```
 
 The parameterized constructor runs first --- initializing both members --- and only then does the default constructor's body run (it is empty here).
+
+**17. Think about it: `explicit operator bool()`.**
+
+`operator bool` is marked `explicit` so the conversion only happens in places where the compiler is *expecting* a bool, not anywhere a `Volume` happens to be used in arithmetic or assignment.
+That avoids the classic "safe bool" footgun where a bool conversion accidentally enables nonsensical comparisons like `volume + 1` or `volume == otherVolume`.
+
+| Call                                          | Compiles? | Why                                                                             |
+|:----------------------------------------------|:---------:|:--------------------------------------------------------------------------------|
+| `(a) if (v) { ... }`                          | yes       | The condition of `if` is a "contextual" bool conversion, which `explicit` allows. |
+| `(b) bool b = v;`                             | **no**    | Implicit copy-initialization to `bool` is not contextual, so `explicit` blocks it. |
+| `(c) bool b2 = static_cast<bool>(v);`         | yes       | An explicit cast asks for the conversion by name, which is exactly what `explicit` permits. |
+| `(d) int n = v;`                              | **no**    | There is no `operator int`, only `operator bool`, and `bool` does not implicitly convert to `int` here without first going through the explicit cast. |
+
+So `explicit operator bool()` lets you write `if (v)`, `while (v)`, `!v`, and so on, while preventing the conversion from sneaking in where you didn't ask for it.
 
 # Chapter 13: Memory Management
 
@@ -3613,9 +3622,9 @@ std::ostream &operator<<(std::ostream &os, const Album &a) {
 }
 
 int main() {
-    Album a("Nevermind", "Nirvana", 12);
-    Album b("Tragic Kingdom", "No Doubt", 14);
-    Album c("Nevermind", "Nirvana", 12);
+    Album a("Vogue", "Madonna", 13);
+    Album b("Torn", "Natalie Imbruglia", 12);
+    Album c("Vogue", "Madonna", 13);
 
     std::cout << a << std::endl;
     std::cout << b << std::endl;
@@ -3777,7 +3786,7 @@ ctor: Standing Outside a Broken Phone Booth
 move: Standing Outside a Broken Phone Booth
 ```
 
-- `Track a("Basket Case")` calls the regular constructor.
+- `Track a("Only Happy When It Rains")` calls the regular constructor.
 - `Track b = a` calls the copy constructor because `a` is an lvalue.
 - `Track c = std::move(a)` calls the move constructor because `std::move(a)` casts `a` to an rvalue.
 - `Track("Standing Outside a Broken Phone Booth")` calls the regular constructor to create a temporary, then the move constructor fires to initialize `d` from that temporary.
@@ -3807,6 +3816,18 @@ This pattern is useful because it makes ownership transfer **explicit and visibl
 When you see `take_widget(std::move(widget))`, both the reader and the compiler know that `widget` is being given away.
 The caller cannot accidentally use `widget` after the call expecting it to still hold something --- it is obviously empty.
 This is much clearer than passing a raw pointer, where it is ambiguous whether the function takes ownership or just borrows the pointer.
+
+**15. Calculation: `sizeof(Buffer)` and `sizeof(Track)`.**
+
+`Buffer` has a `char *data` (8 bytes on a 64-bit system) and a `std::size_t len` (8 bytes).
+Both members are 8-byte aligned and the pointer comes first, so the layout is `data` followed immediately by `len` with no padding.
+`sizeof(Buffer)` is **16 bytes**.
+
+`Track` has a single `std::string title` member.
+The libstdc++ `std::string` is 32 bytes on this platform, so `sizeof(Track)` is **32 bytes** --- the same as the `std::string` it contains, with no extra padding because there are no other members.
+
+These results are platform- and library-dependent: libc++ historically uses a 24-byte `std::string`, MSVC's STL uses 32 bytes, and a 32-bit system would shrink the pointer and `size_t` in `Buffer` to 4 bytes each.
+Use `sizeof` itself when you need a guaranteed answer on a particular target.
 
 # Chapter 15: Odds and Ends
 
@@ -4296,7 +4317,7 @@ Get into the habit of doing this for every local variable: even if today's compi
 Compile with debug info and no optimization:
 
 ```
-c++ -std=c++23 -g -O0 -o off off.cpp
+g++ -std=c++23 -g -O0 -o off off.cpp
 ```
 
 `-g` embeds line numbers and variable names; `-O0` keeps the program close to the source so single-stepping is meaningful.
