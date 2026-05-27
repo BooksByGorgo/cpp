@@ -212,6 +212,15 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - unnamed module vs named module
     - common pain points migrating pre-module code
 
+22. Reflection and Annotations:
+    - the `Class<T>` object, `getClass()`, class literals (`Foo.class`)
+    - inspecting fields, methods, constructors at runtime (`Field`, `Method`, `Constructor`)
+    - invoking methods and accessing fields reflectively
+    - built-in annotations: `@Override`, `@Deprecated`, `@SuppressWarnings`, `@FunctionalInterface`
+    - defining custom annotations (`@interface`, retention, target)
+    - reading annotations at runtime via reflection
+    - annotation processors (compile-time), a brief overview
+
 ### Appendices
 
 - appA.md: C++ / Java Side-by-Side Cheat Sheet
