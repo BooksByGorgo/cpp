@@ -221,7 +221,16 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - reading annotations at runtime via reflection
     - annotation processors (compile-time), a brief overview
 
-23. JVM Internals and GC Tuning:
+23. Testing:
+    - JUnit 5: `@Test`, `@BeforeEach`, `@AfterEach`, `@BeforeAll`, `@AfterAll`
+    - assertions: `assertEquals`, `assertThrows`, `assertAll`, `assertTrue`
+    - parameterized tests: `@ParameterizedTest`, `@ValueSource`, `@MethodSource`
+    - Mockito: mocking dependencies, `@Mock`, `when`/`thenReturn`, `verify`
+    - test organization: unit vs integration vs end-to-end
+    - running tests with Maven (`mvn test`) and Gradle (`./gradlew test`)
+    - code coverage with JaCoCo
+
+24. JVM Internals and GC Tuning:
     - class loading: bootstrap, platform, and application class loaders
     - bytecode execution: interpretation vs JIT compilation (C1/C2), tiered compilation
     - the heap: young generation (eden, survivor spaces), old generation, metaspace
