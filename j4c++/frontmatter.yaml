@@ -1,0 +1,53 @@
+---
+title: "Gorgo Java for C++ Programmers"
+toc: true
+toc-depth: 1
+colorlinks: true
+numbersections: true
+secnumdepth: 0
+mainfont: "TeX Gyre Pagella"
+monofont: "JetBrains Mono"
+header-includes:
+  - \usepackage[most]{tcolorbox}
+  - \usepackage{makeidx}
+  - \makeindex
+  - \setcounter{chapter}{-1}
+  - |
+    ```{=latex}
+    \usepackage{fancyhdr}
+    \pagestyle{fancy}
+    \fancyhf{}
+    \fancyfoot[LE,RO]{\thepage}
+    \fancyfoot[CE,CO]{\nouppercase{\leftmark}}
+    \renewcommand{\headrulewidth}{0pt}
+    \fancypagestyle{plain}{%
+      \fancyhf{}%
+      \fancyfoot[LE,RO]{\thepage}%
+      \fancyfoot[CE,CO]{\nouppercase{\leftmark}}%
+      \renewcommand{\headrulewidth}{0pt}%
+    }
+    \makeatletter
+    \let\gorgoOrigChapter\chapter
+    \def\chapter{\@ifstar\gorgoStarChapter\gorgoOrigChapter}
+    \newcommand\gorgoStarChapter[1]{\gorgoOrigChapter*{#1}\markboth{#1}{#1}}
+    \makeatother
+    ```
+  - \usepackage{titling}
+  - \pretitle{\begin{center}\includegraphics[width=0.35\textwidth]{../images/c++-gorgo-with-badge.png}\par\vspace{1em}\LARGE}
+  - \posttitle{\par\end{center}\vskip 0.5em}
+  - |
+    ```{=latex}
+    \directlua{luaotfload.add_fallback("main_fallback", {
+      "NotoSerifCJKJP:mode=harf;",
+      "DejaVuSerif:mode=harf;",
+      "NotoColorEmoji:mode=harf;",
+    })}
+    \directlua{luaotfload.add_fallback("mono_fallback", {
+      "NotoSansMonoCJKJP:mode=harf;",
+      "DejaVuSansMono:mode=harf;",
+      "NotoColorEmoji:mode=harf;",
+    })}
+    \setmainfont{TeX Gyre Pagella}[RawFeature={fallback=main_fallback}]
+    \setmonofont{JetBrains Mono}[Scale=MatchLowercase, RawFeature={-calt,-liga,-dlig,fallback=mono_fallback}]
+    ```
+---
