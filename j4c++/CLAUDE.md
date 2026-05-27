@@ -221,6 +221,15 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - reading annotations at runtime via reflection
     - annotation processors (compile-time), a brief overview
 
+23. JVM Internals and GC Tuning:
+    - class loading: bootstrap, platform, and application class loaders
+    - bytecode execution: interpretation vs JIT compilation (C1/C2), tiered compilation
+    - the heap: young generation (eden, survivor spaces), old generation, metaspace
+    - garbage collectors: Serial, Parallel, G1 (default since Java 9), ZGC, Shenandoah --- when to use each
+    - GC tuning flags: `-Xms`, `-Xmx`, `-XX:+UseZGC`, `-XX:MaxGCPauseMillis`
+    - reading GC logs (`-Xlog:gc*`)
+    - JVM diagnostic tools: `jps`, `jstack`, `jmap`, `jstat`, `jcmd`, VisualVM, JFR/JMC
+
 ### Appendices
 
 - appA.md: C++ / Java Side-by-Side Cheat Sheet
