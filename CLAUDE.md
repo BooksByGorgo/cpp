@@ -66,6 +66,12 @@ when committing a change based on an issue (or set of issues)
     - calculation questions
     - where is the bug type questions with code snippets
     - propose a short test program they should write
+- formatting checks (build the PDF and inspect it):
+    - tables render correctly: all columns visible, no missing borders, header row distinct
+    - no content overflows the page margins (long lines in code blocks, wide tables, long URLs)
+    - code blocks are not split across pages in a way that breaks readability
+    - callout boxes (tcolorbox) render as full-width blocks with no text spilling outside
+    - no stray LaTeX artifacts: missing characters, undefined references, overfull hbox warnings
 
 # making changes
 
