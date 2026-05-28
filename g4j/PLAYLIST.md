@@ -74,3 +74,6 @@ Do not repeat any reference already listed here.
 - Lady Gaga & Bruno Mars --- "Die With A Smile" (used in Track struct Stringer example: title "Die With A Smile", 144 BPM)
 - "sabor a mí" --- Spanish song title used in any/interface{} variable example
 - "Bienvenidos!" --- Spanish greeting used in http.HandlerFunc example
+- Chappell Roan --- "Good Luck, Babe!" (used in sort.Interface ByTitle example)
+- Benson Boone --- "Beautiful Things" (used in sort.Interface ByTitle example)
+- Gracie Abrams --- "That's So True" (used in sort.Interface ByTitle example)
