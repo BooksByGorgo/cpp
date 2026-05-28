@@ -558,46 +558,41 @@ package main
 
 import "fmt"
 
-func main() {
-    funcs := make([]func(), 3)
+func makeMultipliers() []func(int) int {
+    fns := make([]func(int) int, 3)
+    factor := 1
     for i := 0; i < 3; i++ {
-        funcs[i] = func() { fmt.Println(i) }
+        factor = (i + 1) * 10
+        fns[i] = func(x int) int { return x * factor }
     }
-    for _, f := range funcs {
-        f()
+    return fns
+}
+
+func main() {
+    fns := makeMultipliers()
+    for _, f := range fns {
+        fmt.Println(f(5))
     }
 }
 ```
 
-All three calls print `3`, not `0`, `1`, `2`.
+All three calls print `150`, not `50`, `100`, `150`.
 
-The closure captures the variable `i` by reference, not by value.
-By the time any of the functions are called, the loop has finished and `i` is `3` (the value that caused the loop condition `i < 3` to become false).
-All three closures share the same `i` variable and see the same final value.
+The bug is that `factor` is declared outside the loop.
+All three closures capture the same `factor` variable by reference.
+By the time the closures run, the loop has finished and `factor` is `30` (the last value assigned).
+Every closure multiplies by `30`, so `f(5)` returns `150` for all three.
 
-There are two standard fixes.
-
-Fix 1 --- capture a copy via a loop-local variable:
+The fix is to declare `factor` inside the loop so each iteration gets its own copy:
 
 ```go
 for i := 0; i < 3; i++ {
-    i := i  // new variable shadows the loop variable
-    funcs[i] = func() { fmt.Println(i) }
+    factor := (i + 1) * 10
+    fns[i] = func(x int) int { return x * factor }
 }
 ```
 
-Fix 2 --- pass the value as a function argument:
-
-```go
-for i := 0; i < 3; i++ {
-    funcs[i] = func(n int) func() {
-        return func() { fmt.Println(n) }
-    }(i)
-}
-```
-
-In Go 1.22 and later, loop variables have per-iteration scope, so the original code would print `0`, `1`, `2` without any fix.
-If you are on Go 1.21 or earlier, you need one of the fixes above.
+Now each closure captures a distinct `factor` variable, and the output is `50`, `100`, `150`.
 
 ---
 
