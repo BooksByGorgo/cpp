@@ -49,7 +49,7 @@ PANDOC_OPTS := $(FILTER) \
                -V geometry:"outer=0.7in" \
                -V fontsize=11pt
 
-# Lulu Executive wraparound cover (15.123in x 10.25in with bleed).
+# Lulu Executive wraparound cover (15.296in x 10.25in with bleed).
 COVER_IMG := ../images/c++c-gorgo-cover.png
 COVER_BADGE := ../images/c++c-gorgo-with-badge.png
 COVER_BG := \#0d1b2a

@@ -43,7 +43,7 @@ the template PDF is `lulu-cover-template.pdf`. descriptions of the parts and mea
 
 ### cover image
 
-`c++c-gorgo-cover.png` is a make target --- it is generated from `c++c-gorgo-with-badge.png` by flood-filling the white background with `#0d1b2a` (the full-bleed cover background color). total trim with bleed: 15.123in x 10.25in.
+`c++c-gorgo-cover.png` is a make target --- it is generated from `c++c-gorgo-with-badge.png` by flood-filling the white background with `#0d1b2a` (the full-bleed cover background color). total trim with bleed: 15.296in x 10.25in.
 
 ## lulu compliance
 
