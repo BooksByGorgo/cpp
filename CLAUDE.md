@@ -38,6 +38,7 @@ a collection of programming texts --- focused on C++ for the moment --- suitable
 - opening `{` of a function goes on the same line as the function head (K&R style), including constructors with initializer lists and `requires`-constrained templates
 - this applies to all code examples across books, answer keys, and lecture notes --- the only exceptions are intentional bug demos and scope-limiting blocks (e.g. RAII lock guards)
 - when a run of consecutive code lines each end in a trailing `//` comment, align the `//` markers to a common column so the comments line up visually
+- keep the whitespace before aligned `//` runs minimal so lines fit the narrowest book that includes the chapter --- sc++ and c4c++ chapters also build into the lulu 7x10 book, which fits only 70 chars per code line (60 inside callouts); see sc++c/CLAUDE.md
 
 ## extra content
 
@@ -81,6 +82,7 @@ when committing a change based on an issue (or set of issues)
 - every `::: {.tip}` fence must be preceded by a blank line --- a non-blank line above it (even `\index{}`) makes the callout render as literal `::: {.tip}` text in the PDF 
 - every callout body starts with `**Tip:**`, `**Trap:**`, or `**Wut:**`; fence opens equal fence closes per file
 - code-block lines must be at most 96 chars, and at most 80 inside callouts --- longer lines clip at the page edge and verbatim produces NO overfull warning, so the LaTeX log will not catch this
+- chapters included in the lulu build (sc++/ch*.md, c4c++/ch*.md) are tighter: at most 70 chars per code-block line, 60 inside callouts (measured for the 7x10 trim; emoji count roughly double)
 - no unicode em/en dashes outside code blocks; no `\index{}` inside code blocks
 - every ch*.md/app*.md is in CHAPTERS; cross-reference audit via `grep -rn "Chapter [0-9]"`
 

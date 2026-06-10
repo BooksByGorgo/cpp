@@ -448,7 +448,8 @@ Both strings start with `"Final"`, so the first 5 characters are identical and t
 ```c
 char c = '7';
 printf("%d %d %d\n", isdigit((unsigned char)c) != 0,
-       isalpha((unsigned char)c) != 0, isalnum((unsigned char)c) != 0);
+       isalpha((unsigned char)c) != 0,
+       isalnum((unsigned char)c) != 0);
 ```
 
 **Answer:**
@@ -1881,7 +1882,8 @@ int compare_desc(const void *a, const void *b) {
 int main(void) {
     int vals[] = {3, 1, 4, 1, 5};
     qsort(vals, 5, sizeof(int), compare_desc);
-    printf("%d %d %d %d %d\n", vals[0], vals[1], vals[2], vals[3], vals[4]);
+    printf("%d %d %d %d %d\n",
+           vals[0], vals[1], vals[2], vals[3], vals[4]);
     return 0;
 }
 ```

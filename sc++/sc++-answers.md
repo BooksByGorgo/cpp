@@ -799,8 +799,10 @@ using namespace std::string_literals;
 int main() {
     auto greeting = "Bonjour";
     auto farewell = "Adieu"s;
-    std::cout << greeting << " is " << sizeof(greeting) << " bytes\n";
-    std::cout << farewell << " has " << farewell.size() << " characters\n";
+    std::cout << greeting << " is "
+              << sizeof(greeting) << " bytes\n";
+    std::cout << farewell << " has "
+              << farewell.size() << " characters\n";
 }
 ```
 
@@ -1306,7 +1308,8 @@ Replacing the inner loop with `for (int col = 1; col <= 4 - row; ++col)` flips t
 #include <string>
 
 int main() {
-    std::vector<std::string> tracks = {"Wonderwall", "Creep", "Linger"};
+    std::vector<std::string> tracks = {"Wonderwall", "Creep",
+                                       "Linger"};
     for (const std::string &track : tracks) {
         std::cout << "- " << track << "\n";
     }
@@ -1405,8 +1408,10 @@ Without `[[fallthrough]]`, modern compilers warn about the missing `break` becau
 #include <string>
 
 int main() {
-    std::string lyric = "Mr. Jones and me, tell each other fairy tales";
-    if (auto pos = lyric.find("Jones"); pos != std::string::npos) {
+    std::string lyric = "Mr. Jones and me, "
+                        "tell each other fairy tales";
+    if (auto pos = lyric.find("Jones");
+        pos != std::string::npos) {
         std::cout << "found at " << pos << "\n";
     }
     // could you write `std::cout << pos;` here?
@@ -2172,7 +2177,8 @@ It could also be acceptable if you intentionally need a copy to modify independe
 **7. Where is the bug?**
 
 ```cpp
-std::vector<std::string> playlist = {"Wannabe", "A Little Respect"};
+std::vector<std::string> playlist = {"Wannabe",
+                                     "A Little Respect"};
 std::cout << playlist.at(2) << "\n";
 ```
 
@@ -2363,7 +2369,8 @@ int main() {
     std::vector<int> v = {5, 1, 4, 1, 5, 9, 2, 6};
     std::sort(v.begin(), v.end());
     auto fives = std::count(v.begin(), v.end(), 5);
-    std::cout << v.front() << " " << v.back() << " " << fives << "\n";
+    std::cout << v.front() << " " << v.back() << " "
+              << fives << "\n";
     return 0;
 }
 ```
@@ -2761,7 +2768,8 @@ The format specifier `*^20` means: center-align in a field 20 characters wide, f
 **5. What is wrong with this code?**
 
 ```cpp
-std::string result = std::format("{} scored {1} points", name, score);
+std::string result = std::format("{} scored {1} points",
+    name, score);
 ```
 
 You cannot mix implicit (`{}`) and indexed (`{1}`) argument references in the same format string.
@@ -2828,7 +2836,8 @@ int main() {
 **7. What does this print?**
 
 ```cpp
-std::println("{1} - {0} ({2})", "Backstreet Boys", "I Want It That Way", 1999);
+std::println("{1} - {0} ({2})",
+    "Backstreet Boys", "I Want It That Way", 1999);
 ```
 
 **Now change every `{0}`/`{1}`/`{2}` to plain `{}` and predict the output.**
@@ -3522,7 +3531,8 @@ public:
     }
 
     void play(const std::string &song, int volume) {
-        std::cout << "Playing: " << song << " at volume " << volume << std::endl;
+        std::cout << "Playing: " << song
+                  << " at volume " << volume << std::endl;
     }
 
     void play(int station) {
@@ -4549,7 +4559,9 @@ public:
         delete[] data;
         len = other.len;
         data = new char[len];
-        for (std::size_t i = 0; i < len; ++i) data[i] = other.data[i];
+        for (std::size_t i = 0; i < len; ++i) {
+            data[i] = other.data[i];
+        }
         return *this;
     }
 };
@@ -4578,7 +4590,9 @@ Buffer &operator=(const Buffer &other) {
     delete[] data;
     len  = other.len;
     data = new char[len];
-    for (std::size_t i = 0; i < len; ++i) data[i] = other.data[i];
+    for (std::size_t i = 0; i < len; ++i) {
+        data[i] = other.data[i];
+    }
     return *this;
 }
 ```
@@ -4630,7 +4644,8 @@ public:
     Track(const Track &other) : title(other.title) {
         std::cout << "copy: " << title << "\n";
     }
-    Track(Track &&other) noexcept : title(std::move(other.title)) {
+    Track(Track &&other) noexcept
+        : title(std::move(other.title)) {
         std::cout << "move: " << title << "\n";
     }
 };
@@ -4995,8 +5010,12 @@ About 68% of values should fall between 85 and 115 (within one standard deviatio
 #include <iostream>
 
 struct Track { virtual ~Track() = default; };
-struct AudioTrack : Track { void play() { std::cout << "audio\n"; } };
-struct VideoTrack : Track { void play() { std::cout << "video\n"; } };
+struct AudioTrack : Track {
+    void play() { std::cout << "audio\n"; }
+};
+struct VideoTrack : Track {
+    void play() { std::cout << "video\n"; }
+};
 
 void play(Track *t) {
     if (auto *a = dynamic_cast<AudioTrack *>(t)) {
