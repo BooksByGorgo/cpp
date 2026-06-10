@@ -92,8 +92,8 @@ when committing a change based on an issue (or set of issues)
 
 ### content checks (read-only finder agents, one per chapter)
 
-- extract and actually run every Go example (`go run`/`go vet` in /tmp); claimed outputs in comments and prose must match observed output
-- verify every "since Go 1.X" claim, install path, CLI flag, and third-party API name (pgx, golangci-lint, dlv) against the current toolchain --- several were stale or wrong on first audit
+- extract and actually compile and run every code example in /tmp (for C++: `g++ -std=c++23 -Wall -Wextra -pedantic`); claimed outputs in comments and prose must match observed output; intentional bug demos must fail with the diagnostic the text describes
+- verify every "since C++XX" claim, header name, function signature, CLI flag, and tool name against the current toolchain --- several were stale or wrong on first audit
 - check PLAYLIST.md in both directions: every reference in the text is listed under the right chapter, and every listed entry still exists in the text
 - have agents return structured findings with severity (error/warning/suggestion) and verify each claim yourself before editing --- agents produce occasional false positives (e.g. flagging the intentional `***[rule-name]***` convention as an artifact)
 - when an exercise is reworded, grep answer key for the old wording and change both files in the same edit pass
