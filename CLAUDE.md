@@ -89,6 +89,7 @@ when committing a change based on an issue (or set of issues)
 - to get a log, pandoc the book to .tex in a temp dir and run latexmk there; ignore the `../images` not-found errors (path artifact) and look for Overfull hbox of 20pt+, "undefined", and "missing character"
 - pdftotext the built PDF and grep for leftover markup: `:::`, `{.tip}`, `\index{`, `[@`, `??` --- then visually read any suspect page
 - visually read every page containing a table (column overlap does not show up in any log or text scan)
+- check that text is not going into the margin
 
 ### content checks (read-only finder agents, one per chapter)
 
