@@ -6,8 +6,7 @@ header-includes:
 
 # 1. Introduction
 
-**1. Think about it:** C uses format specifiers in `printf` while C++ uses
-`operator<<` or `std::format`.
+**1. Think about it:** C uses format specifiers in `printf` while C++ uses `operator<<` or `std::format`.
 What advantage does the format string approach give you when writing output to a log file?
 What is a disadvantage?
 
@@ -18,8 +17,6 @@ This is especially useful for log files where you want a consistent format --- y
 fprintf(log, "[%04d-%02d-%02d %02d:%02d:%02d] %s: %s\n",
         year, month, day, hour, min, sec, level, msg);
 ```
-
-The format string can also be stored in a variable or configuration, making it easy to change the log format without restructuring the code.
 
 The disadvantage is that `printf` is not type-safe.
 If you write `%d` but pass a `double`, the compiler may warn you, but the behavior is undefined.
@@ -44,8 +41,7 @@ printf("%05d %x\n", 42, 255);
 
 ---
 
-**3. Calculation:** How many bytes does the string literal `"hello"` occupy in
-memory?
+**3. Calculation:** How many bytes does the string literal `"hello"` occupy in memory?
 
 **Answer:** 6 bytes.
 The five visible characters `h`, `e`, `l`, `l`, `o` plus the null terminator `'\0'`.
@@ -112,8 +108,7 @@ The `%49s` limits input to 49 characters to prevent buffer overflow (leaving roo
 
 ---
 
-**7. Write a program** that prints a 5x5 multiplication table using `printf`
-with width formatting so the columns are aligned.
+**7. Write a program** that prints a 5x5 multiplication table using `printf` with width formatting so the columns are aligned.
 
 **Answer:**
 
@@ -143,8 +138,7 @@ Output:
 
 # 2. Variables
 
-**1. Think about it:** In C++, `auto x = 42;` lets the compiler deduce the
-type.
+**1. Think about it:** In C++, `auto x = 42;` lets the compiler deduce the type.
 C has no `auto` type deduction.
 What advantage does requiring explicit types give to someone reading unfamiliar C code?
 
@@ -171,18 +165,19 @@ printf("%zu %zu\n", sizeof(a), sizeof(a[0]));
 
 `a` is an array of 4 `int` elements.
 On a typical system where `int` is 4 bytes, `sizeof(a)` is `4 * 4 = 16` bytes.
-`sizeof(a[0])` is the size of one `int`, which is 4 bytes. (The common idiom `sizeof(a) / sizeof(a[0])` gives the element count: 4.)
+`sizeof(a[0])` is the size of one `int`, which is 4 bytes.
+(The common idiom `sizeof(a) / sizeof(a[0])` gives the element count: 4.)
 
 ---
 
-**3. Calculation:** Given the following declarations on a system where `int` is
-4 bytes, what is `sizeof(grid)`?
+**3. Calculation:** Given the following declaration on a system where `int` is 4 bytes, what is `sizeof(grid)`?
 
 ```c
 int grid[3][5];
 ```
 
-**Answer:** **60 bytes.** The array has 3 rows of 5 `int` elements each, for a total of `3 * 5 = 15` elements.
+**Answer:** **60 bytes.**
+The array has 3 rows of 5 `int` elements each, for a total of `3 * 5 = 15` elements.
 Each `int` is 4 bytes, so the total is `15 * 4 = 60` bytes.
 
 ---
@@ -233,8 +228,7 @@ Changing `b.x` to 99 does not affect `a.x`, which remains 3.
 
 ---
 
-**6. Think about it:** In C, assigning one struct to another copies the raw
-bytes.
+**6. Think about it:** In C, assigning one struct to another copies the raw bytes.
 What problem could this cause if the struct contains a `char *` member that points to dynamically allocated memory (via `malloc`)?
 How is this different from what C++ does by default?
 
@@ -248,8 +242,7 @@ In C, you must write a manual copy function that allocates new memory and copies
 
 ---
 
-**7. Write a program** that declares a `struct student` with fields `name`
-(a `char` array), `id` (an `int`), and `gpa` (a `double`).
+**7. Write a program** that declares a `struct student` with fields `name` (a `char` array), `id` (an `int`), and `gpa` (a `double`).
 Create an array of 3 students, initialize them with values, and print each student's information using a loop.
 Use `%s`, `%d`, and `%.2f` in your `printf`.
 
@@ -290,8 +283,7 @@ Name: Elena, ID: 1003, GPA: 3.97
 
 # 3. Strings
 
-**1. Think about it:** Why does `strcmp` return 0 for equal strings rather than
-1?
+**1. Think about it:** Why does `strcmp` return 0 for equal strings rather than 1?
 How does this relate to the function's actual purpose?
 
 **Answer:** `strcmp` computes the difference between two strings, not a boolean "are they equal?" check.
@@ -335,7 +327,8 @@ strcat(buf, " on a Prayer");
 printf("%s\n", buf);
 ```
 
-**Answer:** **Buffer overflow.** `buf` is 10 bytes.
+**Answer:** **Buffer overflow.**
+`buf` is 10 bytes.
 `"Livin'"` uses 7 bytes (6 characters + `'\0'`), leaving 3 bytes free.
 `" on a Prayer"` is 12 characters, so the combined string needs 19 bytes (6 + 12 + `'\0'`), which far exceeds the 10-byte buffer.
 `strcat` writes past the end of `buf`, causing undefined behavior.
@@ -354,6 +347,9 @@ if (a == b) {
 }
 ```
 
+(Hint: what does `==` actually compare here?
+Is the output guaranteed?)
+
 **Answer:** The `==` operator compares the **addresses** of the two string literals, not their contents.
 The output is **not guaranteed**.
 Some compilers merge identical string literals (so `a == b` would be true), but others store them separately (so `a == b` would be false).
@@ -367,8 +363,7 @@ if (strcmp(a, b) == 0) {
 
 ---
 
-**6. Write a program** that reads a string from the user, reverses it in place
-using pointer arithmetic, and prints the result.
+**6. Write a program** that reads a string from the user, reverses it in place using pointer arithmetic, and prints the result.
 
 **Answer:**
 
@@ -391,14 +386,16 @@ int main(void) {
     }
 
     /* Reverse in place using two pointers */
-    char *left = buf;
-    char *right = buf + len - 1;
-    while (left < right) {
-        char tmp = *left;
-        *left = *right;
-        *right = tmp;
-        left++;
-        right--;
+    if (len > 0) {
+        char *left = buf;
+        char *right = buf + len - 1;
+        while (left < right) {
+            char tmp = *left;
+            *left = *right;
+            *right = tmp;
+            left++;
+            right--;
+        }
     }
 
     printf("Reversed: %s\n", buf);
@@ -450,7 +447,8 @@ Both strings start with `"Final"`, so the first 5 characters are identical and t
 
 ```c
 char c = '7';
-printf("%d %d %d\n", isdigit(c) != 0, isalpha(c) != 0, isalnum(c) != 0);
+printf("%d %d %d\n", isdigit((unsigned char)c) != 0,
+       isalpha((unsigned char)c) != 0, isalnum((unsigned char)c) != 0);
 ```
 
 **Answer:**
@@ -466,8 +464,8 @@ The `!= 0` normalizes each result to 1 or 0.
 
 ---
 
-**10. Write a program** that takes a string and counts how many uppercase letters,
-lowercase letters, digits, and other characters it contains.
+**10. Write a program** that takes a string and counts how many uppercase letters, lowercase letters, digits, and other characters it contains.
+Use `<ctype.h>` functions.
 
 **Answer:**
 
@@ -512,8 +510,7 @@ Example output:
 
 # 4. Expressions
 
-**1. Think about it:** In C++, you can overload operators to give `+`, `<<`,
-`==`, and others custom meanings for your classes.
+**1. Think about it:** In C++, you can overload operators to give `+`, `<<`, `==`, and others custom meanings for your classes.
 C does not allow operator overloading.
 What advantage does this give you when reading unfamiliar C code?
 Can you think of a situation where operator overloading would have been genuinely useful in C?
@@ -567,16 +564,17 @@ x++;
 
 **Answer:**
 
-- `25 / 4` = **6**. Integer division truncates toward zero: 25 / 4 = 6.25,
-  truncated to 6.
-- `25 % 4` = **1**. The remainder of 25 / 4: 25 - (6 * 4) = 1.
-- `-25 % 4` = **-1**. In C99+, `%` preserves the sign of the dividend (left
-  operand). -25 / 4 = -6 (truncated toward zero), remainder = -25 - (-6 * 4) = -25 + 24 = -1.
-- `(1 << 4) | (1 << 1)` = **18**. `1 << 4` is 16 (binary `10000`), `1 << 1`
-  is 2 (binary `00010`).
+- `25 / 4` = **6**.
+  Integer division truncates toward zero: 25 / 4 = 6.25, truncated to 6.
+- `25 % 4` = **1**.
+  The remainder of 25 / 4: 25 - (6 * 4) = 1.
+- `-25 % 4` = **-1**.
+  In C99+, `%` preserves the sign of the dividend (left operand). -25 / 4 = -6 (truncated toward zero), remainder = -25 - (-6 * 4) = -25 + 24 = -1.
+- `(1 << 4) | (1 << 1)` = **18**.
+  `1 << 4` is 16 (binary `10000`), `1 << 1` is 2 (binary `00010`).
   OR-ing them gives binary `10010` = 18.
-- `0xFF & 0x0F` = **0x0F** (15). AND-ing `11111111` with `00001111` keeps
-  only the low 4 bits: `00001111`.
+- `0xFF & 0x0F` = **0x0F** (15).
+  AND-ing `11111111` with `00001111` keeps only the low 4 bits: `00001111`.
 
 ---
 
@@ -623,9 +621,12 @@ a=10 b=5
 This is the classic XOR swap trick.
 Step by step:
 
-1. `a ^= b` → `a = 5 ^ 10 = 15` (a=15, b=10)
-2. `b ^= a` → `b = 10 ^ 15 = 5` (a=15, b=5)
-3. `a ^= b` → `a = 15 ^ 5 = 10` (a=10, b=5)
+1.
+   `a ^= b` → `a = 5 ^ 10 = 15` (a=15, b=10)
+2.
+   `b ^= a` → `b = 10 ^ 15 = 5` (a=15, b=5)
+3.
+   `a ^= b` → `a = 15 ^ 5 = 10` (a=10, b=5)
 
 The values of `a` and `b` are swapped without using a temporary variable.
 
@@ -655,8 +656,7 @@ if (count == 0) {
 
 ---
 
-**7. Write a program** that takes an `unsigned int` and prints its value in
-binary (most significant bit first).
+**7. Write a program** that takes an `unsigned int` and prints its value in binary (most significant bit first).
 Use bitwise operators to test each bit.
 Test it with the values `0`, `1`, `255`, and `1024`.
 
@@ -702,8 +702,7 @@ Output:
 
 # 5. Control Flow
 
-**1. Think about it:** C uses `0` for false and nonzero for true, while C++
-has a built-in `bool` type.
+**1. Think about it:** C uses `0` for false and nonzero for true, while C++ has a built-in `bool` type.
 What practical problems can arise from using integers as booleans?
 Can you think of a case where a nonzero value that is not `1` might cause a subtle bug?
 
@@ -830,7 +829,8 @@ do {
 } while (i > 10);
 ```
 
-**Answer:** **1 time.** A `do-while` loop always executes the body at least once before checking the condition.
+**Answer:** **1 time.**
+A `do-while` loop always executes the body at least once before checking the condition.
 After the first iteration, `count` becomes 1 and `i` becomes 9.
 Then the condition `i > 10` is checked: `9 > 10` is false, so the loop exits.
 Even though the condition was never true, the body executed exactly once.
@@ -859,8 +859,7 @@ if (level == 10) {
 
 ---
 
-**7. Write a program** that reads integers from the user (using `scanf`) until
-the user enters `0`.
+**7. Write a program** that reads integers from the user (using `scanf`) until the user enters `0`.
 Print the sum and average of all numbers entered (not counting the `0`).
 Use a `do-while` or `while` loop.
 
@@ -910,12 +909,11 @@ Average: 20.00
 
 # 6. Pointers
 
-**1. Think about it:** In C++, you can pass by reference to modify a caller's
-variable.
+**1. Think about it:** In C++, you can pass by reference to modify a caller's variable.
 Why do you think C was designed with only pass by value?
 What does this simplify in the language?
 
-**Answer:** Pass by value only simplifies the language and its calling conventions.
+**Answer:** Having only pass by value simplifies the language and its calling conventions.
 Every function call copies its arguments, so you always know that a function cannot modify your local variables unless you explicitly give it a pointer.
 This makes reasoning about code simpler: if you see `f(x)`, you know `x` cannot change (unless `x` is already a pointer).
 It also simplifies the compiler --- there is no need for reference semantics, no hidden indirection, and no ambiguity about whether an argument is an alias for another variable.
@@ -943,8 +941,7 @@ printf("%d %d %d\n", *p, *(p - 1), p[1]);
 
 ---
 
-**3. Calculation:** On a 64-bit system, what is `sizeof(int *)`,
-`sizeof(char *)`, and `sizeof(double *)`?
+**3. Calculation:** On a 64-bit system, what is `sizeof(int *)`, `sizeof(char *)`, and `sizeof(double *)`?
 
 **Answer:** All three are **8 bytes**.
 On a 64-bit system, all pointers are 8 bytes (64 bits) regardless of the type they point to.
@@ -1014,8 +1011,7 @@ printf("%s\n", p->title);
 
 ---
 
-**7. Write a program** that declares an array of 5 integers, uses a pointer to
-iterate through the array, and prints each element along with its memory address.
+**7. Write a program** that declares an array of 5 integers, uses a pointer to iterate through the array, and prints each element along with its memory address.
 
 **Answer:**
 
@@ -1045,8 +1041,8 @@ arr[4] = 50 at address 0x7ffd...
 
 # 7. Functions
 
-**1. Think about it:** C does not have function overloading. How does the C
-standard library handle providing similar functionality for different types?
+**1. Think about it:** C does not have function overloading.
+How does the C standard library handle providing similar functionality for different types?
 Look at `abs` (for `int`) and `fabs` (for `double`) as examples.
 What naming convention do you see?
 
@@ -1114,8 +1110,7 @@ int count = 0;
 
 ---
 
-**4. Calculation:** Given the struct below, approximately how many bytes are
-copied each time `process_data` is called with pass by value?
+**4. Calculation:** Given the struct below, approximately how many bytes are copied each time `process_data` is called with pass by value?
 Assume `int` is 4 bytes.
 
 ```c
@@ -1127,7 +1122,8 @@ struct data {
 void process_data(struct data d) { /* ... */ }
 ```
 
-**Answer:** **4004 bytes.** The `values` array is `1000 * 4 = 4000` bytes.
+**Answer:** **4004 bytes.**
+The `values` array is `1000 * 4 = 4000` bytes.
 The `count` field is 4 bytes.
 The total struct size is at least 4004 bytes (possibly more due to padding, but typically no padding is needed here since all fields are `int`).
 Every call to `process_data` copies all 4004 bytes onto the stack.
@@ -1201,8 +1197,8 @@ int main(void) {
 
 ---
 
-**7. Write a program** that defines a function `void transform(int *arr, int n,
-int (*fn)(int))` which applies the function `fn` to each element of `arr`, modifying the array in place. Test it with a function that doubles each element and another that negates each element.
+**7. Write a program** that defines a function `void transform(int *arr, int n, int (*fn)(int))` which applies the function `fn` to each element of `arr`, modifying the array in place.
+Test it with a function that doubles each element and another that negates each element.
 
 **Answer:**
 
@@ -1254,8 +1250,7 @@ Negated:  -2 -4 -6 -8 -10
 
 # 8. Allocating Memory
 
-**1. Think about it:** Why would you choose `calloc` over `malloc` followed by
-`memset` to zero?
+**1. Think about it:** Why would you choose `calloc` over `malloc` followed by `memset` to zero?
 
 **Answer:** `calloc` combines allocation and zeroing in a single call, which is simpler and less error-prone.
 It also takes the element count and size as separate arguments (`calloc(n, sizeof(int))`), which protects against integer overflow --- `calloc` checks whether `n * size` overflows before allocating, while `malloc(n * sizeof(int))` silently overflows if `n` is very large.
@@ -1292,10 +1287,10 @@ The first call increments `n` from 0 to 1, the second from 1 to 2, and the third
 
 ---
 
-**3. Calculation:** On a system where `int` is 32 bits, how many bytes does
-`malloc(5 * sizeof(int))` allocate?
+**3. Calculation:** On a system where `int` is 32 bits, how many bytes does `malloc(5 * sizeof(int))` allocate?
 
-**Answer:** **20 bytes.** An `int` that is 32 bits is 4 bytes, and `5 * 4 = 20`.
+**Answer:** **20 bytes.**
+An `int` that is 32 bits is 4 bytes, and `5 * 4 = 20`.
 
 ---
 
@@ -1341,8 +1336,7 @@ b = NULL;
 
 ---
 
-**6. Write a program** that uses `malloc` to allocate an array of `n` integers
-(where `n` is provided by the user via `scanf`), fills the array with squares (0, 1, 4, 9, ...), prints them, and frees the memory.
+**6. Write a program** that uses `malloc` to allocate an array of `n` integers (where `n` is provided by the user via `scanf`), fills the array with squares (0, 1, 4, 9, ...), prints them, and frees the memory.
 
 **Answer:**
 
@@ -1383,7 +1377,8 @@ Example output for `n = 5`:
 
 # 9. Numbers and Casting
 
-**1. Think about it:** C++ provides several different cast operators (`static_cast`, `reinterpret_cast`, etc.) whereas C provides only one. What are the advantages of C++'s approach over C's single cast syntax?
+**1. Think about it:** C++ provides several different cast operators (`static_cast`, `reinterpret_cast`, etc.) whereas C provides only one.
+What are the advantages of C++'s approach over C's single cast syntax?
 
 **Answer:** C++'s multiple cast operators provide better type safety and express intent more clearly.
 `static_cast` restricts you to compatible types, preventing accidental casts between pointers and integers.
@@ -1412,7 +1407,7 @@ The `%c` specifier prints the character `'E'`, and `%d` prints the numeric value
 
 ---
 
-**3. Calculation:** Assuming a 64-bit system where pointers are 8 bytes and `int` is 4 bytes, what is the output of `sizeof("Danger")` and what is the output of `sizeof((int)0)`?
+**3. Calculation:** Assuming a 64-bit system where pointers are 8 bytes and `int` is 4 bytes, what is the value of `sizeof("Danger")` and what is the value of `sizeof((int)0)`?
 
 **Answer:** `sizeof("Danger")` is **7**.
 The string "Danger" has 6 characters plus the null terminator `\0`.
@@ -1445,7 +1440,8 @@ long score = strtol(score_str, NULL, 10);
 
 ---
 
-**5. Write a program** that declares a `double` variable with a fractional component and uses casting to separate the integer part from the fractional part. Print both pieces.
+**5. Write a program** that declares a `double` variable with a fractional component and uses casting to separate the integer part from the fractional part.
+Print both pieces.
 
 **Answer:**
 
@@ -1471,8 +1467,7 @@ int main(void) {
 
 # 10. Standard I/O
 
-**1. Think about it:** Why does `scanf` need the `&` operator for scalar
-variables but not for arrays?
+**1. Think about it:** Why does `scanf` need the `&` operator for scalar variables but not for arrays?
 
 **Answer:** `scanf` needs a pointer to the location where it should store the value it reads.
 For a scalar variable like `int x`, `x` is the value, not an address, so you must pass `&x` to give `scanf` the address.
@@ -1501,8 +1496,7 @@ That string is 10 characters: "Score" is 5, ": " is 2, "100" is 3, totaling 10.
 
 ---
 
-**3. Calculation:** If `buf` is declared as `char buf[20]` and you call
-`snprintf(buf, sizeof(buf), "Year: %d", 1984)`, how many characters (excluding the null terminator) are written to `buf`?
+**3. Calculation:** If `buf` is declared as `char buf[20]` and you call `snprintf(buf, sizeof(buf), "Year: %d", 1984)`, how many characters (excluding the null terminator) are written to `buf`?
 
 **Answer:** **10.** The formatted string is `"Year: 1984"` which is 10 characters.
 Since this fits within the 20-byte buffer, all 10 characters are written (plus a null terminator).
@@ -1554,8 +1548,7 @@ If the intent is to write, the mode should be `"w"`.
 
 ---
 
-**6. Think about it:** You run `./program > output.txt` and your program
-contains both `printf` and `fprintf(stderr, ...)` calls.
+**6. Think about it:** You run `./program > output.txt` and your program contains both `printf` and `fprintf(stderr, ...)` calls.
 Which messages appear in `output.txt` and which appear on the screen?
 Why?
 
@@ -1566,8 +1559,7 @@ To redirect `stderr` as well, you would use `2> errors.txt` or `2>&1` to merge i
 
 ---
 
-**7. Write a program** that opens a text file, writes five lines to it (your
-choice of content), closes it, reopens it for reading, reads and prints each line using `fgets`, then closes it again.
+**7. Write a program** that opens a text file, writes five lines to it (your choice of content), closes it, reopens it for reading, reads and prints each line using `fgets`, then closes it again.
 
 **Answer:**
 
@@ -1616,8 +1608,7 @@ Line 5: Adios
 
 # 11. Low-Level I/O
 
-**1. Think about it:** Why would you use low-level `read`/`write` instead of
-`fprintf`/`fscanf`?
+**1. Think about it:** Why would you use low-level `read`/`write` instead of `fprintf`/`fscanf`?
 When would `stdio` be the better choice?
 
 **Answer:** Low-level I/O is useful when you need precise control: writing binary data without translation, avoiding buffering overhead, working with file descriptors from system calls (e.g., `pipe`, `socket`), or performing atomic operations with `pread`/`pwrite`.
@@ -1647,11 +1638,11 @@ Since `write` does no buffering, the bytes appear immediately and consecutively,
 
 ---
 
-**3. Calculation:** If `read(fd, buf, 1024)` returns 512, what does that tell
-you?
+**3. Calculation:** If `read(fd, buf, 1024)` returns 512, what does that tell you?
 Does it mean there was an error?
 
-**Answer:** **No, it is not an error.** A return value of 512 means that 512 bytes were successfully read.
+**Answer:** **No, it is not an error.**
+A return value of 512 means that 512 bytes were successfully read.
 `read` can return fewer bytes than requested for several reasons: the file may have only 512 bytes remaining, the data is coming from a pipe or socket and only 512 bytes are available right now, or the operating system interrupted the read.
 A return value of 0 means end of file, and -1 means an error occurred.
 Any positive value is a successful read.
@@ -1667,17 +1658,18 @@ close(fd);
 ```
 
 **Answer:** When `O_CREAT` is used, `open` requires a third argument specifying the file permissions.
-Without it, the permissions are undefined (whatever garbage value happens to be on the stack).
+Without it, the permissions are an indeterminate garbage value.
 The fix:
 
 ```c
-int fd = open("newfile.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+int fd = open("newfile.txt", O_WRONLY | O_CREAT, 0644);
 ```
+
+(You usually also want `O_TRUNC` here so an existing file is emptied first, but the missing mode argument is the bug.)
 
 ---
 
-**5. Think about it:** Explain the difference between `lseek(fd, 0, SEEK_END)`
-and `lseek(fd, -1, SEEK_END)`.
+**5. Think about it:** Explain the difference between `lseek(fd, 0, SEEK_END)` and `lseek(fd, -1, SEEK_END)`.
 What does each return?
 
 **Answer:** `lseek(fd, 0, SEEK_END)` moves the file position to exactly the end of the file --- one byte past the last byte.
@@ -1691,8 +1683,7 @@ A subsequent `read` would read that one last byte.
 
 ---
 
-**6. Write a program** that uses low-level I/O (`open`, `read`, `write`,
-`close`) to copy the contents of one file to another.
+**6. Write a program** that uses low-level I/O (`open`, `read`, `write`, `close`) to copy the contents of one file to another.
 The source and destination filenames should be taken from `argv`.
 
 **Answer:**
@@ -1749,21 +1740,19 @@ int main(int argc, char *argv[]) {
 
 # 12. Odds and Ends
 
-**1. Think about it:** In C++ you would use exceptions for error handling. In C
-there are no exceptions.
+**1. Think about it:** In C++ you would use exceptions for error handling.
+In C there are no exceptions.
 What strategies can you use to handle errors in deeply nested function calls?
 When is `exit` appropriate and when is it not?
 
 **Answer:** The main strategies are:
 
-- **Return codes:** Each function returns an error code (0 for success, -1 or
-  an error enum for failure).
+- **Return codes:** Each function returns an error code (0 for success, -1 or an error enum for failure).
   The caller checks the return value and either handles the error or propagates it up.
   This is the most common approach.
 - **`errno` and `perror`:** Many C library functions set `errno` on failure.
   You can call `perror` or `strerror(errno)` to get a human-readable message.
-- **`goto` cleanup:** When a function acquires multiple resources, use `goto`
-  to jump to cleanup labels that release resources in reverse order.
+- **`goto` cleanup:** When a function acquires multiple resources, use `goto` to jump to cleanup labels that release resources in reverse order.
   This is C's version of RAII.
 - **`exit`:** Terminates the program immediately.
 
@@ -1798,7 +1787,7 @@ Adios!
 
 `atexit` registers `cleanup` to be called when the program exits.
 `printf` prints `"Starting..."`, then `exit(0)` triggers the `atexit` handlers, which calls `cleanup`, printing `"Adios!"`.
-The `exit` function flushes all `stdio` streams and calls `atexit` handlers before terminating.
+The `exit` function calls `atexit` handlers and then flushes all `stdio` streams before terminating.
 
 ---
 
@@ -1835,8 +1824,7 @@ void get_greeting(char *buf, size_t size) {
 
 ---
 
-**4. Think about it:** You call a function `char *get_name(int id)` from a
-library.
+**4. Think about it:** You call a function `char *get_name(int id)` from a library.
 How would you determine whether you need to `free` the returned pointer?
 
 **Answer:** Check the documentation.
@@ -1848,7 +1836,8 @@ When in doubt, consult the library's header files for ownership annotations or c
 
 ---
 
-**5. Where is the bug?** (Hint: ownership)
+**5. Where is the bug?**
+(Hint: ownership)
 
 ```c
 char *name = strdup("Walking on Sunshine");
@@ -1871,8 +1860,7 @@ free(alias);
 
 ---
 
-**6. Calculation:** Given `int nums[] = {5, 10, 15, 20};`, what is the value of
-`sizeof(nums) / sizeof(nums[0])`?
+**6. Calculation:** Given `int nums[] = {5, 10, 15, 20};`, what is the value of `sizeof(nums) / sizeof(nums[0])`?
 
 **Answer:** **4.** The array contains 4 `int` elements.
 `sizeof(nums)` is `4 * sizeof(int)` (typically 16 bytes), and `sizeof(nums[0])` is `sizeof(int)` (typically 4 bytes).
@@ -1909,8 +1897,7 @@ The comparison function compares `ib` to `ia` (instead of `ia` to `ib`), which r
 
 ---
 
-**8. Write a program** that uses `qsort` to sort an array of strings in
-reverse alphabetical order.
+**8. Write a program** that uses `qsort` to sort an array of strings in reverse alphabetical order.
 Write a custom comparison function that calls `strcmp` with the arguments swapped.
 
 **Answer:**
@@ -1951,8 +1938,7 @@ alpha
 
 ---
 
-**9. Write a program** in C++ that uses `extern "C"` to call the C function
-`strlen` from `<string.h>`, passes it a string, and prints the result.
+**9. Write a program** in C++ that uses `extern "C"` to call the C function `strlen` from `<string.h>`, passes it a string, and prints the result.
 Compile it with `c++` to verify it works.
 
 **Answer:**
@@ -2011,7 +1997,8 @@ The fix is to read the same member that was written, or use the union for intent
 
 ---
 
-**12. Write a program** that defines a tagged union representing a shape (circle with a radius, or rectangle with width and height). Write a function that prints the area of the shape using the tag to determine which union member to read.
+**12. Write a program** that defines a tagged union representing a shape (circle with a radius, or rectangle with width and height).
+Write a function that prints the area of the shape using the tag to determine which union member to read.
 
 **Answer:**
 
@@ -2056,23 +2043,25 @@ int main(void) {
 
 # Appendix A: Macros
 
-**1. Think about it:** C++ uses `constexpr` and `inline` functions to replace
-many uses of macros.
+**1. Think about it:** C++ uses `constexpr` and `inline` functions to replace many uses of macros.
 What specific problems do macros have that these C++ features solve?
 Why does C still rely on macros despite these problems?
 
 **Answer:** Macros have several problems that C++ features solve:
 
-- **No type safety.** Macros operate on text, not types. `constexpr` and
-  `inline` functions are type-checked by the compiler, catching mismatches at compile time.
-- **Double evaluation.** `SQUARE(i++)` evaluates `i++` twice. A real `inline`
-  function evaluates its argument once.
-- **No scope.** A `#define` is visible from its point of definition to the end
-  of the file (or until `#undef`).
+- **No type safety.**
+  Macros operate on text, not types.
+  `constexpr` and `inline` functions are type-checked by the compiler, catching mismatches at compile time.
+- **Double evaluation.**
+  `SQUARE(i++)` evaluates `i++` twice.
+  A real `inline` function evaluates its argument once.
+- **No scope.**
+  A `#define` is visible from its point of definition to the end of the translation unit (or until `#undef`), so macros defined in headers leak into every file that includes them.
   `constexpr` variables and `inline` functions respect block scope and namespaces.
-- **Hard to debug.** Debuggers step through source code, but macros are expanded
-  before the compiler sees the code, so you cannot step into a macro.
-- **No recursion.** Macros cannot call themselves recursively.
+- **Hard to debug.**
+  Debuggers step through source code, but macros are expanded before the compiler sees the code, so you cannot step into a macro.
+- **No recursion.**
+  Macros cannot call themselves recursively.
 
 C still relies on macros because it lacks alternatives.
 C has no `constexpr` (until C23's limited version), no templates, and `inline` is only a hint --- the compiler may ignore it.
@@ -2089,7 +2078,8 @@ int i = 5;
 printf("%d\n", DOUBLE(i++));
 ```
 
-**Answer:** **Undefined behavior.** `DOUBLE(i++)` expands to `((i++) + (i++))`.
+**Answer:** **Undefined behavior.**
+`DOUBLE(i++)` expands to `((i++) + (i++))`.
 This modifies `i` twice without a sequence point between the modifications, which is undefined behavior in C.
 The compiler is free to produce any result.
 In practice, many compilers will produce `11` (5 + 6) or `10` (5 + 5), but you cannot rely on any particular output.
@@ -2097,11 +2087,11 @@ This is the classic double-evaluation trap --- never pass expressions with side 
 
 ---
 
-**3. Calculation:** Given the macro `#define BUFSIZE 256`, how many bytes does
-`char buf[BUFSIZE + 1]` allocate?
+**3. Calculation:** Given the macro `#define BUFSIZE 256`, how many bytes does `char buf[BUFSIZE + 1]` allocate?
 Why is the `+ 1` a common pattern?
 
-**Answer:** **257 bytes.** The preprocessor substitutes `BUFSIZE` with `256`, giving `char buf[256 + 1]`, which is `char buf[257]`.
+**Answer:** **257 bytes.**
+The preprocessor substitutes `BUFSIZE` with `256`, giving `char buf[256 + 1]`, which is `char buf[257]`.
 The `+ 1` is a common pattern because C strings need a null terminator `'\0'`.
 If you want to store strings of up to 256 characters, you need 257 bytes --- 256 for the characters plus 1 for the null terminator.
 
@@ -2164,7 +2154,7 @@ else
     printf("normal\n");
 ```
 
-**Answer:** The macro creates a **dangling else** problem.
+**Answer:** The macro expands into broken code.
 After expansion, the code becomes:
 
 ```c
@@ -2176,8 +2166,8 @@ else
     printf("normal\n");
 ```
 
-The `else` binds to the inner `if` (from the macro), not the outer `if`.
-Also, the semicolon after `LOG_IF(...)` becomes a separate empty statement, which terminates the outer `if` before the `else` --- causing a syntax error.
+The semicolon after `LOG_IF(...)` becomes a separate empty statement that terminates the outer `if`, so the `else` no longer belongs to any `if` --- the code fails to compile ("'else' without a previous 'if'").
+Remove that semicolon and you trade the compile error for a **dangling else**: the `else` silently binds to the macro's inner `if`, so `"normal"` prints when `x` is between 101 and 200, and nothing prints when `x` is 100 or less --- both wrong.
 The fix is to wrap the macro body in `do { ... } while (0)`:
 
 ```c
@@ -2189,8 +2179,7 @@ The fix is to wrap the macro body in `do { ... } while (0)`:
 
 ---
 
-**7. Write a program** that defines an X-macro list of at least four colors,
-then uses it to generate both an `enum` and a function that returns the string name for a given enum value.
+**7. Write a program** that defines an X-macro list of at least four colors, then uses it to generate both an `enum` and a function that returns the string name for a given enum value.
 Print each color's enum value and name.
 
 **Answer:**

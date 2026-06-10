@@ -3,7 +3,7 @@
 # Macros
 
 In C++, you have `constexpr` for compile-time constants, templates for generic code, and `inline` functions to avoid call overhead.
-C has none of those.
+C has no templates, its `constexpr` only arrived in C23 (in a limited form), and `inline` (added in C99) is little more than a hint.
 \index{preprocessor}
 Instead, C leans heavily on the **preprocessor** --- the `#define` macro system that rewrites your source code *before* the compiler sees it.
 
@@ -237,15 +237,15 @@ This is commonly used to wrap `printf`-style functions with extra decoration lik
 
 ::: {.tip}
 **Tip:** When `__VA_ARGS__` is empty, the trailing comma before it can cause a compilation error.
-GNU C provides `##__VA_ARGS__` which swallows the comma when the argument list is empty:
+GNU C provides `##__VA_ARGS__`, which swallows the comma when the argument list is empty:
 
 ```c
 #define LOG(fmt, ...) fprintf(stderr, "[LOG] " fmt "\n", ##__VA_ARGS__)
 LOG("started");  /* No extra args — comma is removed */
 ```
 
-This is a GCC/Clang extension.
-C23 standardizes this behavior with `__VA_OPT__`.
+This is a GCC/Clang extension --- `##__VA_ARGS__` itself was never standardized.
+C23 solves the same problem portably with `__VA_OPT__` (e.g. `fmt "\n" __VA_OPT__(,) __VA_ARGS__`) and also allows passing zero variadic arguments.
 :::
 
 ## Multi-Level Expansion

@@ -60,7 +60,8 @@ Chapters to help beginning C++ programmers become beginning C programmers.
 - PLAYLIST.md tracks all songs and references used in the text, organized by chapter
 - do not repeat references already listed in PLAYLIST.md
 - when adding or changing a reference in the text, update PLAYLIST.md to match
-- exception: "Come As You Are" by Nirvana (1991) is allowed in Ch 11 despite being early 90s
+- do not enforce the decade strictly: anything within a couple of years of the 80s is fine (e.g., "Come As You Are" by Nirvana, 1991, in Ch 11)
+- exception: "Iron Man" by Black Sabbath (1970) is allowed in Ch 7
 
 # next 80s references
 
@@ -183,4 +184,5 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - explain using extern "C" to use c functions from c++
     - explain why they should always wonder about ownership when the receive a pointer from the function they just called (should they free it?)
     - explain error handling without exceptions: return codes, errno/perror, and goto cleanup pattern for releasing multiple resources
+    - enums and unions, including the tagged union pattern
     - qsort as a practical example of function pointers --- reference Ch 7 for function pointer basics

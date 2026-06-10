@@ -2,6 +2,10 @@
 
 Songs, movies, and cultural references appearing in the text, organized by chapter.
 
+## Chapter 1: Introduction
+- Rick James (musician)
+- Sting (The Police)
+
 ## Chapter 2: Variables
 - I Love Rock 'n' Roll --- Joan Jett & the Blackhearts
 - I Can't Drive 55 --- Sammy Hagar
@@ -27,15 +31,16 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Hysteria --- Def Leppard
 - 2112 --- Rush
 - We Got the Beat --- The Go-Go's
-- Final Countdown --- Europe
+- The Final Countdown --- Europe
 
 ## Chapter 4: Expressions
 - Crazy Train --- Ozzy Osbourne
+- This Is Spinal Tap (1984 film; volume goes to 11)
 
 ## Chapter 5: Control Flow
 - Rock You Like a Hurricane --- Scorpions
 - Big City Nights --- Scorpions
-- Wind of Change --- Scorpions
+- Still Loving You --- Scorpions
 
 ## Chapter 6: Pointers
 - Karma Chameleon --- Culture Club
@@ -57,7 +62,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - 99 Luftballons --- Nena
 - Under Pressure --- Queen & David Bowie
 - Hungry Like the Wolf --- Duran Duran
-- Mis Ojos Lloran Por Ti --- Big Boy
+- La Bamba --- Los Lobos
 
 ## Chapter 11: Low-Level I/O
 - Blue Monday --- New Order
@@ -73,3 +78,6 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Fame --- Irene Cara
 - Thriller --- Michael Jackson
 - Master of Puppets --- Metallica
+
+## Appendix A: Macros
+- Sire Records (80s record label)
