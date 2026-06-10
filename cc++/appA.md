@@ -52,11 +52,13 @@ int main() {
 Build it:
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
-./myapp
+cmake -B build
+cmake --build build
+./build/myapp
 ```
+
+`cmake -B build` generates the build files into a `build/` directory, and `cmake --build build` runs the underlying build tool for you.
+You may also see the older two-step form `mkdir build && cd build && cmake ..` followed by `make`; it does the same thing.
 
 ### Multiple Source Files
 
@@ -258,6 +260,13 @@ It checks for common mistakes, style issues, and modernization opportunities:
 clang-tidy main.cpp -- -std=c++23
 ```
 
+Passing flags after `--` works for one file.
+Real projects let CMake write a `compile_commands.json` so clang-tidy sees the exact flags every file is compiled with:
+
+```bash
+cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+```
+
 Useful check categories:
 
 | Category | What it checks |
@@ -384,13 +393,17 @@ target_link_libraries(myapp PRIVATE fmt::fmt)
 \index{conan}
 
 `conan` is a Python-based package manager that downloads pre-built binaries when available and falls back to source builds when not.
-It is more language-neutral and predates the C++ Modules era, so you will see it in cross-platform projects that already use Python tooling:
+It is not tied to CMake, has a large central package index (Conan Center), and is a common choice in cross-platform projects that already use Python tooling.
 
-```
-# install
+Install it once with `pip`:
+
+```bash
 pip install conan
+```
 
-# declare your dependencies in a conanfile.txt
+Declare your dependencies in a `conanfile.txt`:
+
+```ini
 [requires]
 fmt/10.2.1
 boost/1.84.0
@@ -398,8 +411,11 @@ boost/1.84.0
 [generators]
 CMakeDeps
 CMakeToolchain
+```
 
-# fetch them
+Then fetch them:
+
+```bash
 conan install . --output-folder=build --build=missing
 ```
 
@@ -412,19 +428,21 @@ Both tools generate the CMake glue you need; the choice usually comes down to wh
 
 ::: {.tip}
 **Wut:** C++ standardization has not adopted a single package manager.
-Both `vcpkg` and `Conan` work fine; C++20 modules were supposed to make distribution simpler but have not yet replaced either.
+Both `vcpkg` and `Conan` work fine; C++20 modules improve compilation and encapsulation, but they say nothing about how libraries are distributed, so a package manager is still your problem to pick.
 :::
 
 ## Documentation with Doxygen
 
 \index{Doxygen}
 
-Doxygen reads specially-formatted comments in your code and generates HTML / PDF / man-page documentation.
+Doxygen reads specially formatted comments in your code and generates HTML / PDF / man-page documentation.
 You write the comments where the code is; Doxygen extracts function signatures, class hierarchies, file lists, and inheritance graphs automatically.
 
 The basic comment style is `///` (or `/** ... */`) directly above the entity you are documenting:
 
 ```cpp
+#include <string>
+
 /// Add two integers.
 ///
 /// \param a The first addend.
@@ -483,7 +501,7 @@ The output is mostly empty pages, which is not very useful, but it is a fast way
 - **gdb/lldb** let you step through code, set breakpoints, and inspect variables.
   Compile with `-g -O0` for best results.
 - **Package managers** (vcpkg, Conan) make C++ dependencies installable in one command and integrate with CMake; pick one per project and document it in the README.
-- **Doxygen** turns specially-formatted `///` comments into browseable HTML / PDF docs; valuable for library code, less useful for application code.
+- **Doxygen** turns specially formatted `///` comments into browseable HTML / PDF docs; valuable for library code, less useful for application code.
 
 ## Exercises
 
@@ -495,7 +513,7 @@ Set the C++ standard to 23 and enable `-Wall -Wextra -pedantic`.
 
 3. **Think about it:** Why should you compile with `-Wall -Wextra -pedantic` from the start of a project rather than adding them later?
 
-4. **Calculation:** You have a program with a buffer overflow that only corrupts memory silently.
+4. **Think about it:** You have a program with a buffer overflow that only corrupts memory silently.
 Which sanitizer would catch it?
 What compiler flag would you use?
 
@@ -513,7 +531,7 @@ How would you test for both memory and threading bugs?
 7. **Think about it:** What is the difference between `-O0`, `-O2`, and `-O3`?
 When would you use each?
 
-8. **Where is the problem?**
+8. **Where is the bug?**
 
     ```cmake
     add_executable(myapp main.cpp)
@@ -536,3 +554,21 @@ What problem would a built-in package manager have to solve that the language co
 Document the class and its public methods with `///` Doxygen comments.
 Run `doxygen -g` to generate a `Doxyfile`, edit `INPUT` and `RECURSIVE`, run `doxygen`, and open the generated `html/index.html`.
 What does the generated documentation contain that was not literally typed in the comments?
+
+13. **What does this do?** This program is compiled with `g++ -fsanitize=address -g sum.cpp` and run.
+What does AddressSanitizer report, and does the program print anything?
+
+    ```cpp
+    #include <iostream>
+
+    int main() {
+        int* data = new int[4]{2, 4, 6, 8};
+        int sum = 0;
+        for (int i = 0; i <= 4; ++i) {
+            sum += data[i];
+        }
+        std::cout << sum << '\n';
+        delete[] data;
+        return 0;
+    }
+    ```

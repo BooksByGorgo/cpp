@@ -65,10 +65,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_executable(tests test_math.cpp)
-target_link_libraries(tests PRIVATE gtest_main)
+target_link_libraries(tests PRIVATE GTest::gtest_main)
 ```
 
-`gtest_main` provides a `main()` function, so your test file only needs test cases.
+`GTest::gtest_main` provides a `main()` function, so your test file only needs test cases.
 
 ### Writing Tests
 
@@ -91,8 +91,8 @@ TEST(AddTest, Zero) {
 }
 ```
 
-`TEST(TestSuite, TestName)` defines a test case.
-The suite name groups related tests.
+`TEST(TestSuiteName, TestName)` defines a test.
+The first argument names the **test suite**, which groups related tests.
 
 ### Assertions
 
@@ -117,6 +117,10 @@ The suite name groups related tests.
 When multiple tests need the same setup, use a **fixture**:
 
 ```cpp
+#include <algorithm>
+#include <string>
+#include <vector>
+
 class PlaylistTest : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -129,7 +133,7 @@ protected:
 };
 
 TEST_F(PlaylistTest, HasThreeSongs) {
-    EXPECT_EQ(playlist.size(), 3);
+    EXPECT_EQ(playlist.size(), 3u);
 }
 
 TEST_F(PlaylistTest, ContainsToxic) {
@@ -154,11 +158,13 @@ Each test gets a fresh instance --- tests do not share state.
 
 \index{Catch2}
 
-**Catch2** is a header-friendly alternative to Google Test with a more concise syntax.
+**Catch2** is a popular alternative to Google Test with a more concise syntax.
+Version 3 (used here) is a compiled static library, fetched and linked through CMake just like Google Test.
 
 ### Setting Up
 
 ```cmake
+include(FetchContent)
 FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
@@ -221,7 +227,7 @@ Each `SECTION` runs independently --- the `playlist` vector is reset between sec
 |---------|-----------|--------|
 | Syntax | `TEST()`, `EXPECT_*`, `ASSERT_*` | `TEST_CASE`, `REQUIRE`, `CHECK` |
 | Fixtures | Class-based (`TEST_F`) | Section-based |
-| Setup | Requires linking | Header-friendly |
+| Setup | CMake FetchContent + link | CMake FetchContent + link |
 | Maturity | Industry standard | Popular, modern |
 | Mocking | Built-in (Google Mock) | Separate libraries |
 
@@ -403,7 +409,7 @@ When would you choose one over the other?
     ```cpp
     TEST_F(PlaylistTest, CanRemoveSong) {
         playlist.erase(playlist.begin());
-        ASSERT_EQ(playlist.size(), 2);
+        ASSERT_EQ(playlist.size(), 2u);
         EXPECT_EQ(playlist[0], "Toxic");
     }
     ```
@@ -426,7 +432,7 @@ What happens if you try to mock a class with no virtual functions?
     TEST(StringTest, EmptyString) {
         std::string s;
         EXPECT_TRUE(s.empty());
-        EXPECT_EQ(s.size(), 0);
+        EXPECT_EQ(s.size(), 0u);
         EXPECT_EQ(s, "");
     }
     ```
@@ -447,5 +453,8 @@ Why is writing tests after the code is finished less effective?
 
     Write a class `App` that takes a `Logger&` and has a `run()` method that calls `log("Starting")`.
     Test that `run()` calls `log` exactly once with the message "Starting".
+
+11. **Calculate:** A Catch2 `TEST_CASE` contains a setup line followed by two `SECTION` blocks.
+When the test binary runs, how many times does the setup line execute, and how many times does each `SECTION` body execute?
 
 \printindex
