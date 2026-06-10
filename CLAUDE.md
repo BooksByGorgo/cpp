@@ -74,7 +74,7 @@ when committing a change based on an issue (or set of issues)
     - callout boxes (tcolorbox) render as full-width blocks with no text spilling outside
     - no stray LaTeX artifacts: missing characters, undefined references, overfull hbox warnings
 
-## Verifying the Book
+## verify the book
 
 ### mechanical checks (script these; do not delegate to agents)
 
@@ -99,6 +99,8 @@ when committing a change based on an issue (or set of issues)
 - have agents return structured findings with severity (error/warning/suggestion) and verify each claim yourself before editing --- agents produce occasional false positives (e.g. flagging the intentional `***[rule-name]***` convention as an artifact)
 - when an exercise is reworded, grep answer key for the old wording and change both files in the same edit pass
 - fix-up agents get exactly one file each and must not run git commands; review the full diff before committing
+- validate chapters
+- clean up index. check that key terms are in the index. a term may have multiple page numbers if a term is discussed indepth in multiple parts
 
 # making changes
 
