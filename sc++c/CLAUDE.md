@@ -31,7 +31,7 @@ the template PDF is `lulu-cover-template.pdf`. descriptions of the parts and mea
 
 ### content
 
-- front cover: use the `c++c-gorgo-cover.png` image (background color `#152844` matched to the cover panel). title is `Gorgo Starting C++ and C`. subtitle is the date of the last commit. no author name on the front.
+- front cover: use the `c++c-gorgo-cover.png` image (background color `#0d1b2a` matched to the full-bleed cover background). title is `Gorgo Starting C++ and C`. subtitle is the date of the last commit. no author name on the front.
 - spine: title centered, `Gorgo Book` at the base of the spine
 - back cover: a cheetsheet with tables from the sc++ and c4c++ books:
     - printf format specifiers (c4c++ ch01)
@@ -43,7 +43,7 @@ the template PDF is `lulu-cover-template.pdf`. descriptions of the parts and mea
 
 ### cover image
 
-`c++c-gorgo-cover.png` is a make target --- it is generated from `c++c-gorgo-with-badge.png` by flood-filling the white background with `#152844` (the cover panel color). total trim with bleed: 15.123in x 10.25in.
+`c++c-gorgo-cover.png` is a make target --- it is generated from `c++c-gorgo-with-badge.png` by flood-filling the white background with `#0d1b2a` (the full-bleed cover background color). total trim with bleed: 15.123in x 10.25in.
 
 ## lulu compliance
 
