@@ -74,15 +74,16 @@ It prints `beta`.
 
 **What happens if you run it with `./program alpha`?**
 This is undefined behavior.
-`argc` is 2, so `argv[2]` is out of bounds.
-The program might crash, print garbage, or do something else unpredictable.
+`argc` is 2, and the standard guarantees that `argv[argc]` is a null pointer --- so `argv[2]` is not out of bounds, it is `nullptr`.
+The undefined behavior comes from inserting that null `char *` into `std::cout`.
+The program might crash, print garbage, or (as g++/libstdc++ actually does) print nothing and silently put the stream into a failed state.
 
 **6. If `argc` is 4, how many arguments did the user provide on the command line (not counting the program name)?**
 
 3 arguments.
 `argc` counts all arguments including the program name (`argv[0]`), so the user provided `argc - 1 = 3` arguments.
 
-**7. Write a program that asks for the user's name and favorite number, then prints a message using both.**
+**7. Write a program that asks for the user's name and favorite number, then prints a message using both. For example: "Hola, Carlos! Your favorite number is 7."**
 
 ```cpp
 #include <iostream>
@@ -105,7 +106,7 @@ int main() {
 }
 ```
 
-**8. Think about it: What is the difference between `std::endl` and `"\n"`?**
+**8. Think about it: What is the difference between writing `std::endl` and writing `"\n"` at the end of a line? When does it actually matter, and when is it the same?**
 
 Both write a newline character, so the cursor moves to the next line in either case.
 The difference is that `std::endl` *also* flushes the output buffer.
@@ -115,7 +116,21 @@ When does the difference matter?
 Anywhere you need the user to see output *right now*, before the next thing happens: progress messages during a long computation, prompts that come before a `std::cin`, log lines you want to read while a program is still running, and so on.
 For most everyday output the difference is invisible because the buffer is flushed often enough on its own, and `"\n"` is faster (no flush).
 
-**9. Where is the bug? "Loading..." does not appear until the program exits.**
+**9. Where is the bug? A program does this:**
+
+```cpp
+#include <iostream>
+
+int main() {
+    std::cout << "Loading...";
+    // ... pretend a long computation happens here ...
+    std::cout << "Done!\n";
+    return 0;
+}
+```
+
+**The user reports that "Loading..." does not appear on the screen until the computation finishes and the program exits.**
+**Why does that happen, and how would you fix it so "Loading..." shows up immediately?**
 
 `std::cout` is buffered.
 `"Loading..."` has no newline at the end and nothing in the program flushes the buffer, so the characters sit in `std::cout`'s buffer through the long computation and only get written when the program exits and the buffer is finally flushed.
@@ -130,7 +145,35 @@ std::cout << "Loading..." << std::flush;
 
 Either change makes "Loading..." appear immediately.
 
-**10. Reading "Como estas" with `std::cin >>` vs `std::getline`.**
+**10. What does this program print if the user types `Como estas` and presses Enter?**
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string greeting;
+    std::cout << "Greeting: ";
+    std::cin >> greeting;
+    std::cout << "[" << greeting << "]\n";
+    return 0;
+}
+```
+
+**Now change the line**
+
+```cpp
+std::cin >> greeting;
+```
+
+**to**
+
+```cpp
+std::getline(std::cin, greeting);
+```
+
+**and answer the same question.**
+**What is the difference, and why?**
 
 With `std::cin >> greeting;` the program prints `[Como]`.
 The `>>` operator on `std::string` reads characters until it sees whitespace, so it stops at the space between `Como` and `estas` and only the first word ends up in `greeting`.
@@ -141,7 +184,18 @@ With `std::getline(std::cin, greeting);` the program prints `[Como estas]`.
 
 Use `>>` when you want to read one whitespace-delimited token; use `std::getline` when you want a whole line of input including any internal spaces.
 
-**11. Where is the bug? `"He said "wassup" and left."` will not compile.**
+**11. Where is the bug? The author wants to print `He said "wassup" and left.` but the compiler refuses to build this:**
+
+```cpp
+#include <iostream>
+
+int main() {
+    std::cout << "He said "wassup" and left." << std::endl;
+    return 0;
+}
+```
+
+**Explain what the compiler sees and rewrite the line so it prints the intended text.**
 
 The compiler reads a string literal as everything between an opening `"` and the next `"`.
 Given `"He said "wassup" and left."` it sees the string `"He said "`, then a stray identifier `wassup`, then another string `" and left."`, and gets confused.
@@ -153,7 +207,16 @@ std::cout << "He said \"wassup\" and left." << std::endl;
 
 That prints `He said "wassup" and left.` as intended.
 
-**12. What does `std::cout << "a\\b\tc\nd" << std::endl;` print?**
+**12. What does the following program print?**
+
+```cpp
+#include <iostream>
+
+int main() {
+    std::cout << "a\\b\tc\nd" << std::endl;
+    return 0;
+}
+```
 
 ```
 a\b	c
@@ -205,8 +268,8 @@ The last valid element is `data[2]`.
 **4. Consider the following declarations:**
 
 ```cpp
-const int *p1 = nullptr;
 int x = 42;
+const int *p1 = &x;
 int *const p2 = &x;
 ```
 
@@ -290,7 +353,7 @@ int main() {
 }
 ```
 
-**9. What does `std::numeric_limits<uint8_t>::max()` return? What about `std::numeric_limits<double>::min()` --- is it a large negative number?**
+**9. What does `std::numeric_limits<uint8_t>::max()` return? Is `std::numeric_limits<double>::min()` a large negative number?**
 
 `std::numeric_limits<uint8_t>::max()` returns `255` --- the largest value an 8-bit unsigned integer can hold.
 
@@ -298,7 +361,22 @@ int main() {
 It returns the smallest *positive* normalized `double` value (approximately 2.2e-308).
 To get the most negative `double`, use `std::numeric_limits<double>::lowest()`.
 
-**10. What does the `auto` example print, and what types are deduced?**
+**10. What does this print?**
+
+```cpp
+#include <iostream>
+
+int main() {
+    auto a = 42;
+    auto b = 42.0;
+    auto c = 42 / 5;
+    auto d = 42.0 / 5;
+    std::cout << a << " " << b << " " << c << " " << d << "\n";
+    return 0;
+}
+```
+
+**What is the deduced type of each variable?**
 
 It prints `42 42 8 8.4`.
 
@@ -311,13 +389,37 @@ It prints `42 42 8 8.4`.
 
 `auto` is convenient, but you have to know the rules of the right-hand side to predict the type.
 
-**11. Calculation: `grid[1][2]`, `sizeof(grid)`, total elements.**
+**11. Calculation: Given this declaration, what is the value at `grid[1][2]`?**
+
+```cpp
+int grid[3][4] = {
+    {0, 1, 2, 3},
+    {4, 5, 6, 7},
+    {8, 9, 10, 11},
+};
+```
+
+**What is `sizeof(grid)` on a system where `int` is 4 bytes?**
+**How many `int` elements does `grid` hold in total?**
 
 - `grid[1][2]` is `6`. `grid[1]` is the second row `{4, 5, 6, 7}`, and index `2` of that row is `6`.
 - `sizeof(grid)` is `48` bytes. The grid has 3 * 4 == 12 `int` elements, and `int` is 4 bytes, so 12 * 4 == 48.
 - The grid holds 12 `int` elements total.
 
-**12. What does the `unsigned char x = 250; x = x + 10;` example print?**
+**12. What does this print?**
+
+```cpp
+#include <iostream>
+
+int main() {
+    unsigned char x = 250;
+    x = x + 10;
+    std::cout << static_cast<int>(x) << "\n";
+    return 0;
+}
+```
+
+**Why does `unsigned char` produce that result instead of `260`?**
 
 It prints `4`.
 
@@ -329,7 +431,18 @@ This is well-defined behavior for unsigned types --- the standard guarantees the
 
 The `static_cast<int>(x)` is just so `std::cout` prints `x` as a number instead of as a character; without it, `x` would be printed as the unprintable character with code 4.
 
-**13. What does the `char a = 'a'; char b = a + 4;` example print?**
+**13. What does this print? Use the ASCII table to figure it out without running the code.**
+
+```cpp
+#include <iostream>
+
+int main() {
+    char a = 'a';
+    char b = a + 4;
+    std::cout << b << " " << static_cast<int>(b) << std::endl;
+    return 0;
+}
+```
 
 It prints `e 101`.
 
@@ -340,7 +453,7 @@ When `static_cast<int>(b)` is sent, it is displayed as the number `101`.
 
 Same byte, two different displays --- the type controls which one you see.
 
-**14. Why might you reach for `std::int32_t` instead of `int`?**
+**14. Why might you reach for `std::int32_t` instead of `int` when reading bytes from a file? What does each of these declarations cost you in safety: `int x = 3.7;`, `int x(3.7);`, `int x{3.7};`?**
 
 `int` is only required to be at least 16 bits wide; on most desktop platforms it happens to be 32 bits, but the standard does not promise that.
 When you read raw bytes from a file --- where the file format says "this field is exactly 4 bytes" --- you want a type that is *guaranteed* to be 32 bits everywhere your code runs.
@@ -352,7 +465,20 @@ For the three initializations of `int x` from `3.7`:
 - `int x(3.7);` --- compiles. Same truncation; same warning behavior.
 - `int x{3.7};` --- ERROR. Brace initialization rejects the narrowing conversion at compile time, which catches the data loss before it can hide a bug.
 
-**15. Designated-initializer form for `Album smash`:**
+**15. Given this struct, write the equivalent designated-initializer form for the brace initialization shown:**
+
+```cpp
+struct Album {
+    std::string artist;
+    std::string title;
+    int year;
+    int tracks;
+};
+
+Album smash = {"Hanson", "Middle of Nowhere", 1997, 13};
+```
+
+**What would `Album partial = {.artist = "Hanson"};` leave the other members holding?**
 
 ```cpp
 Album smash = {
@@ -396,7 +522,7 @@ The string `b` is built by concatenating `"Ice"`, `" "`, `"Ice"`, and `" Baby"`,
 **3. What is `std::string("Hola").at(4)`? What about `std::string("Hola")[4]`?**
 
 `std::string("Hola").at(4)` throws a `std::out_of_range` exception.
-The string `"Hola"` has indices 0 through 3, so index 4 is out of bounds and `.at()` catches this.
+The string `"Hola"` has indices 0 through 3, so index 4 is out of bounds and `.at()` detects this and throws.
 
 `std::string("Hola")[4]` accesses the null terminator character `'\0'`.
 The `[]` operator does not perform bounds checking, and `std::string` stores a null terminator at position `size()`, so `[4]` returns `'\0'`.
@@ -485,7 +611,10 @@ The `'B'` is uppercase and not affected.
 `"42abc"` starts with valid digits so it parses `42` and stops at `'a'`.
 `"abc42"` starts with non-digit characters so there is nothing valid to parse, and it throws an exception.
 
-**9. Write a program that asks the user for their full name using `std::getline()`, then prints the number of characters in their name and their name in reverse.**
+**9. Write a program that asks the user for their full name using `std::getline()`, then prints:**
+
+- **the number of characters in their name**
+- **their name in reverse (print each character from last to first)**
 
 ```cpp
 #include <iostream>
@@ -509,7 +638,19 @@ int main() {
 }
 ```
 
-**10. What does the `lyric.replace(0, 3, "Pop")` example print?**
+**10. What does this print?**
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string lyric = "Mmm bop, ba duba dop";
+    lyric.replace(0, 3, "Pop");
+    std::cout << lyric << "\n";
+    return 0;
+}
+```
 
 It prints:
 
@@ -521,7 +662,23 @@ Pop bop, ba duba dop
 Here it removes the 3 characters `"Mmm"` starting at index 0 and inserts `"Pop"`, leaving the rest of the string unchanged.
 Note that the inserted string does not have to be the same length as the removed range.
 
-**11. What does the `substr` example print?**
+**11. What does this print?**
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string title = "Wannabe";
+    std::cout << title.substr(0, 4) << "\n";
+    std::cout << title.substr(3) << "\n";
+    std::cout << title.substr(3, 100) << "\n";
+    return 0;
+}
+```
+
+**The third call passes a length that runs off the end of the string.**
+**Does it crash, throw, or do something else?**
 
 It prints:
 
@@ -538,7 +695,24 @@ nabe
 
 (If the *starting* index were past the end of the string, `substr` would throw `std::out_of_range`. Only an over-long *length* is silently clamped.)
 
-**12. Think about it: case-sensitive comparison `"Wonderwall"` vs `"wonderwall"`.**
+**12. Think about it: What does this print?**
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string a = "Wonderwall";
+    std::string b = "wonderwall";
+    std::cout << (a == b) << "\n";
+    std::cout << (a < b) << "\n";
+    return 0;
+}
+```
+
+**String comparison is case-sensitive.**
+**Why is `a < b` true even though the words are spelled the same?**
+**What would you change to make the two strings compare equal regardless of case?**
 
 It prints:
 
@@ -568,7 +742,21 @@ bool equal_ignore_case(const std::string &x, const std::string &y) {
 
 `std::string` has no built-in case-insensitive compare; you build it yourself like this.
 
-**13. What does `std::string s = "café"; s.size();` report?**
+**13. What does this print?**
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string s = "café";
+    std::cout << s << " " << s.size() << "\n";
+    return 0;
+}
+```
+
+**`c`, `a`, and `f` are ASCII, but `é` is U+00E9, which UTF-8 encodes as 2 bytes.**
+**What does `s.size()` report, and why is it not 4?**
 
 It prints:
 
@@ -584,9 +772,12 @@ The string has 4 visible characters but takes 5 bytes in UTF-8.
 `std::string::size()` always reports bytes, not characters.
 For a pure-ASCII string the two would be the same, but as soon as a non-ASCII character shows up, the byte count exceeds the human "character" count.
 
-**14. Where is the bug? Two string-concatenation lines.**
+**14. Where is the bug? One of these two lines compiles and one does not. Which one fails, why, and what type does the other one produce?**
 
 ```cpp
+#include <string>
+using namespace std::string_literals;
+
 auto a = "Genie "  + "in a bottle";
 auto b = "Genie "s + "in a bottle";
 ```
@@ -599,6 +790,21 @@ The `s` suffix turns `"Genie "` into a `std::string`, and `std::string` *does* o
 The result is a `std::string` containing `"Genie in a bottle"`.
 
 **15. What does this print?**
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std::string_literals;
+
+int main() {
+    auto greeting = "Bonjour";
+    auto farewell = "Adieu"s;
+    std::cout << greeting << " is " << sizeof(greeting) << " bytes\n";
+    std::cout << farewell << " has " << farewell.size() << " characters\n";
+}
+```
+
+**Why is `sizeof(greeting)` not the number of characters in `"Bonjour"`?**
 
 The program prints something like:
 
@@ -719,7 +925,7 @@ B
 The first condition `score >= 90` is false, so it moves to the next.
 The second condition `score >= 80` is true, so `grade` is set to `"B"`.
 
-**8. Write a short program that asks the user for an integer and prints whether it is even or odd, positive or negative (or zero).**
+**8. Write a short program that asks the user for an integer and prints whether it is even or odd, positive or negative (or zero), using the modulo and comparison operators.**
 
 ```cpp
 #include <iostream>
@@ -748,7 +954,24 @@ int main() {
 }
 ```
 
-**9. What does the compound-assignment example print?**
+**9. What does this print?**
+
+```cpp
+#include <iostream>
+
+int main() {
+    int x = 10;
+    x += 5;
+    x *= 2;
+    x -= 3;
+    x /= 4;
+    x %= 5;
+    std::cout << x << "\n";
+    return 0;
+}
+```
+
+**Walk through each line and show the value of `x` after that line runs.**
 
 It prints `1`.
 
@@ -764,7 +987,14 @@ It prints `1`.
 Integer division drops the remainder, so `27 / 4` is `6` rather than `6.75`.
 `6 % 5` is then `1`.
 
-**10. Think about it: precedence of `a < b && c == d || !e`.**
+**10. Think about it: Without using parentheses, what does C++ make of the following expression?**
+
+```cpp
+bool result = a < b && c == d || !e;
+```
+
+**List the operators in the order C++ evaluates them, then rewrite the expression with parentheses that make the precedence explicit.**
+**Why is the second form preferable even though both produce the same result?**
 
 Operator precedence in this expression, from highest to lowest:
 
@@ -777,9 +1007,24 @@ So C++ reads it as `((a < b) && (c == d)) || (!e)`.
 
 The explicit version is preferable because it costs nothing to read (no precedence rules to recall) and it removes any temptation to "fix" it later by reordering operators.
 You may remember the precedence rules today; the next reader of the code (including future-you) might not.
-The CLAUDE.md style guide for this book even has a tip recommending parentheses whenever you mix logical operators for exactly this reason.
+The Tip in this chapter recommends parentheses whenever you mix logical operators for exactly this reason.
 
-**11. What does the `char a + char b` example print?**
+**11. What does this print?**
+
+```cpp
+#include <iostream>
+
+int main() {
+    char a = 'A';
+    char b = 'B';
+    auto sum = a + b;
+    std::cout << sum << " " << sizeof(sum) << "\n";
+    return 0;
+}
+```
+
+**What is the deduced type of `sum`?**
+**Why is `sizeof(sum)` not `1`?**
 
 It prints `131 4` on a typical system.
 
@@ -788,9 +1033,27 @@ Before `+` runs, both operands are widened to `int` by **integer promotion** ---
 The result is therefore `int`, with value `65 + 66 = 131`.
 That is why `auto sum` deduces `int` and `sizeof(sum)` is `4` (or whatever an `int` is on your system), not `1`.
 
-If you actually wanted a `char` back, you would have to write `char sum = a + b;` and accept the truncation --- and on most systems `131` does fit in a signed `char`, but `'A' + 100` would not.
+If you actually wanted a `char` back, you would have to write `char sum = a + b;` and accept the truncation --- on most systems `char` is signed with a maximum of 127, so storing `131` wraps it to `-125`.
 
-**12. Where is the bug in the `temperature < threshold` program?**
+**12. Where is the bug?**
+
+```cpp
+#include <iostream>
+
+int main() {
+    int          temperature = -5;
+    unsigned int threshold   =  0;
+    if (temperature < threshold) {
+        std::cout << "cold\n";
+    } else {
+        std::cout << "warm\n";
+    }
+    return 0;
+}
+```
+
+**Which branch runs, and why?**
+**How would you fix the program so that `-5 < 0` evaluates the way the reader expects?**
 
 It prints `warm`, which is the wrong branch.
 
@@ -808,7 +1071,7 @@ Modern compilers will warn (`-Wsign-compare`); listen to that warning.
 
 # Chapter 5: Control Flow
 
-**1. Think about it: When would you choose a `do-while` loop over a `while` loop?**
+**1. Think about it: When would you choose a `do-while` loop over a `while` loop? Describe a scenario where `do-while` is clearly the better choice and explain why.**
 
 You would choose a `do-while` loop when the loop body must execute at least once before the condition is tested.
 A classic example is an input validation loop where you want to ask the user for input and then check if it is valid.
@@ -952,7 +1215,7 @@ while (n < 10) {
 
 This makes the loop safe even if `n` skips over the exact target.
 
-**8. Write a program that asks the user for a number between 1 and 7, prints the day of the week, and uses a `do-while` loop to keep asking until the user enters 0 to quit.**
+**8. Write a program that asks the user for a number between 1 and 7 and prints the day of the week using a `switch` statement. If the number is out of range, print an error message. Use a `do-while` loop to keep asking until the user enters `0` to quit.**
 
 ```cpp
 #include <iostream>
@@ -999,7 +1262,23 @@ int main() {
 }
 ```
 
-**9. What does the nested-loop triangle program print?**
+**9. What does this print?**
+
+```cpp
+#include <iostream>
+
+int main() {
+    for (int row = 1; row <= 3; ++row) {
+        for (int col = 1; col <= row; ++col) {
+            std::cout << "*";
+        }
+        std::cout << "\n";
+    }
+    return 0;
+}
+```
+
+**Then change the inner loop to `for (int col = 1; col <= 4 - row; ++col)` and predict the new output.**
 
 The first version prints
 
@@ -1019,7 +1298,24 @@ Replacing the inner loop with `for (int col = 1; col <= 4 - row; ++col)` flips t
 *
 ```
 
-**10. What does the range-based `for` loop print, and why use `const std::string &`?**
+**10. What does this print?**
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+
+int main() {
+    std::vector<std::string> tracks = {"Wonderwall", "Creep", "Linger"};
+    for (const std::string &track : tracks) {
+        std::cout << "- " << track << "\n";
+    }
+    return 0;
+}
+```
+
+**Why does the loop variable use `const std::string &` instead of just `std::string`?**
+**(`std::vector` is the topic of Chapter 8 and references are introduced in Chapter 6 --- come back to this exercise after those chapters if the syntax is unfamiliar.)**
 
 It prints:
 
@@ -1033,7 +1329,7 @@ Using `const std::string &` instead of plain `std::string` avoids copying each s
 The `const` makes it clear that the loop body will not modify the elements (and lets the compiler help enforce that).
 For a tiny type like `int` the copy is free and you can just write `int x : numbers`, but for `std::string`, large structs, or anything that owns memory, prefer `const &`.
 
-**11. Write a program that uses `break` to find the first negative number in an array.**
+**11. Write a program that uses `break` to find the first negative number in an array. Use the array `int values[] = {3, 7, 2, -5, 4, -1};`. Print the index and value of the first negative number you find. If no negative number is found, print `"none"`.**
 
 ```cpp
 #include <iostream>
@@ -1064,7 +1360,7 @@ int main() {
 `break` exits the `for` loop the moment we find a negative element, so we do not waste time scanning the rest of the array.
 The sentinel `found_index = -1` lets us tell "found nothing" apart from "found something at index 0" after the loop.
 
-**12. Think about it: intentional `switch` fall-through.**
+**12. Think about it: When would you intentionally let a `switch` case fall through into the next case, and how do you tell the compiler the fall-through is intentional rather than an accidental missing `break`?**
 
 Fall-through is useful when several cases should run the same code.
 A common example is grouping characters that should be treated identically:
@@ -1102,7 +1398,24 @@ case 2:
 
 Without `[[fallthrough]]`, modern compilers warn about the missing `break` because that is almost always a bug.
 
-**13. What does the `if (auto pos = lyric.find("Jones"); pos != npos)` example print?**
+**13. What does this print? And what is the scope of `pos`?**
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string lyric = "Mr. Jones and me, tell each other fairy tales";
+    if (auto pos = lyric.find("Jones"); pos != std::string::npos) {
+        std::cout << "found at " << pos << "\n";
+    }
+    // could you write `std::cout << pos;` here?
+    return 0;
+}
+```
+
+**Rewrite the `if` without using the initializer form.**
+**Why is the original better?**
 
 It prints `found at 4`.
 
@@ -1126,7 +1439,7 @@ The non-initializer version leaves `pos` lying around in the surrounding scope, 
 
 # Chapter 6: Functions
 
-**1. Think about it: Why does C++ pass arguments by value by default instead of by reference? What advantage does this give you?**
+**1. Think about it: Why does C++ pass arguments by value by default instead of by reference? What advantage does this give you in terms of reasoning about your code?**
 
 Pass-by-value gives you a guarantee that the function cannot modify the caller's variable.
 When you pass by value, the function gets its own copy, so you can reason about your code locally --- you know that calling a function will not change your variables unexpectedly.
@@ -1157,7 +1470,7 @@ It prints:
 `a` is passed by value, so modifying it inside `mystery` does not affect `x`.
 `b` is passed by reference, so adding 10 to `b` modifies `y` directly.
 
-**3. Calculation: What does `factorial(6)` return?**
+**3. Calculation: What does `factorial(6)` return, using the recursive factorial function shown in this chapter?**
 
 `factorial(6)` returns **720**.
 
@@ -1296,7 +1609,7 @@ It prints:
 `a + b` calls `operator+`, which adds the levels: 5 + 6 = 11.
 `a > b` calls `operator>`, which compares 5 > 6, which is false (0).
 
-**9. Why should you not overload `&&` and `||`? What behavior do the built-in versions have that overloaded versions lose?**
+**9. Think about it: Why should you not overload `&&` and `||`? What behavior do the built-in versions have that overloaded versions lose?**
 
 The built-in `&&` and `||` use **short-circuit evaluation**: the right operand is only evaluated if the left operand does not already determine the result.
 For example, `ptr != nullptr && ptr->valid()` is safe because if `ptr` is null, the right side is never evaluated.
@@ -1304,7 +1617,7 @@ For example, `ptr != nullptr && ptr->valid()` is safe because if `ptr` is null, 
 When you overload `&&` or `||`, both operands are always evaluated before the operator function is called, because function arguments are evaluated before the function runs.
 This means `ptr != nullptr && ptr->valid()` would crash if `ptr` is null, because `ptr->valid()` would be evaluated regardless.
 
-**10. Write a program with `is_even` and `count_if` functions.**
+**10. Write a program that defines a function `is_even` that returns `true` if a number is even and `false` otherwise. Write a second function `count_if` that takes an array of integers, its size, and a function pointer to a predicate (a function that takes an `int` and returns `bool`). `count_if` should return how many elements satisfy the predicate. Test it by counting the even numbers in an array.**
 
 ```cpp
 #include <iostream>
@@ -1336,7 +1649,14 @@ int main() {
 
 This prints `Even numbers: 5` because there are 5 even numbers (2, 4, 6, 8, 10) in the array.
 
-**11. Where is the bug?**
+**11. Where is the bug? A coworker has a `helpers.h` header file with the following function definition. Two `.cpp` files both `#include "helpers.h"`. The program compiles, but the linker reports a "multiple definition" error. What is the fix?**
+
+```cpp
+// helpers.h
+int double_it(int n) {
+    return n * 2;
+}
+```
 
 The function `double_it` is defined (not just declared) in the header file.
 If two `.cpp` files both `#include "helpers.h"`, the linker sees two definitions of `double_it` and reports a "multiple definition" error, violating the one-definition rule.
@@ -1351,19 +1671,30 @@ inline int double_it(int n) {
 
 **12. What does the compiler do with the following code?**
 
+```cpp
+[[nodiscard]] int compute(int a, int b) {
+    return a * b;
+}
+
+int main() {
+    compute(6, 7);
+    return 0;
+}
+```
+
 The compiler produces a warning because `compute` is marked `[[nodiscard]]` and the return value of `compute(6, 7)` is discarded.
 The program still compiles, but the warning tells you that ignoring the result is almost certainly a bug.
 
-**13. Which lines compile?**
+**13. Which lines compile? Determine which of the following lines compile and which do not. For each error, explain why.**
 
 ```cpp
 int a = 5;
-int &ref = a;            // (A) OK: lvalue reference binds to lvalue
-int &ref2 = 10;          // (B) ERROR: lvalue reference cannot bind to rvalue
-const int &cref = 10;    // (C) OK: const reference can bind to rvalue
-int &&rref = 10;         // (D) OK: rvalue reference binds to rvalue
-int &&rref2 = a;         // (E) ERROR: rvalue reference cannot bind to lvalue
-int &&rref3 = a + 1;     // (F) OK: a + 1 produces a temporary (rvalue)
+int &ref = a;            // (A)
+int &ref2 = 10;          // (B)
+const int &cref = 10;    // (C)
+int &&rref = 10;         // (D)
+int &&rref2 = a;         // (E)
+int &&rref3 = a + 1;     // (F)
 ```
 
 - **(A)** compiles: a plain lvalue reference binds to an lvalue.
@@ -1373,7 +1704,7 @@ int &&rref3 = a + 1;     // (F) OK: a + 1 produces a temporary (rvalue)
 - **(E)** does not compile: an rvalue reference cannot bind to an lvalue (`a` has a name and a persistent address).
 - **(F)** compiles: `a + 1` is a temporary (rvalue), and the rvalue reference binds to it.
 
-**14. Think about it: Inside a function that takes `std::string &&s`, why do you need `std::move(s)` again?**
+**14. Think about it: Inside a function that takes `std::string &&s`, why do you need to write `std::move(s)` to pass `s` to another function that also takes `std::string &&`? Is `s` an lvalue or an rvalue inside the function body?**
 
 Inside the function body, the parameter `s` is an **lvalue** --- it has a name and an address in memory.
 Even though `s` was *bound* to an rvalue by the caller, once it has a name, the language treats it as an lvalue.
@@ -1382,7 +1713,22 @@ This is a safety feature: it prevents you from accidentally moving from a variab
 If you want to pass `s` to another function as an rvalue (to move from it), you must explicitly write `std::move(s)` to cast it back to an rvalue reference.
 Without `std::move(s)`, the other function would receive an lvalue reference and copy instead of move.
 
-**15. Pass `Album` by value vs by `const &`.**
+**15. Think about it / where is the bug? Two functions take the same `Album` struct, which has a `std::string title`, a `std::string artist`, and an `int year`. Both functions only need to *read* the album.**
+
+```cpp
+void print_album(Album a) {
+    std::cout << a.title << " by " << a.artist << "\n";
+}
+
+void print_album_ref(const Album &a) {
+    std::cout << a.title << " by " << a.artist << "\n";
+}
+```
+
+**Both compile and produce the same output.**
+**Why is the second version preferred for a struct like `Album`?**
+**Would the same answer apply to a function that takes a single `int`?**
+**Why or why not?**
 
 Both versions compile and print the same thing, but `print_album_ref(const Album &a)` is preferred for a struct like `Album`.
 
@@ -1398,7 +1744,7 @@ That cutoff varies by platform, but for this book the practical guidance is: bui
 
 # Chapter 7: Numbers
 
-**1. Convert the decimal number `200` to binary, hexadecimal, and octal by hand. Verify with a C++ program.**
+**1. Convert the decimal number `200` to binary, hexadecimal, and octal by hand. Verify your answers by writing a C++ program that prints `200` in each base using `std::println`.**
 
 - Binary: 200 = 128 + 64 + 8 = 2^7^ + 2^6^ + 2^3^ = `11001000`
 - Hex: 200 = 12 * 16 + 8 = `C8`
@@ -1445,9 +1791,10 @@ while (count >= 0) {
 `count` is unsigned, so it can never be negative.
 When `count` reaches `0` and you decrement, it underflows and wraps around to `UINT_MAX` (about 4.3 billion), which is still `>= 0`, so the loop continues forever.
 For an unsigned variable, the condition `count >= 0` is always true.
-Fix it by using a signed type (`int`), or by writing `while (count-- > 0)` to decrement after the test.
+Fix it by using a signed type (`int`).
+(Beware quick hacks like `while (count-- > 0)`: that changes the output --- it prints 9 down to 0, dropping the 10.)
 
-**5. Using two's complement with 8 bits, compute `100 - 75` by hand.**
+**5. Using two's complement with 8 bits, compute `100 - 75` by hand. Show the binary representation of `100`, the two's complement of `75`, and the binary addition.**
 
 ```
  100 = 0110 0100
@@ -1507,7 +1854,7 @@ This is **signed integer overflow** --- undefined behavior.
 In practice many compilers will wrap to a negative value (you might see something like `-294967296`), but the standard does not require any particular result, and the compiler is free to do something else entirely.
 Use `long long` (or `int64_t`) for values that might exceed `int` range.
 
-**9. Write a program that reads a hexadecimal color code (like `"FF8000"`), converts it to its red, green, and blue components, and prints each component in decimal and binary.**
+**9. Write a program that reads a hexadecimal color code (like `"FF8000"`) from the user, converts it to its red, green, and blue components (each 0--255), and prints each component in decimal and binary. Use `std::stoi` with the base parameter and `substr` to extract each pair of hex digits.**
 
 ```cpp
 #include <iostream>
@@ -1529,7 +1876,7 @@ int main() {
 }
 ```
 
-**10. Without running it, determine the output of this program.**
+**10. What does this print?**
 
 ```cpp
 uint8_t a = 250;
@@ -1542,17 +1889,15 @@ It prints `250 + 20 = 14`.
 
 Numerically, `a + b` is 270, but `sum` is `uint8_t` (8 bits, max 255), so the result wraps: 270 - 256 = `14`.
 
-C++23 settled how `std::format` (and therefore `std::println`) treats `unsigned char` and `signed char` with the default `{}` specifier: they print as integers, just like the wider integer types.
-On older standard library implementations the same code may treat `uint8_t` as a character and print the byte with code 14 instead of `14`, which usually shows up as garbage in a terminal.
-To force numeric output portably, use `{:d}` or cast to `int`:
+`std::format` (and therefore `std::println`) treats `unsigned char` and `signed char` with the default `{}` specifier as integers, just like the wider integer types.
+It is the older *stream* interface that treats them as characters: `std::cout << sum` prints the byte with code 14, which usually shows up as garbage in a terminal.
+When printing a `uint8_t` through a stream, cast to `int` to force numeric output:
 
 ```cpp
-std::println("{} + {} = {}",
-    static_cast<int>(a), static_cast<int>(b), static_cast<int>(sum));
-// 250 + 20 = 14
+std::cout << static_cast<int>(sum) << "\n";   // prints 14, not a control byte
 ```
 
-**11. Implement `bool is_set(int num, int bit)`.**
+**11. Write a program to implement a function `bool is_set(int num, int bit)` that returns true if bit number `bit` of `num` is set. For example, `is_set(13, 1)` is `false` but `is_set(13, 2)` is `true`.**
 
 Bit numbering follows the convention in the question: bit `0` is the least-significant bit, bit `1` is the next, and so on.
 To test bit `bit` of `num`, build a mask with that bit set (`1 << bit`) and AND it with `num`.
@@ -1578,7 +1923,17 @@ The `!= 0` makes the conversion to `bool` explicit; without it the function woul
 
 For values wider than `int`, widen the literal too: `1ULL << bit` if `num` is `unsigned long long`, otherwise the shift happens in `int` and overflows for `bit >= 32`.
 
-**12. What does the digit-separator example print? Are the separators part of the value?**
+**12. What does this print?**
+
+```cpp
+int a = 1'000'000;
+int b = 0xFF'00'FF;
+int c = 0b1111'0000'1111'0000;
+std::println("{} {} {}", a, b, c);
+```
+
+**Are the digit separators part of the value?**
+**What does the program output?**
 
 It prints `1000000 16711935 61680`.
 
@@ -1586,20 +1941,42 @@ Digit separators (`'`) are *not* part of the stored value --- they exist purely 
 The compiler ignores them entirely, so `1'000'000` is exactly the same value as `1000000`, `0xFF'00'FF` is exactly the same as `0xFF00FF`, and so on.
 You can place them anywhere between digits and group however you like.
 
-**13. What does the `std::stoi` + `pos` chain print, and what is `pos` after each call?**
+**13. What does this print?**
 
-It prints `42 100 255`.
+```cpp
+std::string input = "42 100 255";
+std::size_t pos = 0;
+
+int a = std::stoi(input, &pos);
+int b = std::stoi(input.substr(pos), &pos);
+int c = std::stoi(input.substr(pos));
+
+std::println("{} {} {}", a, b, c);
+```
+
+**Walk through each call and explain what `pos` ends up as after each one.**
+
+It prints `42 100 0` --- not the `42 100 255` you might expect.
 
 | Call                                           | Returns | `pos` after the call            |
 |:-----------------------------------------------|:-------:|:--------------------------------|
 | `std::stoi(input, &pos)` on `"42 100 255"`     | `42`    | `2` --- index of the space after `42` |
-| `std::stoi(input.substr(2), &pos)` on `" 100 255"` | `100`   | `4` --- 1 leading space + `100` is 4 chars |
-| `std::stoi(input.substr(6))` on `" 255"`       | `255`   | (not requested)                 |
+| `std::stoi(input.substr(pos), &pos)` on `" 100 255"` | `100`   | `4` --- 1 leading space + `100` is 4 chars |
+| `std::stoi(input.substr(pos))` on `input.substr(4)` = `"00 255"` | `0`     | (not requested)                 |
 
-Each call skips leading whitespace, parses as much as it can, and stops at the first non-digit character.
-The `pos` parameter is how the caller learns where parsing stopped, which is what makes it possible to chain multiple parses through one string.
+The trap is that `pos` is always an index into the string you handed `std::stoi`, not into the original `input`.
+After the second call, `pos == 4` is relative to `" 100 255"`, but the third call applies it to `input`, so it parses `input.substr(4)` = `"00 255"` and stops at the space: `0`.
+To chain parses correctly you must accumulate the offsets yourself (e.g. take the third substring from the *previous* substring, or track a running start index).
 
-**14. Calculation: bitwise on 8-bit values.**
+**14. Calculation: Without running a program, compute each of these in 8-bit binary, then give the result in decimal:**
+
+```cpp
+0b1010'1100 & 0b1111'0000
+0b1010'1100 | 0b0000'1111
+0b1010'1100 ^ 0b1111'1111
+```
+
+**What does XORing with all-ones do?**
 
 ```
 0b1010'1100 & 0b1111'0000 = 0b1010'0000 = 160
@@ -1610,7 +1987,18 @@ The `pos` parameter is how the caller learns where parsing stopped, which is wha
 XOR with all-ones flips every bit --- it is the same as the bitwise complement (`~`) for that width.
 The result is the *one's complement* of the original value.
 
-**15. Calculation: `sizeof` and ranges on a typical 64-bit Linux system.**
+**15. Calculation: On a typical 64-bit Linux system, what is the value of each of these?**
+
+```cpp
+sizeof(char)
+sizeof(short)
+sizeof(int)
+sizeof(long)
+sizeof(long long)
+```
+
+**For each type, what is the largest value an *unsigned* version of that type can hold?**
+**(You may answer in terms of `2^N - 1` instead of writing the full decimal number.)**
 
 | Type        | `sizeof` | Largest unsigned value |
 |:------------|:--------:|:-----------------------|
@@ -1623,7 +2011,7 @@ The result is the *one's complement* of the original value.
 Note that on Linux/macOS `long` is 8 bytes but on 64-bit Windows `long` is still 4 bytes.
 This is exactly why `long` should be avoided when you need a specific width --- use a fixed-width type like `int64_t` from `<cstdint>` instead.
 
-**16. Write a program that prints an integer in decimal, hex, octal, binary, and as a string.**
+**16. Write a program that asks the user for an integer and prints it in decimal, hex, octal, binary, and again as a `std::string` produced by `std::to_string`. Use `std::println` (or `std::format`) for the formatted output.**
 
 ```cpp
 #include <print>
@@ -1650,10 +2038,15 @@ int main() {
 The `#` flag adds the `0x`, `0`, and `0b` prefixes so the bases are obvious.
 `std::to_string` always produces the *decimal* string form of the number; if you want a hex string, use `std::format("{:x}", n)` instead.
 
-**17. Where is the bug? `long long ms_per_year = 365 * 24 * 60 * 60 * 1000;`**
+**17. Where is the bug? The programmer wants the number of milliseconds in a (non-leap) year, but the value comes out wrong on most systems. What is the fix?**
+
+```cpp
+long long ms_per_year = 365 * 24 * 60 * 60 * 1000;
+std::println("{}", ms_per_year);
+```
 
 Every literal on the right side is an `int`, so the entire multiplication is done in `int` arithmetic.
-The true value (31,536,000,000) does not fit in 32 bits, so the multiplication overflows --- on most compilers it silently produces `1,471,228,928` instead.
+The true value (31,536,000,000) does not fit in 32 bits, so the multiplication overflows --- it produces `1,471,228,928` instead (g++ warns with `-Woverflow` here because the operands are all constants; with runtime values the overflow is silent).
 Assigning the result to a `long long` afterwards cannot undo the overflow that has already happened.
 
 The fix is to make at least the *first* operand wide enough to force the whole expression into `long long` arithmetic:
@@ -1665,6 +2058,16 @@ long long ms_per_year = 365LL * 24 * 60 * 60 * 1000;
 Once the leftmost operand is `long long`, the usual arithmetic conversions promote each subsequent `int` to `long long` before multiplying, and the answer fits.
 
 **18. What is the type of each variable?**
+
+```cpp
+auto a = 1;
+auto b = 1U;
+auto c = 1L;
+auto d = 1ULL;
+auto e = 1.0;
+auto f = 1.0f;
+auto g = 1.0L;
+```
 
 ```cpp
 auto a = 1;       // int
@@ -1681,7 +2084,7 @@ Each suffix selects a different type at compile time --- the value `1` is the sa
 
 # Chapter 8: Containers
 
-**1. Think about it: Why does `std::array` require the size as part of its type while `std::vector` does not? What trade-off does this create?**
+**1. Think about it: Why does `std::array` require the size as part of its type (e.g., `std::array<int, 5>`) while `std::vector` does not? What trade-off does this create?**
 
 `std::array` stores its elements directly inside the object (on the stack), so the compiler needs to know the size at compile time to allocate the right amount of space.
 The size is part of the type, which means `std::array<int, 5>` and `std::array<int, 10>` are different types and cannot be assigned to each other.
@@ -1758,7 +2161,7 @@ It prints:
 
 The iterator loop visits each element from `begin()` to `end()`, printing each one.
 
-**6. Think about it: Why is `for (auto x : vec)` (without `&`) generally a bad idea for vectors of strings? When would it be acceptable?**
+**6. Think about it: The range-based for loop `for (auto x : vec)` (without `&`) works, but why is it generally a bad idea for vectors of strings? When would it be acceptable?**
 
 Without `&`, each element is copied into `x` on every iteration.
 For `std::string`, this means allocating memory and copying the string data for each element, which is wasteful and slow.
@@ -1777,7 +2180,7 @@ The vector has 2 elements at indices 0 and 1.
 `playlist.at(2)` is out of bounds and will throw a `std::out_of_range` exception, crashing the program.
 The last valid index is 1.
 
-**8. Calculation: A `std::vector<double>` contains 3 elements and has a capacity of 4. You call `push_back` 5 times. What is the size? What is the capacity?**
+**8. Calculation: A `std::vector<double>` contains 3 elements and has a capacity of 4. You call `push_back` 5 times. After all 5 calls, what is the size? Assuming the capacity doubles when exceeded, what is the capacity?**
 
 After 5 `push_back` calls, the size is 3 + 5 = **8**.
 
@@ -1808,7 +2211,7 @@ It prints:
 `v.clear()` removes all elements, making the size 0.
 `v.empty()` returns `true`, which prints as `1`.
 
-**10. Write a program that reads numbers from the user (enter -1 to stop), stores them in a `std::vector<int>`, and prints them in reverse order.**
+**10. Write a program that asks the user to enter numbers one at a time (enter -1 to stop), stores them in a `std::vector<int>`, and then prints them in reverse order using iterators or indexing.**
 
 ```cpp
 #include <iostream>
@@ -1836,18 +2239,48 @@ int main() {
 
 **11. What does this print?**
 
+```cpp
+std::vector<int> v = {10, 20, 30, 40, 50};
+v.insert(v.begin() + 2, 25);
+v.erase(v.begin());
+for (const auto& n : v) {
+    std::cout << n << " ";
+}
+std::cout << "\n";
+```
+
 The vector starts as `{10, 20, 30, 40, 50}`.
 After `insert(v.begin() + 2, 25)`, it becomes `{10, 20, 25, 30, 40, 50}`.
 After `erase(v.begin())`, it becomes `{20, 25, 30, 40, 50}`.
 
 It prints: `20 25 30 40 50`
 
-**12. Calculation:** What is the size and capacity after calling `reserve(100)` on an empty `std::vector<int>`, then calling `push_back` 3 times?
+**12. Calculation: What is the size and capacity after calling `reserve(100)` on an empty `std::vector<int>`, then calling `push_back` 3 times?**
 
 The size is 3 (three elements were added).
 The capacity is at least 100 (the `reserve` call preallocated room for 100 elements, and adding 3 elements does not exceed that, so no reallocation occurs).
 
-**13. Where is the bug? `push_back` inside an iterator loop.**
+**13. Where is the bug?**
+
+```cpp
+#include <vector>
+#include <iostream>
+
+int main() {
+    std::vector<int> v = {1, 2, 3, 4, 5};
+    for (auto it = v.begin(); it != v.end(); ++it) {
+        if (*it == 3) {
+            v.push_back(99);
+        }
+    }
+    for (int n : v) std::cout << n << " ";
+    std::cout << "\n";
+    return 0;
+}
+```
+
+**The program may crash, may print garbage, or may even appear to work depending on the compiler.**
+**What is going on, and how would you fix it?**
 
 The bug is **iterator invalidation**.
 When `push_back` runs out of capacity, the vector reallocates its storage to a new (larger) buffer and copies the elements over.
@@ -1877,7 +2310,14 @@ for (std::size_t i = 0; i < v.size(); ++i) {
 
 The general rule: do not modify a container's structure while iterating over it. If you need to add or remove elements based on what you find, build a list of changes first and apply them afterward.
 
-**14. Think about it: `std::array<double, 3>` vs `std::vector<double>`.**
+**14. Think about it: A function takes three coordinates as a `std::array<double, 3>`:**
+
+```cpp
+double length(const std::array<double, 3> &v);
+```
+
+**Why does the size `3` appear in the parameter type, and what would happen if a caller passed a `std::array<double, 4>` instead?**
+**Compare this to a function that takes `const std::vector<double> &v` --- which one is more flexible, and which one gives stronger compile-time guarantees?**
 
 The size `3` is part of the *type* of `std::array`.
 A function that takes `const std::array<double, 3> &` will only accept a 3-element array; passing a `std::array<double, 4>` is a compile error, because `std::array<double, 3>` and `std::array<double, 4>` are completely different types.
@@ -1889,7 +2329,7 @@ There is no compile-time guarantee that the input is the right shape.
 Use `std::array<T, N>` when the size is known and fixed at compile time and you want the compiler to enforce it.
 Use `std::vector<T>` when the size is determined at run time or might change.
 
-**15. Calculation: `reserve(8)` then 12 `push_back` calls.**
+**15. Calculation: Start with an empty `std::vector<int>` and call `reserve(8)`. Then call `push_back` 12 times. What are `size()` and `capacity()` after each of those 12 calls? (Assume the implementation doubles the capacity when it has to grow.) On which `push_back` calls (if any) are existing iterators into the vector invalidated?**
 
 After `reserve(8)`: `size() == 0`, `capacity() == 8`.
 
@@ -1912,7 +2352,21 @@ The 9th `push_back` is the only one that reallocates: capacity was full at 8, an
 That is also the only call where existing iterators, pointers, and references into the vector are invalidated.
 The 1st through 8th calls only write into already-reserved storage, and the 10th through 12th only fill in the freshly-allocated space, so iterators obtained *after* the reallocation are still valid.
 
-**16. What does the sort + count program print?**
+**16. What does this print?**
+
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> v = {5, 1, 4, 1, 5, 9, 2, 6};
+    std::sort(v.begin(), v.end());
+    auto fives = std::count(v.begin(), v.end(), 5);
+    std::cout << v.front() << " " << v.back() << " " << fives << "\n";
+    return 0;
+}
+```
 
 It prints `1 9 2`.
 
@@ -1920,7 +2374,22 @@ After `std::sort`, `v` becomes `{1, 1, 2, 4, 5, 5, 6, 9}`.
 `v.front()` is `1`, `v.back()` is `9`.
 `std::count(v.begin(), v.end(), 5)` returns the number of elements equal to `5`, which is `2`.
 
-**17. Where is the bug in the find example?**
+**17. Where is the bug?**
+
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> v = {1, 2, 3};
+    auto it = std::find(v.begin(), v.end(), 99);
+    std::cout << *it << "\n";
+    return 0;
+}
+```
+
+**Why is dereferencing `it` unsafe here, and what should the program check first?**
 
 `std::find(v.begin(), v.end(), 99)` searches for `99`.
 There is no `99` in `v`, so `find` returns `v.end()` --- the iterator one *past* the last element, which does not point to a valid element.
@@ -1939,7 +2408,7 @@ if (it != v.end()) {
 
 Every search algorithm in `<algorithm>` follows the same convention --- the "not found" result is the sentinel `end()` iterator.
 
-**18. Min/max/average program.**
+**18. Write a program that reads numbers from `std::cin` until end-of-file, stores them in a `std::vector<int>`, and then prints the smallest, largest, and average using `std::min_element`, `std::max_element`, and `std::accumulate` (from `<numeric>`).**
 
 ```cpp
 #include <algorithm>
@@ -2030,6 +2499,7 @@ The `cout` statement prints them in a different order: `d`, `n`, `s`.
 ```cpp
 #include <fstream>
 #include <iostream>
+#include <string>
 
 int main() {
     std::ifstream infile("data.txt");
@@ -2082,7 +2552,7 @@ Because they share the same interface, code written to work with one type of str
 For example, a function that writes data using `<<` on an `std::ostream&` reference can write to the screen (`std::cout`), to a file (`std::ofstream`), or to a string (`std::ostringstream`) without any changes.
 This makes code more flexible and reusable.
 
-**6. Write a program that reads three song names from the user, builds a single string with them separated by ` / ` using an `std::ostringstream`, writes it to `favorites.txt`, then reads the file back and prints its contents.**
+**6. Write a program that reads three song names from the user using `std::getline`, builds a single string containing all three songs separated by ` / ` using an `std::ostringstream`, writes that string to a file called `favorites.txt`, then reads the file back and prints its contents.**
 
 ```cpp
 #include <fstream>
@@ -2129,6 +2599,18 @@ int main() {
 
 **7. What does this program print?**
 
+```cpp
+#include <iomanip>
+#include <iostream>
+
+int main() {
+    std::cout << std::boolalpha << (5 > 3) << std::endl;
+    std::cout << std::fixed << std::setprecision(1);
+    std::cout << 3.14159 << std::endl;
+    return 0;
+}
+```
+
 It prints:
 
 ```
@@ -2147,13 +2629,43 @@ The existing content is preserved.
 By default, `std::ofstream` opens with `std::ios::out | std::ios::trunc`, which truncates (erases) the file before writing.
 Any existing content is lost.
 
-**9. Given the input string `"Closing Time 1998 Smooth 1999"`, how many times will this loop iterate? What is the final value of `count`?**
+**9. Given the input string `"Closing Time 1998 Smooth 1999"`, how many times will this loop iterate?**
+
+```cpp
+std::istringstream iss("Closing Time 1998 Smooth 1999");
+std::string word;
+int count = 0;
+while (iss >> word) {
+    count++;
+}
+```
+
+**What is the final value of `count`?**
 
 The loop iterates **5** times, and the final value of `count` is **5**.
 `iss >> word` reads one whitespace-delimited token per iteration: "Closing", "Time", "1998", "Smooth", "1999".
 The `>>` operator splits on whitespace, so each word and number is a separate token.
 
-**10. What does the bidirectional `std::stringstream` example print?**
+**10. What does this print?**
+
+```cpp
+#include <sstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    std::stringstream ss;
+    ss << "year " << 1999;
+    std::string word;
+    int year{};
+    ss >> word >> year;
+    std::cout << "[" << word << "] [" << year << "]\n";
+    return 0;
+}
+```
+
+**`std::stringstream` is bidirectional --- you can write into it with `<<` and then read out of it with `>>`.**
+**Walk through what is in the stream after the `<<` line and what each `>>` extracts.**
 
 It prints `[year] [1999]`.
 
@@ -2162,10 +2674,19 @@ The first `ss >> word` reads up to the next whitespace, so `word` becomes `"year
 The second `ss >> year` skips the leading whitespace and parses `1999` into the `int year`.
 A `std::stringstream` is just a `std::ios::in | std::ios::out` stream backed by a string, so the same object can both produce text (via `<<`) and consume text (via `>>`).
 
-**11. Calculation: file open mode flags.**
+**11. Calculation: What does each of these `std::ios_base::openmode` combinations do when you open a file with it?**
+
+```cpp
+std::ios::out
+std::ios::out | std::ios::app
+std::ios::out | std::ios::trunc
+std::ios::in  | std::ios::out | std::ios::binary
+```
+
+**Why do you OR the flags together with `|` instead of using `+` or `,`?**
 
 Each flag is one bit in a `std::ios_base::openmode` bitmask, so combinations are made by OR'ing them together.
-You use `|` because that is the bitwise OR operator (the same one introduced in Chapter 7) --- it sets all the bits that are on in either operand, which is exactly what "this mode AND that mode" means.
+You use `|` because that is the bitwise OR operator (the same one introduced in Chapter 4) --- it sets all the bits that are on in either operand, which is exactly what "this mode AND that mode" means.
 You cannot use `+` or `,` because those would either give the wrong numeric value or not produce a valid `openmode` at all.
 
 | Expression                                            | What it asks for                                            |
@@ -2175,7 +2696,7 @@ You cannot use `+` or `,` because those would either give the wrong numeric valu
 | `std::ios::out \| std::ios::trunc`                    | open for writing and **truncate** the file to zero length   |
 | `std::ios::in \| std::ios::out \| std::ios::binary`   | open for reading **and** writing in **binary** mode (no newline translation) |
 
-**12. Write a program that reads `oldies.txt`, prints each line, and reports errors on `std::cerr`.**
+**12. Write a program that opens a file called `oldies.txt`, reads each line into a `std::vector<std::string>`, and prints them. If the file cannot be opened, write a clear error message to `std::cerr` (not `std::cout`) and return a non-zero exit code. Why does sending the error to `std::cerr` matter even though both streams print to the same terminal by default?**
 
 ```cpp
 #include <fstream>
@@ -2204,7 +2725,7 @@ int main() {
 ```
 
 `std::cerr` matters even though it goes to the same terminal by default for two reasons.
-First, `std::cerr` is **unbuffered**, so error messages reach the user immediately even if the program is about to crash.
+First, `std::cerr` is **flushed after every output**, so error messages reach the user immediately even if the program is about to crash.
 Second, on the command line `std::cout` and `std::cerr` are independently redirectable: a user running `./program > out.txt` only sends standard output to the file, so error messages still appear on the screen.
 If the program had written errors to `std::cout` instead, they would have ended up silently in `out.txt`.
 Sending data to `std::cout` and errors to `std::cerr` is the convention every Unix tool follows for exactly this reason.
@@ -2219,7 +2740,7 @@ The format specifier `>8.2f` means: right-align in a field 8 characters wide, wi
 Right-aligned in 8 characters, it is padded with 4 spaces on the left.
 The result is **8 characters wide**.
 
-**2. Why might you prefer `std::format` over chaining `<<` operators with `std::cout`?**
+**2. Why might you prefer `std::format` over chaining `<<` operators with `std::cout`? Give at least two reasons.**
 
 1. **Readability:** A format string like `std::format("{} scored {} points", name, score)` is much easier to read than `std::cout << name << " scored " << score << " points"`. The format string shows the complete output pattern in one place.
 
@@ -2252,7 +2773,7 @@ std::string result = std::format("{} scored {} points", name, score);
 std::string result = std::format("{0} scored {1} points", name, score);
 ```
 
-**6. Write a program that asks for three song names and scores, writes them to a file, reads the file back, and prints a formatted table.**
+**6. Write a program that asks the user for three song names and three scores (as doubles), writes them to a file called `rankings.txt` (one song and score per line), then reads the file back and prints a formatted table with columns for song name and score, right-aligning the scores to one decimal place.**
 
 ```cpp
 #include <fstream>
@@ -2304,7 +2825,14 @@ int main() {
 }
 ```
 
-**7. What does the indexed-placeholder example print?**
+**7. What does this print?**
+
+```cpp
+std::println("{1} - {0} ({2})", "Backstreet Boys", "I Want It That Way", 1999);
+```
+
+**Now change every `{0}`/`{1}`/`{2}` to plain `{}` and predict the output.**
+**What is the rule about mixing indexed and implicit placeholders in the same format string?**
 
 The first call prints:
 
@@ -2324,7 +2852,17 @@ The rule is: in any single format string, all placeholders must be either *all i
 You cannot mix the two styles.
 A format string like `"{} - {1} - {2}"` is rejected at compile time --- pick one style and stick with it.
 
-**8. Calculation: sign and zero-padding format specs.**
+**8. Calculation: What does each of these `std::format` calls produce?**
+
+```cpp
+std::format("{:+d}", 42)
+std::format("{:+d}", -42)
+std::format("{: d}", 42)
+std::format("{:05d}", 42)
+std::format("{:+06d}", -42)
+```
+
+**For each one, write down the exact characters in the resulting string, including any spaces or zeros.**
 
 | Expression                  | Result    | Notes                                                       |
 |:----------------------------|:----------|:------------------------------------------------------------|
@@ -2332,11 +2870,21 @@ A format string like `"{} - {1} - {2}"` is rejected at compile time --- pick one
 | `std::format("{:+d}", -42)` | `"-42"`   | negatives still get a `-`                                   |
 | `std::format("{: d}", 42)`  | `" 42"`   | space flag puts a space where `+` would go on positives     |
 | `std::format("{:05d}", 42)` | `"00042"` | width 5, zero-padded; `42` becomes `00042`                  |
-| `std::format("{:+06d}", -42)` | `"-0042"` | width 6, zero-padded, signed; the `-` counts toward the width |
+| `std::format("{:+06d}", -42)` | `"-00042"` | width 6, zero-padded, signed; the `-` counts toward the width |
 
-The width includes the sign character, so `"{:+06d}"` on `-42` is `-` followed by 4 zeros and then `42`, totaling 6 characters.
+The width includes the sign character, so `"{:+06d}"` on `-42` is `-` followed by 3 zeros and then `42`, totaling 6 characters.
 
-**9. What does the `#` and `08b` example print, and what do those flags mean?**
+**9. What does this print?**
+
+```cpp
+int n = 255;
+std::println("{:#x}", n);
+std::println("{:#o}", n);
+std::println("{:#b}", n);
+std::println("{:08b}", n);
+```
+
+**What does the `#` flag do, and what does the `08` in the last line do?**
 
 It prints:
 
@@ -2354,7 +2902,17 @@ It prints:
   `255` already takes 8 bits to write in binary, so the result is `11111111` with no padding needed.
   If the value were `5`, the same spec would produce `00000101`.
 
-**10. What does the string-precision example print, and what does precision mean for strings?**
+**10. What does this print?**
+
+```cpp
+std::string title = "Smells Like Teen Spirit";
+std::println("[{:.5}]", title);
+std::println("[{:<10.5}]", title);
+std::println("[{:>10.5}]", title);
+```
+
+**For string arguments, what does the precision (`.5`) mean?**
+**How is that different from precision on a `double`?**
 
 It prints:
 
@@ -2365,7 +2923,7 @@ It prints:
 ```
 
 For a string argument, precision (`.5`) is the **maximum number of characters to use from the string** --- it truncates anything longer.
-That is the opposite of how precision works for floating-point numbers, where `.5` means "show 5 digits after the decimal point" (which can make the result *longer*, not shorter).
+That is the opposite of how precision works for floating-point numbers, where `.5` means "show 5 digits after the decimal point" with the `f` type (5 significant digits without it) --- which can make the result *longer*, not shorter.
 
 Combined with width and alignment:
 
@@ -2375,7 +2933,13 @@ Combined with width and alignment:
 
 So the string is first truncated to `"Smell"` and then placed in a 10-wide field.
 
-**11. Write a program that prints three integers in decimal, hex, and binary.**
+**11. Write a program that takes three integers, formats them into a single `std::string` using `std::format`, and prints each integer in three different ways:**
+
+- **decimal in a 6-character field, right-aligned**
+- **hexadecimal with the `0x` prefix and zero-padded to 8 hex digits**
+- **binary with the `0b` prefix, zero-padded to 16 bits**
+
+**Use a single `std::format` call per row so you practice combining width, fill, and base specifiers in the same format string.**
 
 ```cpp
 #include <print>
@@ -2527,7 +3091,7 @@ After stack unwinding, the `catch (...)` block runs.
 
 ```cpp
 void load(const std::string &file) {
-    throw std::runtime_error("file not found");
+    throw std::runtime_error("file not found: " + file);
 }
 
 void play() noexcept {
@@ -2588,12 +3152,48 @@ Threading error codes through every intermediate function would be tedious and e
 
 **8. How many destructors run before the `catch` block executes?**
 
+```cpp
+struct Song {
+    std::string title;
+    Song(const std::string &t) : title(t) {}
+    ~Song() { std::cout << "destroyed: " << title << std::endl; }
+};
+
+void inner() {
+    Song a("Torn");
+    Song b("Vogue");
+    throw std::runtime_error("oops");
+}
+
+void outer() {
+    Song c("Iris");
+    inner();
+}
+
+int main() {
+    try {
+        outer();
+    } catch (...) {
+        std::cout << "caught" << std::endl;
+    }
+    return 0;
+}
+```
+
 Three destructors run before the `catch` block.
 When `inner()` throws, stack unwinding destroys `b` ("Vogue") and then `a` ("Torn") in reverse order of construction.
 Then `outer()`'s frame unwinds, destroying `c` ("Iris").
 Only after all three destructors complete does the `catch` block execute and print "caught".
 
-**9. Write a function `safe_sqrt` that returns `std::expected<double, std::string>`.**
+**9. Write a function with the following signature:**
+
+```cpp
+std::expected<double, std::string> safe_sqrt(double x);
+```
+
+**If `x` is negative, return an error message.**
+**Otherwise, return the square root.**
+**Test it in `main()` with both a positive and a negative value.**
 
 ```cpp
 #include <cmath>
@@ -2630,14 +3230,37 @@ sqrt(25) = 5
 Error: cannot take square root of negative number
 ```
 
-**10. Where is the bug? `catch(...)` before `catch(const std::out_of_range &)`.**
+**10. Where is the bug?**
 
-The program prints `anything`, and the `out_of_range` handler is never reached.
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+int main() {
+    try {
+        throw std::out_of_range("nope");
+    }
+    catch (const std::exception &e) {
+        std::cout << "exception: " << e.what() << "\n";
+    }
+    catch (const std::out_of_range &e) {
+        std::cout << "out_of_range: " << e.what() << "\n";
+    }
+    return 0;
+}
+```
+
+**Catch handlers are tried in source order, top to bottom.**
+**Why is the second `catch` block effectively dead code?**
+**How would you reorder the handlers so that `out_of_range` is caught specifically and `std::exception` only acts as a safety net?**
+
+The program prints `exception: nope`, and the `out_of_range` handler is never reached.
 
 `catch` clauses are matched **in source order**, top to bottom.
-`catch(...)` matches *anything*, so once it appears at the top of the list, no later handler can ever fire --- the more specific `catch(const std::out_of_range &)` is dead code.
+`std::out_of_range` derives from `std::exception`, so the first handler matches every `out_of_range` before the more specific handler gets a chance --- the second `catch` is dead code.
+g++ even warns about it: `exception of type 'std::out_of_range' will be caught by earlier handler [-Wexceptions]`.
 
-The fix is to put the most specific handlers first and `catch(...)` last as a final safety net:
+The fix is to put the most specific handlers first and the most general ones last as a safety net:
 
 ```cpp
 try {
@@ -2657,7 +3280,15 @@ catch (...) {                            // truly unknown
 This is the standard layering: type-specific, then `std::exception` for everything from the standard library, then `catch(...)` to make sure no exception escapes the function.
 With this ordering, the program now prints `out_of_range: nope`.
 
-**11. Write `parse_age` that translates `std::stoi` failures into specific exceptions.**
+**11. Write a program that defines a function**
+
+```cpp
+int parse_age(const std::string &s);
+```
+
+**that converts `s` to an integer using `std::stoi` and then returns it.**
+**Throw `std::invalid_argument("not a number")` if `std::stoi` itself throws `std::invalid_argument`, and throw `std::out_of_range("age must be 0..150")` if the parsed number is outside the range `[0, 150]`.**
+**In `main`, call `parse_age` on three inputs --- `"42"`, `"abc"`, and `"-1"` --- inside `try`/`catch` blocks that catch each of the two exception types separately and print a different message for each one.**
 
 ```cpp
 #include <iostream>
@@ -2803,12 +3434,12 @@ class Example {
     const int id;
     int &ref;
 public:
-    // Must use initializer list — cannot assign to const or ref in body
+    // Must use initializer list --- cannot assign to const or ref in body
     Example(int i, int &r) : id(i), ref(r) {}
 };
 ```
 
-**5. If a class has three `int` members and a `std::string` member, how many bytes minimum does an object of that class occupy on a system where `int` is 32 bits and `std::string` is 32 bytes?**
+**5. If a class has three `int` members and a `std::string` member, how many bytes *minimum* does an object of that class occupy on a system where `int` is 32 bits and `std::string` is 32 bytes? (Ignore padding for this question.)**
 
 Three `int` members at 4 bytes each = 12 bytes.
 One `std::string` at 32 bytes.
@@ -2947,10 +3578,29 @@ The fix is to remove one of the overloads or change the default parameter design
 Default parameters must appear at the end because the compiler fills in defaults from right to left.
 If a non-default parameter came after a default one, there would be no way to skip the default and supply the later argument.
 
-For example, `void f(int a = 10, int b)` would make `f(5)` ambiguous --- is 5 the value for `a` or `b`?
-The compiler rejects this as an error.
+A call like `f(5)` would be ambiguous --- is 5 the value for `a` or `b`?
+The compiler does not even wait for a call: it rejects the declaration `void f(int a = 10, int b)` itself with "default argument missing for parameter 2".
 
 **11. What is wrong with this code?**
+
+```cpp
+#include <iostream>
+
+class TrackNumber {
+public:
+    int number;
+    TrackNumber(int n) : number(n) {}
+};
+
+void play(TrackNumber t) {
+    std::cout << "Track " << t.number << std::endl;
+}
+
+int main() {
+    play(7);
+    return 0;
+}
+```
 
 The `TrackNumber` constructor takes a single `int` and is not marked `explicit`.
 This means the compiler silently converts `7` to `TrackNumber(7)` when calling `play(7)`.
@@ -2973,7 +3623,7 @@ The `explicit` version prevents the object from being used in arithmetic, compar
 For example, without `explicit`, `obj + 5` would compile --- `obj` converts to `bool` (`true` = `1`), and then `1 + 5` gives `6`.
 With `explicit`, that expression is a compile error.
 
-**13. Write a class called `Counter`.**
+**13. Write a class called `Counter` with a private `int count` that starts at 0. Give it an `increment()` method, a `reset()` method, and a `const` method `value()` that returns the current count. Overload `operator==` to compare two counters by their count. Test it in `main()` by incrementing, printing, resetting, and comparing two counters.**
 
 ```cpp
 #include <iostream>
@@ -3014,7 +3664,29 @@ int main() {
 }
 ```
 
-**14. Where is the bug? `p.tracks.push_back(...)`.**
+**14. Where is the bug?**
+
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+
+class Playlist {
+    std::vector<std::string> tracks;
+public:
+    int size() const { return tracks.size(); }
+};
+
+int main() {
+    Playlist p;
+    p.tracks.push_back("Wonderwall");
+    std::cout << p.size() << "\n";
+    return 0;
+}
+```
+
+**What does the compiler say, and which design rule does it enforce?**
+**What is the smallest change you can make to `Playlist` so the program compiles, and what is the *better* change?**
 
 The compiler rejects the program with something like:
 
@@ -3049,7 +3721,15 @@ public:
 
 Now `Playlist` keeps full control over its internal vector and can later add validation, logging, or change the underlying storage without breaking any caller.
 
-**15. Write a `Builder` with a chainable `add` method.**
+**15. Write a program that defines a class `Builder` whose `add(int)` method returns `*this` by reference so calls can be chained:**
+
+```cpp
+Builder b;
+b.add(1).add(2).add(3).add(4);
+```
+
+**The class should keep a `std::vector<int>` internally and have a `print()` method that prints all of the values added so far.**
+**Why does `add` return `*this` and not just a fresh `Builder`?**
 
 ```cpp
 #include <iostream>
@@ -3083,7 +3763,19 @@ int main() {
 If `add` returned `*this` by value, each call would build a fresh copy and the chain would be acting on temporary objects --- the original `b` would never get any of the values added past the first one.
 Returning a reference is what makes the fluent interface actually fluent.
 
-**16. Where is the bug in the delegating-constructor `Album` example?**
+**16. Where is the bug?**
+
+```cpp
+class Album {
+    std::string artist;
+    int year;
+public:
+    Album(const std::string &a, int y) : artist(a), year(y) {}
+    Album() : artist("Unknown"), Album("Unknown", 0) {}
+};
+```
+
+**Why does the second constructor not compile, and how do you fix it?**
 
 The default constructor `Album()` tries to mix a member initializer (`artist("Unknown")`) with a delegating call to another constructor (`Album("Unknown", 0)`).
 That is not allowed: when one constructor delegates to another, the delegated-to call must be the *only* entry in the initializer list.
@@ -3103,7 +3795,27 @@ public:
 
 The parameterized constructor runs first --- initializing both members --- and only then does the default constructor's body run (it is empty here).
 
-**17. Think about it: `explicit operator bool()`.**
+**17. Think about it: A class has this conversion operator:**
+
+```cpp
+class Volume {
+    int level;
+public:
+    explicit Volume(int v) : level(v) {}
+    explicit operator bool() const { return level > 0; }
+};
+```
+
+**Why is `operator bool` marked `explicit`?**
+**Which of the following calls compile, and which do not?**
+
+```cpp
+Volume v(3);
+if (v) { /* ... */ }                       // (a)
+bool b = v;                                // (b)
+bool b2 = static_cast<bool>(v);            // (c)
+int  n  = v;                               // (d)
+```
 
 `operator bool` is marked `explicit` so the conversion only happens in places where the compiler is *expecting* a bool, not anywhere a `Volume` happens to be used in arithmetic or assignment.
 That avoids the classic "safe bool" footgun where a bool conversion accidentally enables nonsensical comparisons like `volume + 1` or `volume == otherVolume`.
@@ -3113,7 +3825,7 @@ That avoids the classic "safe bool" footgun where a bool conversion accidentally
 | `(a) if (v) { ... }`                          | yes       | The condition of `if` is a "contextual" bool conversion, which `explicit` allows. |
 | `(b) bool b = v;`                             | **no**    | Implicit copy-initialization to `bool` is not contextual, so `explicit` blocks it. |
 | `(c) bool b2 = static_cast<bool>(v);`         | yes       | An explicit cast asks for the conversion by name, which is exactly what `explicit` permits. |
-| `(d) int n = v;`                              | **no**    | There is no `operator int`, only `operator bool`, and `bool` does not implicitly convert to `int` here without first going through the explicit cast. |
+| `(d) int n = v;`                              | **no**    | An `explicit` conversion operator is never a candidate for an implicit conversion, so the compiler cannot get from `Volume` to `int` at all here. |
 
 So `explicit operator bool()` lets you write `if (v)`, `while (v)`, `!v`, and so on, while preventing the conversion from sneaking in where you didn't ask for it.
 
@@ -3227,13 +3939,13 @@ Both `a` and `b` are constructed from the same raw pointer, so they both think t
 When they go out of scope, both will try to `delete` the same pointer, resulting in a double-free bug (undefined behavior).
 This is why you should use `std::make_unique` instead of constructing `unique_ptr` from raw pointers, and never give the same raw pointer to two smart pointers.
 
-**7. If a `std::shared_ptr` is copied 4 times (so there are 5 `shared_ptr`s total), what is the reference count? How many need to be destroyed before the object is freed?**
+**7. If a `std::shared_ptr` is copied 4 times (so there are 5 `shared_ptr`s total pointing to the same object), what is the reference count? How many of those `shared_ptr`s need to be destroyed before the object is freed?**
 
 The reference count is **5**.
 All 5 `shared_ptr`s must be destroyed (or reset) before the object is freed.
 The object is deleted when the last `shared_ptr` owning it is destroyed, which brings the reference count from 1 to 0.
 
-**8. Write a program with `std::unique_ptr` that demonstrates moving ownership.**
+**8. Write a program that creates a `std::unique_ptr<std::string>` holding your favorite 90s song title. Move it to a second `unique_ptr`, then print from the second and verify the first is empty (check with `if (!ptr)`).**
 
 ```cpp
 #include <iostream>
@@ -3275,7 +3987,7 @@ std::cout << x << std::endl;
 It prints `20`.
 `p` points to `x`, so `*p = 20` modifies `x` through the pointer.
 
-**10. Given a `struct Song` and a pointer `Song *ptr`, write two equivalent expressions to access `title`.**
+**10. Given a `struct Song { std::string title; int year; };` and a pointer `Song *ptr`, write two equivalent expressions to access `title` --- one using `*` and `.`, the other using `->`.**
 
 ```cpp
 (*ptr).title   // dereference first, then access member
@@ -3285,7 +3997,21 @@ ptr->title     // arrow operator --- same thing, cleaner
 Both expressions access the `title` member of the `Song` that `ptr` points to.
 `ptr->title` is the preferred form.
 
-**11. Where is the bug? `play(Song *song)` with a `nullptr`.**
+**11. Where is the bug?**
+
+```cpp
+void play(Song *song) {
+    std::cout << song->title << " (" << song->year << ")\n";
+}
+
+int main() {
+    Song *s = nullptr;
+    play(s);
+    return 0;
+}
+```
+
+**Why is this dangerous, and what is the smallest change to `play` that makes it safe?**
 
 `play` dereferences `song` (`song->title`) without checking that the pointer is non-null first.
 Calling it with `nullptr` reads from address 0, which is undefined behavior --- on most systems it will crash with a segmentation fault.
@@ -3304,7 +4030,7 @@ void play(Song *song) {
 
 The deeper fix is to use a reference (`Song &`) instead of a pointer when the function never wants to handle "no song", since references cannot be null and the caller is forced to provide a real `Song`.
 
-**12. Think about it: What is RAII?**
+**12. Think about it: Explain RAII in your own words. Why is `std::unique_ptr` an RAII wrapper around `new`/`delete`? Name two other RAII types you have already seen earlier in this book.**
 
 RAII --- *Resource Acquisition Is Initialization* --- is the C++ idiom that ties the lifetime of a resource to the lifetime of an object on the stack.
 The constructor of the object **acquires** the resource (memory, a file handle, a lock, etc.), and the destructor **releases** it.
@@ -3321,7 +4047,21 @@ Two other RAII types you have already seen:
 
 Both follow the same pattern: a stack object that owns something on the heap or in the OS, and tears it down automatically when its scope ends.
 
-**13. Where is the bug? `make_playlist` leak.**
+**13. Where is the bug?**
+
+```cpp
+void make_playlist() {
+    std::string *fav = new std::string("Wonderwall");
+    if (fav->size() > 100) {
+        return;
+    }
+    std::cout << *fav << "\n";
+    delete fav;
+}
+```
+
+**The function looks fine in the common case but leaks memory in one specific path.**
+**Identify the leak and rewrite the function so it cannot leak no matter which return path is taken (without sprinkling extra `delete` calls everywhere).**
 
 The early-return path leaks:
 
@@ -3352,7 +4092,16 @@ void make_playlist() {
 Now there is no `delete` to forget, and *every* exit path --- the early `return`, the normal end of the function, even an exception thrown by `std::cout` --- frees the string automatically.
 That is the whole point of RAII.
 
-**14. Write a program that uses `unique_ptr::get()` to call a C-style API.**
+**14. Write a program that uses `std::unique_ptr<int>` to wrap a heap integer and then passes the underlying raw pointer to a small C-style function**
+
+```cpp
+void c_api(int *p) {
+    *p += 1;
+}
+```
+
+**Use `.get()` to obtain the raw pointer, call `c_api`, and then print the value.**
+**Why is it important that the `unique_ptr` *keeps* ownership across the call to `c_api` --- in particular, why must `c_api` not call `delete` on its parameter?**
 
 ```cpp
 #include <iostream>
@@ -3380,7 +4129,7 @@ If it did, the `unique_ptr` would later run its own destructor and call `delete`
 The rule for raw pointers obtained via `.get()` is "look but do not delete": treat them as observers, never as owners.
 If a function genuinely needs to take ownership instead, hand it the `unique_ptr` itself with `std::move`, which transfers the ownership cleanly.
 
-**15. Think about it: What happens in memory when a `std::string` is moved?**
+**15. Think about it: When a `std::string` is moved, no heap memory is allocated or freed. Explain what happens on the stack and on the heap during the move. Why is a move constant-time while a copy is proportional to the string's length?**
 
 A `std::string` typically stores three values on the stack: a pointer to a heap-allocated character buffer, the string's length, and its capacity.
 When you move a string, the move constructor copies those three stack values (the pointer, length, and capacity) from the source to the destination.
@@ -3394,7 +4143,17 @@ A copy, by contrast, must allocate a new heap buffer of the same size and then c
 The time is proportional to the string's length.
 For a short string that is negligible, but for a string with millions of characters the difference between a pointer swap and a full memory copy is enormous.
 
-**16. What is wrong with `return std::move(v)`?**
+**16. What is wrong with this function?**
+
+```cpp
+std::vector<int> make_data() {
+    std::vector<int> v = {1, 2, 3, 4, 5};
+    return std::move(v);
+}
+```
+
+**The function compiles and runs, but it is slower than it should be.**
+**What optimization does the explicit `std::move` defeat, and what should the return statement look like instead?**
 
 The function compiles and returns the correct result, but the explicit `std::move` defeats **copy elision** (also called return value optimization, or RVO).
 
@@ -3414,15 +4173,23 @@ std::vector<int> make_data() {
 **17. What does this print?**
 
 ```cpp
-auto a = std::make_shared<std::string>("Killing Me Softly");
-std::cout << a.use_count() << std::endl;
+#include <iostream>
+#include <memory>
+#include <string>
 
-auto b = a;
-std::cout << a.use_count() << std::endl;
+int main() {
+    auto a = std::make_shared<std::string>("Killing Me Softly");
+    std::cout << a.use_count() << std::endl;
 
-auto c = std::move(a);
-std::cout << (a == nullptr) << std::endl;
-std::cout << b.use_count() << std::endl;
+    auto b = a;
+    std::cout << a.use_count() << std::endl;
+
+    auto c = std::move(a);
+    std::cout << (a == nullptr) << std::endl;
+    std::cout << b.use_count() << std::endl;
+
+    return 0;
+}
 ```
 
 It prints:
@@ -3438,7 +4205,41 @@ It prints:
 - After copying `a` to `b`, the reference count is 2.
 - After moving `a` to `c`, `a` is now `nullptr` (prints `1` for the comparison). The move transferred `a`'s ownership to `c` without changing the reference count, so `b.use_count()` is still 2 (shared between `b` and `c`).
 
-**18. What does the `weak_ptr` "Doll Parts" example print?**
+**18. What does this print?**
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+int main() {
+    auto song = std::make_shared<std::string>("Doll Parts");
+    std::weak_ptr<std::string> watcher = song;
+
+    std::cout << "before: count=" << song.use_count()
+              << " expired=" << watcher.expired() << "\n";
+
+    if (auto live = watcher.lock()) {
+        std::cout << "alive: " << *live << "\n";
+    }
+
+    song.reset();
+
+    std::cout << "after:  count=" << watcher.use_count()
+              << " expired=" << watcher.expired() << "\n";
+    if (auto live = watcher.lock()) {
+        std::cout << "alive: " << *live << "\n";
+    } else {
+        std::cout << "expired\n";
+    }
+    return 0;
+}
+```
+
+**Why does the second `lock()` produce an empty `shared_ptr`?**
+**What would happen if the program tried `*watcher` directly instead of using `lock()`?**
+
+It prints:
 
 ```
 before: count=1 expired=0
@@ -3483,6 +4284,9 @@ private:
 public:
     Track(const std::string &t) : title(t) {}
 
+    Track(const Track &) = default;
+    Track &operator=(const Track &) = default;
+
     Track(Track &&other)
         : title(std::move(other.title)),
           samples(std::move(other.samples)) {}
@@ -3490,8 +4294,9 @@ public:
 ```
 
 The move constructor is missing `noexcept`.
-`std::vector` will only move elements during reallocation if the move constructor promises not to throw.
+For a copyable class like this one, `std::vector` will only move elements during reallocation if the move constructor promises not to throw.
 Without `noexcept`, the vector falls back to copying because a failed move mid-reallocation would leave the vector in a broken state --- some elements moved, others lost.
+(If the class were move-only --- no copy operations at all --- the vector would have no choice but to move even without `noexcept`.)
 The fix:
 
 ```cpp
@@ -3579,14 +4384,14 @@ Friendship is not transitive.
 But that does not give `C` any access to `A`.
 For `C` to access `A`'s private members, `A` would need to declare `C` as a friend directly.
 
-**8. How many of the five special member functions do you need to write?**
+**8. A class has a `std::string name`, a `std::vector<int> scores` with 3 elements, and an `int id`. How many of the five special member functions do you need to write if all members are standard library types or built-in types?**
 
 Zero.
 All members (`std::string`, `std::vector<int>`, and `int`) are types that manage themselves.
 The compiler-generated destructor, copy constructor, copy assignment, move constructor, and move assignment all do the right thing.
 This is the Rule of Zero in action.
 
-**9. Write a class called `Album` with private members, a parameterized constructor, a `const` print function, an overloaded `==` operator, and a friend `operator<<`.**
+**9. Write a class called `Album` with private members for `title` (string), `artist` (string), and `track_count` (int). Give it a parameterized constructor, a `const` member function that prints the album info, an overloaded `==` operator that compares all three fields, and a friend `operator<<` for output. Test it in `main()` by creating two albums, printing them with `<<`, and comparing them.**
 
 ```cpp
 #include <iostream>
@@ -3636,7 +4441,17 @@ int main() {
 }
 ```
 
-**10. Write a `Buffer` with all five special members.**
+**10. Write a program that defines a class `Buffer` that owns a heap-allocated `char *` and a `size_t` length. Implement all five special member functions explicitly:**
+
+- destructor
+- copy constructor
+- copy assignment operator
+- move constructor (mark `noexcept`)
+- move assignment operator (mark `noexcept`)
+
+**Add a small helper that prints which special member is running ("copy ctor", "move ctor", and so on) so you can watch them fire.**
+**In `main`, create one `Buffer`, copy it into another, move-construct a third, and let all of them go out of scope.**
+**Trace the output by hand before you run it and confirm it matches.**
 
 ```cpp
 #include <cstring>
@@ -3649,7 +4464,7 @@ class Buffer {
 public:
     explicit Buffer(std::size_t n)
         : data(new char[n]), len(n) {
-        std::cout << "default ctor (size " << len << ")\n";
+        std::cout << "ctor (size " << len << ")\n";
     }
 
     ~Buffer() {
@@ -3695,7 +4510,7 @@ public:
 };
 
 int main() {
-    Buffer a(8);                  // default ctor
+    Buffer a(8);                  // ctor
     Buffer b = a;                 // copy ctor
     Buffer c = std::move(a);      // move ctor
     return 0;                     // dtors for c, b, a (a now owns nothing)
@@ -3705,24 +4520,53 @@ int main() {
 Expected output:
 
 ```
-default ctor (size 8)
+ctor (size 8)
 copy ctor
 move ctor
+dtor (size 8)
+dtor (size 8)
 dtor (size 0)
-dtor (size 8)
-dtor (size 8)
 ```
 
 Notes:
 
+- Local objects are destroyed in reverse declaration order, so `c` (size 8) goes first, then `b` (size 8), and the moved-from `a` (size 0) last.
 - The destructor still runs on the moved-from `a`, but its `len` is now `0` and `data` is `nullptr`, so the `delete[]` is a harmless no-op (`delete[] nullptr` is well-defined).
 - Both move operations are marked `noexcept`. That is required if we want `std::vector<Buffer>` to use them during reallocation (see exercise 12).
 - Both assignment operators check `this != &other` to handle the self-assignment case (see exercise 11).
 
-**11. Where is the bug? Self-assignment.**
+**11. Where is the bug?**
 
-When the right-hand side and the left-hand side are the same object, this `operator=` first runs `delete[] data` and then tries to copy from `other.data` --- but `other` *is* `*this`, so `other.data` is now a dangling pointer to memory we just freed.
-The subsequent loop reads from freed memory, which is undefined behavior, and the resulting `Buffer` is left in a corrupted state.
+```cpp
+class Buffer {
+    char *data;
+    std::size_t len;
+public:
+    Buffer(std::size_t n) : data(new char[n]), len(n) {}
+    ~Buffer() { delete[] data; }
+
+    Buffer &operator=(const Buffer &other) {
+        delete[] data;
+        len = other.len;
+        data = new char[len];
+        for (std::size_t i = 0; i < len; ++i) data[i] = other.data[i];
+        return *this;
+    }
+};
+
+int main() {
+    Buffer b(100);
+    b = b;            // assign to itself
+    return 0;
+}
+```
+
+**Walk through what happens inside `operator=` when the right-hand side *is* the left-hand side.**
+**Why do the buffer's contents end up destroyed, and what is the standard fix?**
+
+When the right-hand side and the left-hand side are the same object, this `operator=` first runs `delete[] data`, destroying the only copy of the contents.
+It then allocates a fresh buffer and assigns it to `data` --- but `other` *is* `*this`, so `other.data` now points at that same fresh, uninitialized buffer.
+The loop dutifully copies each uninitialized byte onto itself: no crash, but the buffer's contents are gone, silently replaced with garbage (and reading those indeterminate bytes is not even well-defined).
 
 The standard fix is to detect self-assignment and bail out before doing any destructive work:
 
@@ -3750,9 +4594,12 @@ Buffer &operator=(Buffer other) {     // by value: makes a copy first
 }                                      // other's destructor frees the old buffer
 ```
 
-Either form makes `b = b;` a safe no-op instead of a crash.
+(Note that copy-and-swap relies on a correct *deep* copy constructor --- the exercise's class does not define one, so the implicitly generated shallow copy would lead to a double free.
+Write the copy constructor first.)
 
-**12. Think about it: Why does `std::vector` insist on `noexcept` move?**
+Either form makes `b = b;` a safe no-op instead of silent data loss.
+
+**12. Think about it: Why does `std::vector` insist that the move constructor and move assignment operator be marked `noexcept` before it will use them? What does the vector do *instead* if your move operations are not `noexcept`, and what is the performance cost?**
 
 When `std::vector` runs out of capacity and has to grow, it allocates a new (larger) buffer and has to relocate every existing element from the old buffer into the new one.
 Vector wants this relocation to be **strongly exception safe**: if anything goes wrong partway through, the vector should be left exactly as it was before the `push_back` --- the old buffer still intact, no elements lost, no half-moved state.
@@ -3767,43 +4614,61 @@ For a vector of 10,000 `std::string`s, that is 10,000 heap allocations and 10,00
 For a vector of `noexcept`-movable strings, it is 10,000 pointer swaps.
 This is why mature classes that own resources almost always mark their move operations `noexcept`.
 
-**13. What does this print?**
+**13. What does this print? Trace through the output, paying attention to which special member function is called for each line.**
 
 ```cpp
-Track a("Only Happy When It Rains");
-Track b = a;
-Track c = std::move(a);
-Track d = Track("Standing Outside a Broken Phone Booth");
+#include <iostream>
+#include <string>
+#include <utility>
+
+class Track {
+    std::string title;
+public:
+    Track(const std::string &t) : title(t) {
+        std::cout << "ctor: " << title << "\n";
+    }
+    Track(const Track &other) : title(other.title) {
+        std::cout << "copy: " << title << "\n";
+    }
+    Track(Track &&other) noexcept : title(std::move(other.title)) {
+        std::cout << "move: " << title << "\n";
+    }
+};
+
+int main() {
+    Track a("Only Happy When It Rains");
+    Track b = a;
+    Track c = std::move(a);
+    Track d = Track("Standing Outside a Broken Phone Booth");
+    return 0;
+}
 ```
 
-Without copy elision on the last line:
+**(Note: since C++17 the last move is *guaranteed* to be elided --- `d` is constructed in place.**
+**Explain what the output is, and what it would have been if the temporary were materialized and moved.)**
+
+The output is:
 
 ```
 ctor: Only Happy When It Rains
 copy: Only Happy When It Rains
 move: Only Happy When It Rains
 ctor: Standing Outside a Broken Phone Booth
-move: Standing Outside a Broken Phone Booth
 ```
 
 - `Track a("Only Happy When It Rains")` calls the regular constructor.
 - `Track b = a` calls the copy constructor because `a` is an lvalue.
 - `Track c = std::move(a)` calls the move constructor because `std::move(a)` casts `a` to an rvalue.
-- `Track("Standing Outside a Broken Phone Booth")` calls the regular constructor to create a temporary, then the move constructor fires to initialize `d` from that temporary.
+- `Track d = Track("Standing Outside a Broken Phone Booth")` constructs `d` directly in place: since C++17, copy elision here is *guaranteed*, so there is no temporary and no move.
 
-With copy elision (which modern compilers apply by default):
+If the temporary were materialized and moved (as could happen before C++17), the last line would instead produce two lines of output:
 
 ```
-ctor: Only Happy When It Rains
-copy: Only Happy When It Rains
-move: Only Happy When It Rains
 ctor: Standing Outside a Broken Phone Booth
+move: Standing Outside a Broken Phone Booth
 ```
 
-The compiler constructs `d` directly from the constructor arguments, skipping the move entirely.
-The last `Track("Standing Outside a Broken Phone Booth")` creates `d` in place --- no temporary, no move.
-
-**14. Think about it: Why does passing `unique_ptr` by value require `std::move`?**
+**14. Think about it: Consider a function that accepts a `std::unique_ptr<Widget>` by value. Why does this force the caller to use `std::move`? What happens to the caller's `unique_ptr` after the call? Why is this a useful pattern for expressing "this function takes ownership"?**
 
 `std::unique_ptr` has a deleted copy constructor --- it cannot be copied.
 The only way to initialize the function parameter is by *moving* from the caller's `unique_ptr`.
@@ -3817,7 +4682,7 @@ When you see `take_widget(std::move(widget))`, both the reader and the compiler 
 The caller cannot accidentally use `widget` after the call expecting it to still hold something --- it is obviously empty.
 This is much clearer than passing a raw pointer, where it is ambiguous whether the function takes ownership or just borrows the pointer.
 
-**15. Calculation: `sizeof(Buffer)` and `sizeof(Track)`.**
+**15. Calculation: On a typical 64-bit Linux system where `std::string` is 32 bytes and `std::size_t` is 8 bytes, what is `sizeof(Buffer)` for the class in exercise 11 (`char *data; std::size_t len;`)? What is `sizeof(Track)` for the class in exercise 13 (a single `std::string title;` member)? Account for any padding the compiler is likely to insert.**
 
 `Buffer` has a `char *data` (8 bytes on a 64-bit system) and a `std::size_t len` (8 bytes).
 Both members are 8-byte aligned and the pointer comes first, so the layout is `data` followed immediately by `len` with no padding.
@@ -3875,7 +4740,7 @@ The mangled names ensure each overload has a unique symbol so the linker can tel
 C does not mangle names because C does not support function overloading.
 Each function name is unique, so the compiler stores it as-is.
 
-**3. A coworker gets a linker error about an undefined symbol when calling a C library function. What is the fix?**
+**3. A coworker writes the following C++ code to call a C library function but gets a linker error about an undefined symbol. What is the fix?**
 
 ```cpp
 // my_program.cpp
@@ -3936,7 +4801,7 @@ It prints:
 When printed as a `char`, it displays the character `0`.
 When cast to `int` and printed, it displays the numeric value `48`.
 
-**6. Explain why this C-style cast is dangerous and what C++ cast you should use instead.**
+**6. Explain why this C-style cast is dangerous and what C++ cast you should use instead:**
 
 ```cpp
 void* ptr = get_some_pointer();
@@ -3956,12 +4821,20 @@ int* ip = static_cast<int*>(ptr);
 `static_cast` is more restrictive and makes the intent clear.
 If you need to reinterpret the bits of one pointer type as another, use `reinterpret_cast`, which explicitly signals the danger.
 
-**7. What is the difference between `static_cast<int>(3.14)` and `reinterpret_cast<int>(3.14)`? Will the second one even compile?**
+**7. Both of the following try to convert a `double` value of `3.14` to an `int`:**
+
+```cpp
+static_cast<int>(3.14)
+reinterpret_cast<int>(3.14)
+```
+
+**What does each one do?**
+**Will the second one even compile?**
 
 `static_cast<int>(3.14)` performs a meaningful conversion: it converts the `double` value 3.14 to the `int` value 3 by truncating the decimal part.
 
 `reinterpret_cast<int>(3.14)` will **not compile**.
-`reinterpret_cast` works on pointers and references, not on values.
+`reinterpret_cast` works on pointers, references, and pointer-integer conversions --- not on arbitrary values.
 It reinterprets the bit pattern of one type as another, but you cannot `reinterpret_cast` a floating-point value directly to an integer value.
 
 **8. What does the `#ifdef __cplusplus` guard accomplish in a C/C++ shared header? When would the code inside the `#ifdef` be skipped?**
@@ -3972,7 +4845,7 @@ When the header is compiled by a C compiler, `__cplusplus` is not defined, so th
 
 This allows the same header to work correctly in both C and C++ code.
 
-**9. Write a program that takes an `int` and prints it as a `char`, and takes a `char` and prints its integer value. Use `static_cast` for both conversions.**
+**9. Write a program that takes an `int` and prints it as a `char`, and takes a `char` and prints its integer value. Use `static_cast` for both conversions. Test it with the value `65` and the character `'Z'`.**
 
 ```cpp
 #include <iostream>
@@ -4023,7 +4896,12 @@ It prints:
 `duration_cast<seconds>` truncates toward zero, giving 5 seconds (not 6).
 The fractional 750 milliseconds is discarded.
 
-**11. Why should you use `std::chrono::steady_clock` instead of `std::chrono::system_clock` when measuring how long a piece of code takes to run?**
+**11. The `<chrono>` library offers two general-purpose clocks:**
+
+- `std::chrono::steady_clock`
+- `std::chrono::system_clock`
+
+**Why should you use the first to measure how long a piece of code takes to run?**
 
 `steady_clock` is guaranteed to never be adjusted --- it always moves forward at a constant rate.
 `system_clock` represents the system's wall clock, which can jump forward or backward when the clock is adjusted (e.g., NTP synchronization, daylight saving time changes, or manual adjustments).
@@ -4047,7 +4925,7 @@ int main() {
 There are two problems:
 
 1. `srand()` is never called, so `rand()` uses the same default seed every time the program runs, producing the same "random" number.
-2. Even with `srand()`, `rand() % 100` introduces bias --- if `RAND_MAX` is not evenly divisible by 100, some values are slightly more likely than others.
+2. Even with `srand()`, `rand() % 100` introduces bias --- if the number of possible values (`RAND_MAX + 1`) is not evenly divisible by 100, some results are slightly more likely than others.
 
 The proper C++ approach is to use `<random>` with `std::mt19937` and `std::uniform_int_distribution<int>(1, 100)`.
 
@@ -4088,7 +4966,7 @@ Roll 9: 2 + 2 = 4
 Roll 10: 4 + 5 = 9
 ```
 
-**14. Write a program that generates 10 random values using `std::normal_distribution` with a mean of 100 and a standard deviation of 15.**
+**14. Write a program that uses `std::normal_distribution<double>` to generate 10 random values with a mean of 100 and a standard deviation of 15. Print each value. Are most values close to 100?**
 
 ```cpp
 #include <iostream>
@@ -4111,7 +4989,37 @@ int main() {
 Most values will be close to 100.
 About 68% of values should fall between 85 and 115 (within one standard deviation of the mean), and about 95% should fall between 70 and 130 (within two standard deviations).
 
-**15. What does the `dynamic_cast` example print?**
+**15. What does this print?**
+
+```cpp
+#include <iostream>
+
+struct Track { virtual ~Track() = default; };
+struct AudioTrack : Track { void play() { std::cout << "audio\n"; } };
+struct VideoTrack : Track { void play() { std::cout << "video\n"; } };
+
+void play(Track *t) {
+    if (auto *a = dynamic_cast<AudioTrack *>(t)) {
+        a->play();
+    } else if (auto *v = dynamic_cast<VideoTrack *>(t)) {
+        v->play();
+    } else {
+        std::cout << "unknown\n";
+    }
+}
+
+int main() {
+    AudioTrack a;
+    VideoTrack v;
+    Track      t;
+    play(&a);
+    play(&v);
+    play(&t);
+    return 0;
+}
+```
+
+**Why does the base class need a `virtual` destructor for `dynamic_cast` to work here?**
 
 It prints:
 
@@ -4132,7 +5040,28 @@ For the plain `Track t`, neither cast succeeds and the function falls through to
 Adding `virtual ~Track() = default;` to the base class is the minimum that gives `Track` a vtable; without it, the program would not compile (`source type is not polymorphic`).
 A virtual destructor is also exactly what you want anyway --- without it, deleting a derived object through a `Track *` would only run `Track`'s destructor.
 
-**16. Where is the bug? `const_cast` on a string literal-like `const std::string`.**
+**16. Where is the bug?**
+
+```cpp
+#include <cctype>
+#include <iostream>
+#include <string>
+
+void uppercase_first(const std::string &s) {
+    char &first = const_cast<char &>(s[0]);
+    first = static_cast<char>(std::toupper(first));
+}
+
+int main() {
+    const std::string title = "wonderwall";
+    uppercase_first(title);
+    std::cout << title << "\n";
+    return 0;
+}
+```
+
+**The function compiles, but it is undefined behavior at runtime.**
+**Explain what `const_cast` is doing here and why this particular use of it is broken.**
 
 `const_cast` strips the `const` from a reference or pointer, allowing you to modify what was originally declared as `const`.
 The compiler will let you do this --- but the behavior is **only** defined if the underlying object is not actually `const`.
@@ -4162,7 +5091,17 @@ int main() {
 The general rule for `const_cast`: only use it to remove `const` from something that was *not* originally declared `const`, typically when interfacing with an old C API that forgot to mark a pointer parameter `const`.
 Anywhere else, prefer to fix the types so the cast is unnecessary.
 
-**17. Calculation: `<cstdint>` fixed-width types.**
+**17. Calculation: Given the fixed-width types from `<cstdint>`, how many bytes does each of the following take, and what is the largest value it can hold?**
+
+```cpp
+int8_t   a;
+uint8_t  b;
+int16_t  c;
+uint32_t d;
+int64_t  e;
+```
+
+**Why prefer `int32_t` over `int` when you need exactly 32 bits, and why prefer `int` over `int32_t` for ordinary counters?**
 
 | Type       | Bytes | Largest value                              |
 |:-----------|:-----:|:-------------------------------------------|
@@ -4179,7 +5118,7 @@ For ordinary counters, indices, and arithmetic, prefer plain `int`.
 The compiler picks whatever the platform's "natural" word size is, which is usually the fastest type and avoids the noisy `int32_t`/`int64_t` spelling on every loop variable.
 The rule of thumb is: `int` for everyday code, `int32_t` / `int64_t` (and friends) when the width is part of the contract.
 
-**18. Think about it: `std::exit(0)` vs `return 0;` from `main`.**
+**18. Think about it: What is the difference between calling `std::exit(0)` and writing `return 0;` from `main`? Specifically, which destructors run in each case? Sketch a small program with a class that prints from its destructor and predict what each version prints.**
 
 `return 0;` from `main` performs a normal function return, which means C++ first runs the destructors of all local objects in `main` (and then any globals, in reverse order of construction).
 
@@ -4223,7 +5162,7 @@ With `std::exit(0)` the program prints **nothing** --- both `Local` destructors 
 This is exactly why `std::exit` is a sledgehammer: anything an RAII object was holding open (a file, a database connection, a temporary directory) is left dangling.
 Prefer `return` from `main` whenever possible, and reserve `std::exit` for cases where you want to abort early from deep inside a call chain *and* you have already cleaned up anything that needed cleaning up.
 
-**19. Write a program that seeds `std::mt19937` from `std::random_device`.**
+**19. Write a program that seeds a `std::mt19937` from `std::random_device`, then uses it with a `std::uniform_int_distribution<int>(1, 100)` to print 10 random integers in the range `[1, 100]`. Now run the program twice and compare: do you get the same numbers each time? Then change the program to use a fixed seed (`std::mt19937 rng(42);`) and run it twice again. What changed, and why?**
 
 ```cpp
 #include <iostream>
@@ -4255,7 +5194,7 @@ then the engine starts in exactly the same state every run, and **the two runs p
 That is a feature, not a bug: it makes randomized programs reproducible (useful for tests and for debugging a problem you only see "sometimes") at the cost of being predictable.
 For anything where unpredictability matters (games, simulations, anything user-facing), seed from `random_device`; for tests and reproducible experiments, seed from a known constant.
 
-**20. Calculation: area and circumference of a circle with `r = 4.0`.**
+**20. Calculation: Use `<cmath>` and `<numbers>` to write the area and circumference of a circle with radius `r = 4.0`. Show the formulas you used and the values you computed. Why is `std::numbers::pi` preferable to typing `3.14159265` in your code?**
 
 ```cpp
 #include <cmath>
@@ -4283,7 +5222,22 @@ circumference: 25.1327
 A hand-typed literal like `3.14159265` is harder to verify, easy to typo, and still less precise than the library constant.
 On top of that, the named constant signals intent: a future reader sees "the value is pi" rather than having to mentally compare a row of digits to one they remember.
 
-**21. Predict the output of the floor/ceil/round/fmod example.**
+**21. What does this print?**
+
+```cpp
+#include <cmath>
+#include <iostream>
+
+int main() {
+    std::cout << std::floor(-1.5) << " "
+              << std::ceil(-1.5)  << " "
+              << std::round(-1.5) << " "
+              << std::fmod(7.5, 2.0) << "\n";
+    return 0;
+}
+```
+
+**Predict each value before you compile it.**
 
 It prints `-2 -1 -2 1.5`.
 
@@ -4294,7 +5248,7 @@ It prints `-2 -1 -2 1.5`.
 
 The asymmetry between `floor` and `round` for negative halves is the most common surprise here.
 
-**22. Think about it: uninitialized `int x` reads.**
+**22. Think about it: A program reads `int x;` without initializing it and then runs `std::cout << x;`. The first time you run it, it prints `0`. The second time, it prints `32767`. The third time, it prints `0` again. Is the program correct? What is the rule that makes this undefined behavior, and what should you do to make the program reliably print `0`?**
 
 The program is **not** correct.
 Reading an uninitialized non-static local variable is undefined behavior.
@@ -4312,7 +5266,30 @@ int x{0};       // explicit, narrowing-checked
 The first form, brace-initialization with empty braces, is sometimes called "value initialization" --- it guarantees zero for built-in types and the default-constructed value for class types.
 Get into the habit of doing this for every local variable: even if today's compiler appears to give you `0`, tomorrow's compiler is allowed to give you garbage.
 
-**23. Debugger session for the off-by-one vector loop.**
+**23. Write a debugger session (in pseudocode --- you do not have to actually run it). Given this buggy program:**
+
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> v;
+    for (int i = 0; i < 5; ++i) {
+        v.push_back(i);
+    }
+    for (std::size_t i = 0; i <= v.size(); ++i) {   // bug
+        std::cout << v[i] << "\n";
+    }
+    return 0;
+}
+```
+
+**List the gdb (or lldb) commands you would issue to:**
+
+- set a breakpoint inside the second loop,
+- run the program,
+- inspect `i` and `v.size()` at each iteration,
+- identify the iteration on which the program reads past the end of `v`.
 
 Compile with debug info and no optimization:
 

@@ -24,6 +24,8 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Weezer (band name in raw-string SQL example)
 - Mambo No. 5 --- Lou Bega (string-suffix concatenation example)
 - Genie in a Bottle --- Christina Aguilera (string-suffix exercise)
+- Wannabe --- Spice Girls (substr exercise; repeat of ch08 entry)
+- Wonderwall --- Oasis (case-sensitivity exercise; repeat of ch02 entry)
 
 ## Chapter 4: Expressions
 - Jump Around --- House of Pain
@@ -35,6 +37,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Zombie --- The Cranberries
 - Black Hole Sun --- Soundgarden (if-with-initializer example)
 - Mr. Jones --- Counting Crows (if-with-initializer exercise)
+- Wonderwall / Creep / Linger (range-for exercise; repeats of ch02/ch08 entries)
 
 ## Chapter 6: Functions
 - I Want It That Way --- Backstreet Boys
@@ -47,12 +50,13 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Steal My Sunshine --- Len (rvalue reference example)
 
 ## Chapter 7: Numbers
-- (none --- Spanish phrases only)
+- (none)
 
 ## Chapter 8: Containers
 - Wannabe --- Spice Girls
 - A Little Respect --- Erasure
 - Oasis (band name used in example)
+- Blackstreet (band name used in example)
 - Creep --- Radiohead
 - No Rain --- Blind Melon
 - Linger --- The Cranberries
@@ -62,6 +66,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Closing Time --- Semisonic
 - Smooth --- Santana ft. Rob Thomas
 - Tubthumping --- Chumbawamba
+- "Yo me la paso bien" (Spanish phrase in stringstream exercise)
 
 ## Chapter 10: std::format and std::print
 - Santana (artist name reused from ch09 intro example)
@@ -69,10 +74,13 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Jumper --- Third Eye Blind
 - Say My Name --- Destiny's Child
 - You Get What You Give --- New Radicals
+- I Want It That Way --- Backstreet Boys (exercise; repeat of ch06 entry)
+- Smells Like Teen Spirit --- Nirvana (exercise; repeat of ch01 entry)
 
 ## Chapter 11: Exceptions
 - The Freshmen --- The Verve Pipe
 - Save Tonight --- Eagle-Eye Cherry
+- Torn / Vogue / Iris (stack-unwinding exercise; repeats of ch14/ch03 entries)
 
 ## Chapter 12: Classes
 - Enter Sandman --- Metallica
@@ -80,7 +88,9 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - All Star --- Smash Mouth
 - Basket Case --- Green Day
 - Virtual Insanity --- Jamiroquai
-- Wonderwall --- Oasis (Playlist `private` exercise)
+- Wonderwall --- Oasis (Playlist `private` exercise; repeat of ch02 entry)
+- Torn --- Natalie Imbruglia (constructor examples; repeat of ch14 entry)
+- Kiss from a Rose --- Seal (constructor examples; repeat of ch14 entry)
 
 ## Chapter 13: Memory Management
 - Under the Bridge --- Red Hot Chili Peppers
@@ -94,7 +104,8 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Black --- Pearl Jam (weak_ptr cycle example)
 - Karma Police --- Radiohead (weak_ptr lock example)
 - Doll Parts --- Hole (weak_ptr exercise)
-- Wonderwall --- Oasis (raw `new` answer-key example)
+- Wonderwall --- Oasis (raw `new` leak exercise; repeat of ch02 entry)
+- Wannabe --- Spice Girls (unique_ptr answer-key example; repeat of ch08 entry)
 
 ## Chapter 14: Special Members and Friends
 - Torn --- Natalie Imbruglia
@@ -105,9 +116,11 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Standing Outside a Broken Phone Booth --- Primitive Radio Gods (move constructor exercise)
 - "Yo te quiero" (Spanish phrase in `Lyric` move-constructor example)
 - Tell Me Why --- Backstreet Boys (`Lyric` move-constructor example)
+- DJ Jazzy Jeff (friend-class example)
 
 ## Chapter 15: Odds and Ends
 - La Copa de la Vida --- Ricky Martin
 - Believe --- Cher
 - "Cinco tracks al azar" (Spanish phrase used in random numbers example)
-- Wonderwall --- Oasis (`const_cast` exercise)
+- "Diez puntuaciones al azar" (Spanish phrase in normal-distribution example)
+- Wonderwall --- Oasis (`const_cast` exercise; repeat of ch02 entry)
