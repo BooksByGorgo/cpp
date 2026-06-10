@@ -100,9 +100,10 @@
 \node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.5615,5.125)$)
   {\fontsize{13}{15}\selectfont\bfseries Gorgo Starting C++ and C};
 
-% "Gorgo Book" at the base of the spine
-\node[anchor=center, rotate=-90, text=accent] at ($(O)+(7.5615,1.25)$)
-  {\fontsize{10}{12}\selectfont\scshape Gorgo Book};
+% "Gorgo Book" at the base of the spine, horizontal so it reads
+% normally when the book is upright on a shelf
+\node[anchor=center, text=accent, align=center] at ($(O)+(7.5615,1.25)$)
+  {\fontsize{10}{12}\selectfont\scshape Gorgo\\Book};
 
 % ============================================================
 % BACK COVER  (left side)
