@@ -14,7 +14,7 @@ run `make` in sc++c/ to build both PDFs. the Makefile automatically injects the 
 
 - combines sc++ (Starting C++) and c4c++ (C for C++ Programmers) into one book
 - lulu executive trim: 7x10in (paperwidth=7in, paperheight=10in)
-- margins: inner=0.8in, outer=0.7in, top/bottom=0.75in
+- margins: inner=0.8in, outer=0.7in, top=0.6in, bottom=0.9in, footskip=0.3in (footer must stay 0.5in+ from the trim edge for lulu; text height is 8.5in --- changing it reflows pages and invalidates the cover spine width)
 - text width is 5.5in --- body code blocks must fit within 70 monospace characters, code inside callouts within 60 (the tcolorbox icon column and padding eat the difference; a 61-char callout line touches the box frame)
 - verbatim overflow produces no overfull warning in the LaTeX log --- check by counting characters in the markdown; emoji render roughly double width
 - when a code line is too wide, first tighten the whitespace before aligned trailing `//` comments, then trim the comment text; restructure the code itself only as a last resort

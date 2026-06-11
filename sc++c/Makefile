@@ -43,8 +43,9 @@ PANDOC_OPTS := $(FILTER) \
                -M subtitle="$(DATE)" \
                -V geometry:"paperwidth=7in" \
                -V geometry:"paperheight=10in" \
-               -V geometry:"top=0.75in" \
-               -V geometry:"bottom=0.75in" \
+               -V geometry:"top=0.6in" \
+               -V geometry:"bottom=0.9in" \
+               -V geometry:"footskip=0.3in" \
                -V geometry:"inner=0.8in" \
                -V geometry:"outer=0.7in" \
                -V fontsize=11pt
@@ -67,7 +68,7 @@ all: lulu-sc++c.pdf lulu-cover.pdf
 .lulu-c4-author.md: ../c4c++/author-intro.md
 	sed '1{/^\\newpage$$/d;}' $< > $@
 
-lulu-sc++c.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/ieee.csl
+lulu-sc++c.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/ieee.csl Makefile
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
 
 # --- Cover ---
