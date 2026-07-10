@@ -45,6 +45,11 @@ a collection of programming texts --- focused on C++ for the moment --- suitable
 - operators
 - c4c++ (C for C++ programmers)
 
+## lectures
+
+- lecture notes and slides live in the private `cpp-instructor` repo (sibling checkout `../cpp-instructor`) --- the notes contain quiz answers and must stay private
+- slide decks are published as static files committed under `docs/<book>/lectures/` by that repo's `publish-slides.sh`; do not edit them here and do not add lecture generation back to `build-site.sh`
+
 ## implementing github issues
 
 when committing a change based on an issue (or set of issues)
