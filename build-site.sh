@@ -335,7 +335,7 @@ build_lectures() {
     } > "$index_dest"
 }
 
-# Build the three books, the sc++ lectures, and the extras in parallel so
+# Build the three books, their lectures, and the extras in parallel so
 # at least four top-level jobs are running at any given time. Combined with
 # make -j4 inside each book's PDF build, peak parallelism is ~12 concurrent
 # pandoc+lualatex runs during the PDF phase.
@@ -343,6 +343,7 @@ build_book sc++  starting-cpp   "Gorgo Starting C++"          "sc++" &
 build_lectures sc++/lectures starting-cpp/lectures "Gorgo Starting C++" &
 build_book cc++  continuing-cpp "Gorgo Continuing C++"        "cc++" &
 build_book c4c++ c-for-cpp      "Gorgo C for C++ Programmers" "c4c++" &
+build_lectures c4c++/lectures c-for-cpp/lectures "Gorgo C for C++ Programmers" &
 
 # extras --- run in parallel with the book builds.
 (
