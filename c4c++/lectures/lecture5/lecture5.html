@@ -184,7 +184,7 @@ free(nums);
 
 - *For:* safety, predictable failure
 - *Against:* the checks clutter the code; the error paths they guard almost never run
-- Safety-critical systems still need the check --- though many forbid dynamic allocation anyway
+- Safety-critical systems: often forbid dynamic allocation entirely
 
 Rule of thumb: for this class, check.
 
@@ -204,17 +204,17 @@ Rule of thumb: for this class, check.
 ```c
 int total = 0;
 
-void add(int n) {
-    total += n;
-}
+void add(int n) { total += n; }
 
 int main(void) {
     add(10); add(20);
     printf("%d\n", total);
 
-    int *d = malloc(3*sizeof(int));
+    int *d =
+        malloc(3 * sizeof(int));
     if (!d) return 1;
-    d[0]=1985; d[1]=1986; d[2]=1987;
+    d[0]=1985; d[1]=1986;
+    d[2]=1987;
     // ...
     free(d);
 }
@@ -267,7 +267,7 @@ printf("%d\n", p[0]);
 1. Ben got this wrong
 
 ---
-# Calculation
+# How many bytes does malloc get?
 
 `malloc(5 * sizeof(int))` on a 32-bit-int system asks for:
 

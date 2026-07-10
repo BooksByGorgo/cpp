@@ -8,9 +8,9 @@
 By the end of this lecture, students should be able to:
 
 - Distinguish a function declaration (prototype) from its definition
-- Explain why `int foo()` and `int foo(void)` differ in C
+- Explain why `int foo()` and `int foo(void)` differ in C17 and earlier, and what C23 changed
 - State that C has no overloading, no defaults, and no references --- and explain the consequences
-- Emulate default arguments with sentinel values and name variations
+- Fake default arguments with sentinel values and name variations
 - Add `const` to pointer parameters and explain the two benefits
 - Choose between pass-by-value and `const T *` for struct parameters
 - Write a recursive function and reason about stack depth
@@ -29,6 +29,8 @@ By the end of this lecture, students should be able to:
 
 **Q.** What does this print?
 
+Inside `main`:
+
 ```c
 int a[] = {10, 20, 30, 40, 50};
 int *p = a + 2;
@@ -43,7 +45,7 @@ E. Ben got this wrong
 
 *Answer: A*
 
-## 1. Declarations vs Definitions (5 min)
+## 1. Declarations vs Definitions (7 min)
 
 ```c
 int add(int a, int b);          // declaration (prototype)
@@ -56,32 +58,35 @@ int add(int a, int b) {         // definition
 - Prototypes live in headers (`.h`); the definition lives in one `.c` file.
 - In C++, a parameterless `foo()` means "no parameters."
 - In C17 and earlier, `foo()` means **unspecified parameters** --- the compiler will not check your call.
-- C23 changed this: `foo()` now means the same as `foo(void)`, matching C++.
-- Our classroom compiler (gcc 15) defaults to C23, so calling `get_score(1, 2, 3)` through a `()` prototype is a hard error ("too many arguments").
-- To demo the historical unchecked-call behavior live, compile with `-std=gnu17`.
+- C23 changed this: `foo()` now means the same as `(void)`, matching C++.
+- Our classroom compiler (gcc 15) defaults to C23, so calling through a `()` prototype with arguments is a hard error.
 
 ```c
 int get_score(void);    // truly no parameters (enforced)
-int get_score();        // C17: unspecified; C23: same as (void)
+int get_score();        // unspecified in C17 and earlier
 ```
 
+**Live demo:** declare `int get_score();`, define it with an empty parameter list, and call `get_score(1, 2, 3)`.
+Compile with `cc -std=c17 -Wall -Wextra -pedantic` --- it compiles clean and runs (the old hole).
+Recompile with the default C23 --- `error: too many arguments to function 'get_score'; expected 0, have 3`.
+
 ::: {.tip}
-**Tip:** Always write `(void)` for an empty parameter list.
-It means "no parameters" in every version of C, no matter which standard the compiler targets.
+**Tip:** Always write `(void)` for an empty parameter list --- it means "no parameters" in every version of C.
+You will see `int main(void)` throughout this book for exactly this reason.
 :::
 
-## 2. No Overloading, No Defaults (5 min)
+## 2. No Overloading, No Defaults (4 min)
 
 - `int max(int, int)` and `double max(double, double)` cannot coexist --- C has no overloading.
 - Standard library convention: `abs` for `int`, `fabs` for `double`, `labs` for `long`.
 - No default arguments: every call site passes every argument.
 - Trade-off: when you see `add(x, y)`, you know exactly which function runs. No ambiguity.
 
-## 3. Default-Argument Workarounds (4 min)
+## 3. Faking Default Arguments (4 min)
 
 C programmers use two conventions to get the effect of default arguments: **sentinel values** and **name variations**.
 
-A sentinel value is a distinguished input --- `0`, `-1`, `NULL` --- that the function treats as "use the default":
+A sentinel is a distinguished input (`0`, `-1`, `NULL`) that the function treats as "use the default":
 
 ```c
 void greet(const char *name, int times) {
@@ -95,7 +100,7 @@ greet("She-Ra", 0);   // prints once (default)
 greet("He-Man", 3);   // prints three times
 ```
 
-Name variations provide several functions with related names; the short name calls the long name with the default filled in:
+Name variations provide related names; the short name calls the long name with the default filled in:
 
 ```c
 void play_n(const char *title, int times) {
@@ -111,6 +116,7 @@ void play(const char *title) {
 
 - The standard library does this everywhere: `printf` is a thin wrapper around `fprintf` that passes `stdout` --- a name variation.
 - `pthread_create` takes an attributes pointer that can be `NULL` to request defaults --- a sentinel value.
+- POSIX loves sentinels: `NULL` often means "I do not care about this output," `-1` often means "use the system default."
 
 ::: {.tip}
 **Tip:** Prefer name variations when the default represents a meaningfully different call (writing to `stdout` vs an arbitrary file).
@@ -177,7 +183,7 @@ int fibonacci(int n) {
 - No stack-overflow exception in C. Running out of stack = crash.
 - For deep recursion, convert to iteration or add memoization.
 
-## 8. Function Pointers (12 min)
+## 8. Function Pointers (10 min)
 
 ```c
 int (*fp)(int, int);    // fp: pointer to function(int,int) -> int
@@ -212,11 +218,11 @@ void apply(binop_fn fn, int x, int y) {
 
 ### Callbacks
 
-- Pass a function pointer to another function, which calls it at the right moment.
+- Pass a function pointer to another function, let it call the function at the right moment.
 - C's answer to lambdas and `std::function`.
 - The canonical example is `qsort` (we will see it in a later chapter).
 
-## 9. Live Coding: Functions Starter (7 min)
+## 9. Live Coding: Functions Starter (5 min)
 
 ```c
 #include <stdio.h>
@@ -293,7 +299,7 @@ E. Ben got this wrong
 
 *Answer: B*
 
-*Instructor note: gcc's uninitialized-variable warning only fires here at `-O2` --- run the live demo with `cc -Wall -Wextra -O2`, not `-O0`.*
+*Instructor note: gcc's `-Wmaybe-uninitialized` fires here at `-O1` and higher --- run the live demo with `cc -Wall -Wextra -O1` (or `-O2`), not `-O0`.*
 
 **Q3.** What does this print?
 
@@ -304,7 +310,10 @@ int apply(int (*fn)(int, int), int a, int b) {
     return fn(a, b);
 }
 
-printf("%d\n", apply(mul, 6, 7));
+int main(void) {
+    printf("%d\n", apply(mul, 6, 7));
+    return 0;
+}
 ```
 
 A. `13`
@@ -323,8 +332,7 @@ E. Ben got this wrong
 ## Key Points to Reinforce
 
 - Always use `(void)` for empty parameter lists
-- No overloading and no defaults in C
-- Fake defaults with sentinel values and name variations
+- No overloading and no defaults in C --- fake defaults with sentinel values or name variations
 - Every parameter is pass-by-value
 - `const T *param` for read-only pointer arguments
 - Pass large structs by `const T *`, not by value

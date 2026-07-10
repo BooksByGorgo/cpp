@@ -7,76 +7,72 @@
 
 By the end of this lecture, students should be able to:
 
-- Explain that the CPU sees only numbers and that types tell the compiler how to interpret them
-- Do arithmetic on `char` values and explain why `'A'` is the same as `65`
-- Describe a pointer as a number that holds a memory address
-- Explain why C has no string type, only `0`-terminated arrays of `char` plus library functions
-- Convert strings to numbers with `strtol` and `strtod` and explain why they beat `atoi`
-- Recall the common integer sizes and ranges and the `char` signedness trap
-- Explain why `0.1 + 0.2` is not exactly `0.3` and why comparing a `float` to a `double` literal can fail
-- Use the C cast `(type)value` and state what a cast does and does not do
-- Spot the classic bug of casting a `char *` to an integer
+- Explain that the CPU sees only numbers and that types tell the compiler how to use them
+- Do arithmetic on `char` values and convert between the `%c` and `%d` views
+- Explain that a pointer is just a number used as a memory address
+- Describe a C string as an array of small integers ending in a `0` byte
+- Convert strings to numbers with `strtol` and explain why it beats `atoi`
+- Look up integer sizes and ranges with `sizeof` and `<limits.h>`
+- Predict the result of unsigned arithmetic like `size_t` subtraction
+- Explain why `float f = 1.2` fails an `f == 1.2` comparison
+- Cast with `(type)value` and state which scalar casts are allowed
+- Spot the `(int)"1999"` trap and fix it with `strtol`
 
 ## Materials
 
 - Live coding terminal with `cc -Wall -Wextra -pedantic`
+- Whiteboard for the integer-size table and byte diagrams
 - Copy of `c4c++/ch09.md` for reference
 
 ---
 
 ## 0. Review (5 min)
 
-**Q.** What is unsafe about `p = realloc(p, n)`?
+**Q.** Why choose `calloc` over `malloc` + `memset`?
 
-A. `realloc` never fails
-B. If `realloc` fails, `p` becomes `NULL` and the original block leaks
-C. `realloc` requires a cast in C
-D. `realloc` only grows, never shrinks
+A. `calloc` is always faster
+B. It is clearer intent and the library can often skip the memset for fresh pages
+C. `malloc` cannot allocate arrays
+D. `memset` only works on chars
 E. Ben got this wrong
 
 *Answer: B*
 
-## 1. Everything is a Number (6 min)
+## 1. Everything Is a Number (5 min)
 
-- To the CPU there are no characters, strings, pointers, or objects --- only numeric values in registers and memory.
-- Types do not change the underlying bits; they tell the *compiler* how to interpret and use those numbers.
-- Different numeric types give you different sizes (which determine range) and different semantics (signed/unsigned, integer/floating-point).
-- A `char` is just a small integer (usually 8 bits). Assigning `'A'` is exactly the same as assigning `65` (in ASCII).
+- The CPU has no concept of characters, strings, pointers, or objects --- only numbers in registers and memory.
+- Types do not change the bits; they tell the *compiler* how you plan to interpret and use those numbers.
+- A `char` is just a small integer (usually 8 bits); `'A'` is exactly the same as `65`.
 
 ```c
-char grade = 'A';
-int score = 65;
+char grade = 'A';   // same as: char grade = 65;
 
-// Both variables hold the exact same numeric value
-printf("grade as char: %c, as int: %d\n", grade, grade);
-printf("score as char: %c, as int: %d\n", score, score);
+printf("%c %d\n", grade, grade);   // A 65
 
-char next_grade = grade + 1;            // 65 + 1 = 66
-printf("Next grade: %c\n", next_grade); // 'B'
+char next = grade + 1;             // 65 + 1 = 66
+printf("%c\n", next);              // B
 ```
 
-- Same bits, two interpretations: `%c` prints `A`, `%d` prints `65`.
-- Math on characters is just math on integers.
+- Math on characters is just integer math --- there is no conversion happening.
 
-## 2. Pointers are Numbers Too (4 min)
+## 2. Pointers Are Numbers Too (3 min)
 
 ```c
-int val = 1986; // Year "Danger Zone" charted
-int *p = &val;
+int year = 1999;
+int *p = &year;
 
-printf("Address: %p\n", (void *)p); // e.g., 0x7ffd9b8
+printf("Address: %p\n", (void *)p);   // e.g., 0x7ffc965e5104
 ```
 
 - A pointer is an integer that represents a memory address.
-- The type `int *` tells the compiler: "treat this address number as the location of an `int`."
-- `%p` prints the address, usually as hexadecimal (cast the pointer to `void *`).
+- The type `int *` tells the compiler: "treat the number at this address as an `int`."
+- `%p` prints the number, usually as hexadecimal.
 
-## 3. Strings are Not Special (6 min)
+## 3. Strings Are Not Special (4 min)
 
-- Because everything is a number, C has no native understanding of "strings."
-- A string is merely an array of characters (small integers) ending in a special `0` byte --- the null terminator `'\0'`.
-- The literal `"Africa"` is just the numbers `65, 102, 114, 105, 99, 97, 0` in read-only memory, and you get a `char *` to the first one.
-- `<string.h>` gives you the *illusion* of strings by walking these arrays until it hits the `0` byte.
+- C has no native understanding of "strings."
+- A string is an array of characters (small integers) that ends with a `0` byte (the null terminator).
+- `<string.h>` provides the illusion by processing those numbers until it hits the `0`.
 
 ```c
 char word[] = "Hola";
@@ -91,25 +87,23 @@ printf("\n");
 // Bytes: 72 111 108 97 0
 ```
 
-- The five bytes are the ASCII values for `H`, `o`, `l`, `a`, and the null terminator.
+## 4. Converting Strings to Numbers (8 min)
 
-## 4. Converting Strings to Numbers (10 min)
-
-- The text `"1986"` and the integer `1986` are completely different bit patterns.
-- Converting between them is one of the most common tasks in C.
+- The text `"1999"` and the integer `1999` are completely different bit patterns.
+- Use `strtol` (string to long) from `<stdlib.h>`:
 
 ```c
 long strtol(const char *str, char **endptr, int base);
 ```
 
+- `str` is the text to parse; `endptr` points past the parsed digits (pass `NULL` if you do not care); `base` is 10, 16, or 0 to auto-detect.
+
 ```c
-char *year_str = "1986";
-long year = strtol(year_str, NULL, 10);
-printf("Year: %ld\n", year);   // Year: 1986
+long jenny = strtol("8675309", NULL, 10);
+printf("Jenny: %ld\n", jenny);   // 8675309
 ```
 
-- `endptr` is set to the first character after the parsed number; pass `NULL` if you don't need it.
-- The base is 10 for decimal, 16 for hex, or 0 to auto-detect from the prefix.
+Base 0 auto-detects from the prefix:
 
 ```c
 strtol("42",   NULL, 0);   // 42 --- decimal
@@ -118,107 +112,113 @@ strtol("052",  NULL, 0);   // 42 --- octal (leading 0)
 ```
 
 ::: {.tip}
-**Trap:** Base 0 is handy when you want to accept multiple formats, but a leading zero silently changes the meaning.
+**Trap:** With base 0, a leading zero silently means octal.
 `strtol("010", NULL, 0)` returns `8`, not `10`.
-If your input might have zero-padded decimals (like `"007"` for track 7), pass `10` explicitly.
+If your input might be zero-padded decimal, pass `10` explicitly.
 :::
 
-- `strtod` (string to double) works the same way, minus the base argument.
-- Older code uses `atoi`, `atol`, `atoll`, and `atof` --- simpler looking, but weaker:
+- `strtod` does the same for floating point (no base argument).
+- You will see the older `atoi`, `atol`, `atoll`, and `atof` in existing code:
 
 ```c
-int n = atoi("banana");   // returns 0 --- really "0"? no way to tell.
+int n = atoi("banana");   // 0 --- bad input or a real zero?
 ```
 
-- No base selection, no `endptr`, no error reporting, and undefined behavior on overflow.
-
 ::: {.tip}
-**Tip:** Prefer `strtol`, `strtoul`, `strtoll`, `strtoull`, and `strtod` over `atoi` and friends.
+**Tip:** Prefer the `strto*` family over `atoi` and friends.
+You get base selection, an `endptr` that shows what was parsed, and real overflow reporting through `errno`.
 Treat `atoi` as something you read, not something you write.
 :::
 
-- Next lecture covers `sprintf` and `sscanf`, which convert in both directions.
+Going the other way --- numbers to strings --- is a formatting job:
 
-## 5. Integer Types and Promotion (8 min)
+```c
+char buf[16];
+snprintf(buf, sizeof(buf), "%d", 1999);   // buf is "1999"
+```
+
+- The full `sprintf` / `sscanf` story comes with Standard I/O in chapter 10.
+
+## 5. Integer Types and Ranges (6 min)
 
 | Type | Bytes | Range | Suffix |
 |------|:-----:|-------|:------:|
-| `signed char` | 1 | -128 to 127 | |
-| `unsigned char` | 1 | 0 to 255 | |
+| `char` | 1 | -128 to 127 | |
 | `short` | 2 | -32,768 to 32,767 | |
-| `unsigned short` | 2 | 0 to 65,535 | |
-| `int` | 4 | -2^31 to 2^31-1 | |
-| `unsigned int` | 4 | 0 to 2^32-1 | `U` |
-| `long` | 8 | -2^63 to 2^63-1 | `L` |
-| `unsigned long` | 8 | 0 to 2^64-1 | `UL` |
-| `long long` | 8 | -2^63 to 2^63-1 | `LL` |
-| `unsigned long long` | 8 | 0 to 2^64-1 | `ULL` |
+| `int` | 4 | about -2.1 to 2.1 billion | |
+| `long` | 8 | about -9.2 to 9.2 quintillion | `L` |
+| `long long` | 8 | same as `long` on 64-bit Linux | `LL` |
 
-- Sizes vary by platform; the standard's guarantees are too loose to be worth quoting :'(.
-- **Two's complement:** the top bit is the sign, and there is one more negative value than positive.
-- Explore your machine with `sizeof` and `<limits.h>` (`INT_MIN`, `INT_MAX`, `LONG_MAX`, ...).
-
-::: {.tip}
-**Trap:** The other integer types are signed by default, but `char` is different --- its signedness is implementation-defined.
-On x86_64 CPUs `char` is signed by default, and on ARM CPUs `char` is unsigned by default!
-Watch out!
-:::
-
-### Integer promotion
-
-- Values smaller than `int` (`char`, `short`) are promoted to `int` in expressions.
-- Mixed sizes generally promote to the signedness and size of the larger type.
-
-::: {.tip}
-**Trap:** `strlen` returns `size_t`, an *unsigned* type.
-Subtracting two `size_t` values never goes negative --- it wraps to a huge positive number.
-:::
+- Unsigned variants shift the range to start at 0 (`U`, `UL`, `ULL` suffixes).
+- Sizes vary by platform --- these are the usual 64-bit numbers.
+- Two's complement: the top bit is the sign, and there is one more negative value than positive.
+- Explore your machine with `sizeof` and `<limits.h>`:
 
 ```c
-char *a = "Jump";       // strlen = 4
-char *b = "Jump!!!!";   // strlen = 8
-
-// size_t is unsigned, so 4 - 8 wraps around!
-size_t diff = strlen(a) - strlen(b);
-printf("strlen(a) - strlen(b) = %zu\n", diff);
-
-// cast to a signed type to get the correct result
-long sdiff = (long)strlen(a) - (long)strlen(b);
-printf("Signed difference:      %ld\n", sdiff);
-// Output:
-// strlen(a) - strlen(b) = 18446744073709551612
-// Signed difference:      -4
+printf("char: %zu byte,  %d to %d\n",
+       sizeof(char), CHAR_MIN, CHAR_MAX);
+printf("int:  %zu bytes, %d to %d\n",
+       sizeof(int), INT_MIN, INT_MAX);
+printf("long: %zu bytes, %ld to %ld\n",
+       sizeof(long), LONG_MIN, LONG_MAX);
 ```
 
-## 6. Floating Point (5 min)
+::: {.tip}
+**Trap:** Every other integer type is signed by default, but the signedness of plain `char` is implementation-defined.
+It is signed on x86_64 and unsigned on ARM.
+Spell out `signed char` or `unsigned char` when the numeric range matters.
+:::
 
-| Type | Size | Range | Suffix |
-|------|------|-------|--------|
-| `float` | 4 bytes | -3.4e+38 to 3.4e+38 | `F` |
-| `double` | 8 bytes | -1.7e+308 to 1.7e+308 | *(none, default)* |
-| `long double` | 16 bytes | -1.2e+4932 to 1.2e+4932 | `L` |
+## 6. Integer Promotion and the `size_t` Trap (4 min)
 
-- Always signed; the sign bit can be set on zero, so there are two zeros (they compare equal).
-- Special values: infinity and NaN.
-- Fractions are stored as sums of negative powers of 2: `0.5` and `0.25` are exact, `0.1` and `0.2` are not.
-- Consequence: `0.1 + 0.2` is not exactly equal to `0.3`.
+- Types smaller than `int` (like `char` and `short`) are promoted to `int` in expressions.
+- Mixed sizes promote to the larger type; mixed signedness tends to go unsigned --- and that bites.
+- `strlen` returns `size_t`, an unsigned type, so subtraction can wrap:
+
+```c
+char *a = "Whip";       // strlen = 4
+char *b = "Whip It!";   // strlen = 8
+
+size_t diff = strlen(a) - strlen(b);
+printf("%zu\n", diff);   // 18446744073709551612
+
+long sdiff = (long)strlen(a) - (long)strlen(b);
+printf("%ld\n", sdiff);  // -4
+```
+
+- Cast to a signed type *before* subtracting when the difference can be negative.
+
+## 7. Floating-Point Surprises (5 min)
+
+- `float` is 4 bytes, `double` is 8, `long double` is 16; all are signed.
+- Floating point has two zeros, infinities, and NaN --- integers have none of those.
+- Fractions are sums of negative powers of 2: `0.5` and `0.25` are exact; `0.1` and `0.2` are not.
 
 ```c
 float f = 1.2;
 if (f != 1.2) printf("what?!?\n");
 if (f == 1.2f) printf("ok\n");
+// BOTH lines print!
 ```
 
-- Both lines print!
-- `1.2` is a `double`; assigning it to `f` rounds away precision.
-- Promoting `f` back to `double` does not recover the lost bits, so `f != 1.2`.
-- `1.2f` is a `float` literal rounded the same way, so that comparison succeeds.
+- The literal `1.2` is a `double`; assigning it to `f` rounds it to `float` precision.
+- The first `if` promotes `f` back to `double`, but the lost precision never comes back.
+- `1.2f` was rounded the same way `f` was, so the second comparison succeeds.
 
-## 7. Casting (10 min)
+## 8. Casting (7 min)
 
-- A cast forces the compiler to treat a value of one type as another type: `(type)value`.
-- One unified syntax --- much simpler than C++'s four cast operators, and much less magical.
-- Only scalar types can be cast (integers, floating-point, pointers); remember `char` is an integer type.
+- A cast forces the compiler to treat a value of one type as another type: `(type) value`.
+- C has exactly one cast syntax; C++ has four named casts.
+- Much simpler, and much less magical --- a cast never parses, rounds, or converts text.
+
+```c
+double pi = 3.14159;
+int roughly_pi = (int)pi;   // 3 --- truncates, does not round
+```
+
+- Float to integer truncates, but a value too big to fit the target type is undefined behavior.
+
+Only scalar types can be cast:
 
 | From / To | Integer | Floating-Point | Pointer |
 | :--- | :--- | :--- | :--- |
@@ -226,53 +226,41 @@ if (f == 1.2f) printf("ok\n");
 | **Floating-Point** | Yes | Yes | No |
 | **Pointer** | Yes | No | Yes |
 
-- Float to integer *truncates* --- it does not round.
-- If the value does not fit the target type: undefined behavior.
-
-```c
-double pi = 3.14159;
-int roughly_pi = (int)pi; // truncates to 3
-```
-
-- A cast tells the compiler: "I know what I am doing, suppress the warnings, treat this as the type I specified."
-- C trusts you implicitly, so casting can be dangerous.
-- Magic *does not* happen when you cast.
+- A cast tells the compiler: "I know what I am doing, suppress the warnings."
+- C trusts you implicitly, so a wrong cast is on you.
 
 ::: {.tip}
-**Trap:** A classic beginner mistake is trying to convert a string to an integer by casting the pointer.
+**Trap:** Casting a `char *` to an integer converts the *address*, not the text.
 
 ```c
-char *movie_year = "1985";      // The Goonies
-int bad_year = (int)movie_year; // THIS IS A BUG! not 1985!!
+char *song_year = "1999";       // Prince
+int bad_year = (int)song_year;  // BUG! not 1999
 ```
 
-This converts the *memory address* of the string, not the text `"1985"`.
-On a 64-bit system the pointer is 8 bytes and the `int` is 4, so the compiler even warns about casting a pointer to an integer of different size.
-Always use functions like `strtol` to parse strings into numbers.
+The compiler even warns: `cast from pointer to integer of different size`.
+The 8-byte address gets chopped to fit a 4-byte `int` --- garbage either way.
+Always use `strtol` to parse strings into numbers.
 :::
 
-### Casting pointers to other pointers
-
-- `void *` is a pointer to anything --- this is why `malloc` needs no cast in C.
-- `char *` gives you byte-level access to any object.
-- When casting between pointer types, you must understand the memory layout you are working with.
+## 9. Casting Pointers to Other Pointers (4 min)
 
 ```c
 int nums[] = {1984, 1985, 1986, 1987};
 
-void *vp = nums;            // any pointer converts to void *
-int *ip = (int *)vp;        // cast back to use it
-printf("First: %d\n", ip[0]);
+void *vp = nums;         // any pointer converts to void *
+int *ip = (int *)vp;     // cast back to use it
+printf("%d\n", ip[0]);   // 1984
 
-// byte-level access with char *
-char *bp = (char *)nums;
-printf("First byte of nums[0]: 0x%02x\n", (unsigned char)bp[0]);
-// Output:
-// First: 1984
-// First byte of nums[0]: 0xc0
+char *bp = (char *)nums; // byte-level view
+printf("0x%02x\n", (unsigned char)bp[0]);   // 0xc0
 ```
 
-## 8. Live Coding: Numbers Starter (4 min)
+- `void *` points at anything --- this is why `malloc` needs no cast in C (lecture 5).
+- `char *` gives you a byte-by-byte view of any object.
+- `1984` is `0x7C0`; a little-endian machine stores the low byte first, so `bp[0]` is `0xc0`.
+- When you cast pointer to pointer, *you* are responsible for knowing the memory layout.
+
+## 10. Live Coding: Numbers Starter (5 min)
 
 ```c
 #include <stdio.h>
@@ -280,44 +268,46 @@ printf("First byte of nums[0]: 0x%02x\n", (unsigned char)bp[0]);
 #include <limits.h>
 
 int main(void) {
-    // Characters are just numbers
+    // characters are just numbers
     char ch = 'A';
     printf("'%c' is %d\n", ch, ch);
     printf("'%c' + 3 = '%c' (%d)\n", ch, ch + 3, ch + 3);
 
-    // Strings are arrays of numbers
-    char title[] = "Rio";
+    // strings are arrays of numbers
+    char title[] = "Xanadu";
     printf("\"%s\" bytes: ", title);
     for (int i = 0; i < (int)sizeof(title); i++)
         printf("%d ", title[i]);
     printf("\n");
 
-    // String to number conversion
-    char *bpm_str = "120";
-    long bpm = strtol(bpm_str, NULL, 10);
-    printf("\"%s\" as a number: %ld\n", bpm_str, bpm);
+    // string to number conversion
+    long jenny = strtol("8675309", NULL, 10);
+    printf("Jenny's number: %ld\n", jenny);
 
-    // Hex string to number
+    // hex string to number
     long color = strtol("FF8000", NULL, 16);
     printf("0x%lX = %ld\n", color, color);
 
-    // Casting: float to int truncates
-    double tempo = 120.7;
-    int whole = (int)tempo;
-    printf("(int)%.1f = %d\n", tempo, whole);
+    // integer sizes on this machine
+    printf("sizeof(int)  = %zu\n", sizeof(int));
+    printf("sizeof(long) = %zu\n", sizeof(long));
+    printf("INT_MAX      = %d\n", INT_MAX);
 
-    // The classic trap: casting a pointer
-    char *year_str = "1982";
-    long bad  = (long)year_str;          // address, not 1982!
+    // casting: float to int truncates
+    double tempo = 118.9;
+    printf("(int)%.1f = %d\n", tempo, (int)tempo);
+
+    // the classic trap
+    char *year_str = "1999";
+    long bad  = (long)year_str;
     long good = strtol(year_str, NULL, 10);
-    printf("(long)\"1982\"        = %ld (an address!)\n", bad);
-    printf("strtol(\"1982\", ...) = %ld\n", good);
+    printf("(long)\"1999\"        = %ld (an address!)\n", bad);
+    printf("strtol(\"1999\", ...) = %ld\n", good);
 
-    // let's look at the bytes of an int (little-endian?)
+    // bytes of an int: endianness
     int hex_val = 0xbadd00d;
-    printf("%d %x\n", hex_val, hex_val);
     unsigned char *raw = (unsigned char *)&hex_val;
-    printf("little-endian: %02x %02x %02x %02x\n",
+    printf("%x -> %02x %02x %02x %02x\n", hex_val,
            raw[0], raw[1], raw[2], raw[3]);
 
     return 0;
@@ -325,22 +315,22 @@ int main(void) {
 ```
 
 - Compile with `cc -Wall -Wextra -pedantic`.
-- Change the `(long)` in the trap to `(int)` and read the "cast from pointer to integer of different size" warning.
-- Print `sizeof(int)`, `INT_MAX`, and friends from `<limits.h>` if time permits.
+- Change the `(long)year_str` cast to `(int)` and read the warning together.
+- The byte dump prints `badd00d -> 0d d0 ad 0b` --- ask the class why the bytes are backwards (little-endian).
 
-## 9. Wrap-up Quiz (5 min)
+## 11. Wrap-up Quiz (5 min)
 
 **Q1.** What does this print?
 
 ```c
-char letter = 'C';
-printf("%c %d\n", letter + 2, letter + 2);
+char c = 'A';
+printf("%c %d\n", c + 1, c + 1);
 ```
 
-A. `E 69`
-B. `C 67`
-C. `E E`
-D. `69 69`
+A. `B 66`
+B. `A 65`
+C. `B 65`
+D. `66 B`
 E. Ben got this wrong
 
 *Answer: A*
@@ -348,20 +338,24 @@ E. Ben got this wrong
 **Q2.** Where is the bug?
 
 ```c
-char *score_str = "100";
-int score = (int)score_str;
-printf("You got a %d percent!\n", score);
+char *track_str = "42";
+int track = (int)track_str;
+printf("Track %d\n", track);
 ```
 
-A. `score_str` needs a `&` in the cast
-B. The cast converts the address of the string, not its contents --- use `strtol`
-C. `%d` should be `%s`
-D. `score_str` must be declared `const`
+A. `track_str` needs an `&`
+B. `%d` should be `%s`
+C. The cast converts the address, not the text --- use `strtol`
+D. `"42"` is missing a null terminator
 E. Ben got this wrong
 
-*Answer: B*
+*Answer: C*
 
-**Q3.** What does `strtol("010", NULL, 0)` return?
+**Q3.** What does this print?
+
+```c
+printf("%ld\n", strtol("010", NULL, 0));
+```
 
 A. `10`
 B. `8`
@@ -371,19 +365,19 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 10. Assignment / Reading (2 min)
+## 12. Assignment / Reading (2 min)
 
 **Read:** chapter 10 of *Gorgo C for C++ Programmers*.
 **Do:** exercises 1-7.
 
 ## Key Points to Reinforce
 
-- Under the hood, everything (characters, pointers) is just a number
-- Types tell the compiler how to interpret the bits --- they do not change them
-- C has no native strings, only arrays of numbers ended with a `0`
-- `strtol`/`strtod` for parsing; treat `atoi` as legacy you read but do not write
-- `char` signedness is implementation-defined; small types promote to `int`
-- `size_t` is unsigned --- subtraction can wrap to a huge positive number
-- Floating point is approximate: `0.1 + 0.2` is not exactly `0.3`
+- To the CPU everything is a number; types tell the compiler how to use it
+- `'A'` is 65; char math is integer math
+- A pointer is a number used as a memory address
+- A C string is an array of small integers ending in a `0` byte
+- `strtol` over `atoi`: bases, `endptr`, and real error reporting
+- `size_t` is unsigned; subtraction can wrap to a huge number
+- Float literals are doubles; `f == 1.2` and `f == 1.2f` are different questions
 - `(type)value` asserts you know what you are doing --- no magic happens
-- Casting a `char *` to an integer gives you the address, not the parsed string
+- Casting a `char *` to an int gives the address, not the parsed number --- use `strtol`

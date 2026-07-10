@@ -3,22 +3,18 @@
 **Source:** `c4c++/ch10.md`
 **Duration:** 65 minutes
 
-This is the final lecture of the course.
-
 ## Learning Objectives
 
 By the end of this lecture, students should be able to:
 
-- Read input with `scanf` and explain why scalar arguments need `&` but arrays do not
-- Limit string input with width specifiers to avoid buffer overflow
-- Parse structured text with scan sets (`%[...]`)
-- Describe `stdin`, `stdout`, and `stderr` and how shell redirection affects each
-- Write to any stream with `fprintf` and read from one with `fscanf`
-- Open and close files with `fopen`/`fclose`, pick the right mode string, and check for `NULL`
-- Format into strings with `sprintf`/`snprintf` and parse strings with `sscanf`
-- Move raw bytes with `fwrite` and `fread`
-- Read lines safely with `fgets`
-- Explain `stdio` buffering and force output with `fflush`
+- Use `scanf` for formatted input and explain why scalar arguments need `&`
+- Name the three standard streams and send error messages to `stderr`
+- Use `fprintf` and `fscanf` with any `FILE *`
+- Open and close files with `fopen`/`fclose`, choosing the right mode string (including binary)
+- Format into strings with `sprintf`/`snprintf` and parse strings with `sscanf` and scan sets (`%[...]`)
+- Round-trip raw data with `fwrite` and `fread`
+- Read whole lines safely with `fgets`
+- Explain line buffering vs full buffering and use `fflush` when output must appear immediately
 
 ## Materials
 
@@ -29,30 +25,30 @@ By the end of this lecture, students should be able to:
 
 ## 0. Review (5 min)
 
-**Q.** Where is the bug?
+**Q.** You want `year` to hold the number 1985. Where is the bug?
 
 ```c
-char *score_str = "100";
-int score = (int)score_str;
-printf("You got a %d percent!\n", score);
+char *year_str = "1985";
+int year = (int)year_str;
 ```
 
-A. `score_str` needs a `&` in the cast
-B. The cast converts the address of the string, not its contents --- use `strtol`
-C. `%d` should be `%s`
-D. `score_str` must be declared `const`
+A. Nothing --- the cast converts the string to the number 1985
+B. The cast converts the *address*, not the text --- parse with `strtol`
+C. `year_str` must be declared as a `char[]`, not a `char *`
+D. `(int)` should be `(long)`
 E. Ben got this wrong
 
 *Answer: B*
 
-## 1. `scanf` and Why `&` Is Needed (8 min)
+- Magic does not happen when you cast --- the pointer's numeric value gets chopped to fit an `int`.
+- The compiler even warns: `cast from pointer to integer of different size`.
 
-- `<stdio.h>` is your replacement for C++ `iostream`.
-- Everything flows through `FILE *` --- an opaque pointer to a structure tracking the state of a stream.
+## 1. `<stdio.h>`: `printf` Out, `scanf` In (7 min)
 
-```c
-int scanf(const char *format, ...);
-```
+- `<stdio.h>` replaces `iostream` --- everything flows through `FILE *`, an opaque pointer that tracks the state of an I/O stream.
+- `printf`/`scanf` for formatted text, `fopen`/`fclose` for files, `fread`/`fwrite` for raw bytes.
+- This is the last new-material lecture --- after today you have the whole C toolbox.
+- You have used `printf` since lecture 1; `scanf` is its input twin.
 
 ```c
 int year;
@@ -61,53 +57,27 @@ scanf("%d", &year);
 printf("You entered: %d\n", year);
 ```
 
-- C has no pass by reference, so `scanf` needs the *address* of the variable to store the result there.
-- Forgetting the `&` compiles but crashes or produces garbage at runtime --- a classic bug.
-- `scanf` specifiers are similar to `printf` but not identical: `scanf` uses `%lf` for `double` while `printf` uses `%f`.
+- `scanf` needs the *address* of the variable so it can store the result there.
+- Forgetting the `&` compiles fine, then crashes or produces garbage at runtime.
+- Arrays do not need `&` --- the array name already decays to a pointer.
 
 ```c
 char name[50];
 double gpa;
-scanf("%s %lf", name, &gpa);
+scanf("%49s %lf", name, &gpa);
 ```
 
-- `name` needs no `&` --- an array name already points to the bytes we want to fill.
+- `scanf` uses `%lf` for `double`; `printf` uses `%f`.
 
 ::: {.tip}
-**Trap:** `scanf("%s", ...)` reads a single word (stopping at whitespace) and has no bounds checking --- it will happily overflow your buffer.
-Use a width specifier like `%49s` to limit input to 49 characters (plus `'\0'`).
+**Trap:** `scanf("%s", ...)` reads a single word and has no bounds checking --- it will happily overflow your buffer.
+Always add a width like `%49s` (49 characters plus `'\0'`).
+For whole lines, `fgets(line, sizeof(line), stdin)` is safer and simpler.
 :::
 
-## 2. Scan Sets (4 min)
+## 2. `stdin`, `stdout`, and `stderr` (5 min)
 
-- `%[...]` accepts only the listed characters and stops at the first character not in the set.
-- A leading `^` negates the set: read everything *except* those characters.
-- `%[^\n]` is the `scanf` way to read a whole line.
-
-```c
-char line[80];
-scanf("%79[^\n]", line);   // reads a full line (up to 79 chars)
-printf("You said: %s\n", line);
-```
-
-- Scan sets work with `sscanf` too:
-
-```c
-char buf[] = "Track 03: 99 Luftballons";
-int track;
-char title[50];
-sscanf(buf, "Track %d: %49[^\n]", &track, title);
-// track is 3, title is "99 Luftballons"
-```
-
-::: {.tip}
-**Tip:** `fgets` is generally safer and simpler for line-oriented input; use scan sets for structured parsing.
-POSIX also offers the `%m` modifier, which `malloc`s a right-sized buffer for you (`scanf("%m[^\n]", &line)`) --- glibc only, not standard C, and you must `free` the result.
-:::
-
-## 3. `stdin`, `stdout`, and `stderr` (5 min)
-
-When your C program starts, three `FILE *` streams are already open:
+Three streams are already open when your program starts:
 
 | Stream | Purpose | C++ equivalent |
 |:---|:---|:---|
@@ -115,27 +85,23 @@ When your C program starts, three `FILE *` streams are already open:
 | `stdout` | Standard output (screen) | `std::cout` |
 | `stderr` | Standard error (screen) | `std::cerr` |
 
-- `printf(...)` is actually shorthand for `fprintf(stdout, ...)`.
-- `./program > output.txt` redirects only `stdout`, so `stderr` messages still appear on the screen.
-- `./program 2> err.txt` redirects `stderr` instead.
+- `printf(...)` is shorthand for `fprintf(stdout, ...)`.
 
 ```c
 fprintf(stderr, "Error: file not found\n");
 ```
 
-## 4. `fprintf` and `fscanf` (5 min)
+- `./program > out.txt` redirects only `stdout` --- errors still appear on the screen.
+- `./program 2> err.txt` redirects `stderr` instead.
+
+## 3. `fprintf` and `fscanf` (5 min)
 
 ```c
 int fprintf(FILE *stream, const char *format, ...);
 int fscanf(FILE *stream, const char *format, ...);
 ```
 
-- The file versions of `printf` and `scanf` --- same formats, plus a `FILE *` first argument.
-
-```c
-fprintf(stdout, "Hello\n");           // same as printf("Hello\n")
-fprintf(stderr, "Something broke\n"); // write to stderr
-```
+- The file versions of `printf` and `scanf` --- same format strings, plus a `FILE *` first argument.
 
 ```c
 FILE *f = fopen("scores.txt", "r");
@@ -149,9 +115,10 @@ if (f != NULL) {
 }
 ```
 
-- `fscanf` returns the number of items successfully read --- check it to know whether the read worked.
+- `fscanf` returns the number of items successfully read --- `== 2` means we got both, and the loop stops cleanly at end of file.
+- With `scores.txt` containing `Maverick 94`, `Goose 87`, `Iceman 99`, this prints each pilot's score on its own line.
 
-## 5. Opening and Closing Files (7 min)
+## 4. Opening and Closing Files (7 min)
 
 ```c
 FILE *fopen(const char *path, const char *mode);
@@ -159,19 +126,17 @@ int fclose(FILE *stream);
 ```
 
 ```c
-FILE *f = fopen("log.txt", "w");
+FILE *f = fopen("setlist.txt", "w");
 if (f == NULL) {
-    fprintf(stderr, "Cannot open file\n");
+    fprintf(stderr, "cannot open setlist.txt\n");
     return 1;
 }
-
-fprintf(f, "Under Pressure\n");
-fprintf(f, "Year: %d\n", 1981);
-
+fprintf(f, "Eye of the Tiger\n");
+fprintf(f, "Year: %d\n", 1982);
 fclose(f);
 ```
 
-- `fopen` returns `NULL` on failure --- *always* check before using the pointer.
+- `fclose` flushes any buffered output and releases the stream.
 
 The mode string:
 
@@ -184,77 +149,74 @@ The mode string:
 | `"w+"` | Read and write (creates or truncates) |
 | `"a+"` | Read and append |
 
-- Add `b` for **binary mode**: `"rb"`, `"wb"`, `"ab"`, ...
-- On Unix, binary and text modes behave identically.
-- On Windows, text mode translates `\r\n` to `\n` on input and back on output --- binary mode does not.
+- Add `b` for binary mode: `"rb"`, `"wb"`, `"ab"`.
+- On Unix, binary and text modes behave identically; on Windows, text mode translates `\r\n` to `\n` and back.
 
-## 6. `sprintf`, `sscanf`, and `snprintf` (6 min)
+::: {.tip}
+**Trap:** `fopen` returns `NULL` on failure --- a missing file, a bad path, no permission.
+Always check before using the file pointer; writing through a `NULL` `FILE *` is undefined behavior.
+:::
 
-- `sprintf` formats into a string buffer instead of a stream; `sscanf` parses from a string.
-- Together they are C's number-to-string and string-to-number formatting kit.
+## 5. Formatting Into Strings (7 min)
+
+- `sprintf` writes formatted output into a buffer; `sscanf` parses formatted input from a string.
 
 ```c
 char buf[100];
-sprintf(buf, "Track %02d: %s", 3, "99 Luftballons");
-// buf is now "Track 03: 99 Luftballons"
+sprintf(buf, "Track %02d: %s", 2, "Whip It");
+// buf is now "Track 02: Whip It"
 
 int track;
 char title[50];
 sscanf(buf, "Track %d: %49[^\n]", &track, title);
-// track is 3, title is "99 Luftballons"
+// track is 2, title is "Whip It"
 ```
+
+- `%[...]` is a **scan set**: it accepts only the listed characters and stops at the first one outside the set --- `%[aeiou]` reads vowels and nothing else.
+- A leading `^` negates the set, so `%79[^\n]` reads up to 79 characters of anything *except* a newline --- the `scanf` way to grab a whole line.
+- That is what `%49[^\n]` does above: read the whole title, stopping at a newline (or the end of the string).
 
 ::: {.tip}
-**Trap:** `sprintf` has the same buffer overflow risk as `strcpy` --- it does not check the size of the destination buffer.
-Use `snprintf` for safety:
-
-```c
-snprintf(buf, sizeof(buf), "Track %02d: %s",
-         3, "99 Luftballons");
-```
-
-`snprintf` guarantees it will not write more than `sizeof(buf)` bytes, including the null terminator.
+**Tip:** the POSIX `%m` modifier (glibc only, not standard C) makes `scanf` `malloc` a right-sized buffer --- `scanf("%m[^\n]", &line)` --- and you must `free` it.
 :::
 
 ::: {.tip}
-**Tip:** POSIX `asprintf(&msg, ...)` goes one step further and `malloc`s a buffer that is exactly the right size --- no sizing, no truncation, no overflow.
-Like `%m`, it is not standard C (no MSVC), and you must `free` the result.
-:::
-
-## 7. Binary I/O: `fwrite` and `fread` (6 min)
+**Trap:** `sprintf` has the same overflow risk as `strcpy` --- it never checks the destination size.
+Use `snprintf`, which will not write more than `size` bytes, null terminator included:
 
 ```c
-size_t fread(void *ptr, size_t size, size_t count, FILE *stream);
+char small[15];
+snprintf(small, sizeof(small), "Jenny: %d", 8675309);
+// "Jenny: 8675309" --- 14 chars + '\0' fits exactly
+```
+:::
+
+::: {.tip}
+**Tip:** POSIX `asprintf(&msg, ...)` formats into a `malloc`'d string of exactly the right size (glibc and friends, not standard C) --- you must `free` it.
+:::
+
+## 6. Binary I/O: `fwrite` and `fread` (6 min)
+
+```c
 size_t fwrite(const void *ptr, size_t size, size_t count,
               FILE *stream);
+size_t fread(void *ptr, size_t size, size_t count, FILE *stream);
 ```
 
 - Four arguments: pointer to the data, size of each element, number of elements, stream.
-- Raw bytes only --- no format conversion.
+- Raw bytes only --- no format conversion, no text.
 
 ```c
-int nums[] = {10, 20, 30, 40, 50};
-
-// Write binary data
-FILE *f = fopen("data.bin", "wb");
-fwrite(nums, sizeof(int), 5, f);
+int tracks[] = {4, 8, 15, 16};
+FILE *f = fopen("tracks.bin", "wb");
+fwrite(tracks, sizeof(int), 4, f);
 fclose(f);
-
-// Read it back
-int result[5];
-f = fopen("data.bin", "rb");
-fread(result, sizeof(int), 5, f);
-fclose(f);
-
-for (int i = 0; i < 5; i++) {
-    printf("%d ", result[i]);   // 10 20 30 40 50
-}
-printf("\n");
 ```
 
-- Both return the number of elements successfully transferred.
+- The file is exactly `4 * sizeof(int)` = 16 bytes.
+- Both functions return the number of *elements* transferred --- check `fread`'s return to detect a short read.
 
-## 8. Reading Lines: `fgets` (3 min)
+## 7. Reading Lines: `fgets` (3 min)
 
 ```c
 char *fgets(char *s, int size, FILE *stream);
@@ -267,15 +229,15 @@ while (fgets(line, sizeof(line), f) != NULL) {
 }
 ```
 
-- Stops after `size - 1` characters, at a newline (kept in the buffer), or at end of file.
-- Always null-terminates on success; returns `NULL` at end of file or on error.
-- Safer than `scanf` for lines because it always respects the buffer size.
+- Stops after `size - 1` characters, at a newline (which it *keeps* in the buffer), or at end of file.
+- Always null-terminates on success; returns `NULL` at end of file or on error --- which is why the `while` loop works.
+- Safer than `scanf` for lines because it always respects the buffer size --- this is the line reader the earlier Trap promised.
 
-## 9. Buffering and `fflush` (5 min)
+## 8. Buffering and `fflush` (5 min)
 
-- `stdio` does not write to the device on every call --- it accumulates output in a buffer and writes larger chunks.
-- **Full buffering:** flushed when the buffer is full (default for files).
-- **Line buffering:** flushed at each `\n` (default for `stdout` at a terminal).
+- `stdio` does not hit the device on every call --- it accumulates output in a buffer.
+- **Full buffering:** written when the buffer fills (default for files).
+- **Line buffering:** written at each `\n` (default for `stdout` at a terminal).
 - **Unbuffered:** written immediately (default for `stderr`).
 
 ```c
@@ -285,89 +247,118 @@ fflush(stdout);   // force output to appear now
 printf(" done!\n");
 ```
 
+- Without the `fflush`, `Working...` has no `\n`, so nothing appears until the final newline --- the whole line shows up at once when the work finishes.
+
 ::: {.tip}
-**Trap:** When `stdout` is connected to a terminal, a `\n` triggers a flush.
-When `stdout` is redirected to a file or pipe, it is fully buffered --- output may not appear until the buffer fills or the program exits.
-If you need output to appear immediately (progress indicators!), call `fflush(stdout)`.
-`stderr` is unbuffered, which is why error messages appear immediately.
+**Trap:** At a terminal, `\n` triggers a flush.
+Redirect `stdout` to a file or pipe and it becomes *fully* buffered --- even lines ending in `\n` may not appear until the buffer fills or the program exits.
+For progress indicators, call `fflush(stdout)`.
+`stderr` is unbuffered, which is why error messages always appear immediately.
 :::
 
-## 10. Live Coding: Standard I/O Starter (4 min)
+## 9. Live Coding: Mixtape Files (8 min)
+
+Write a text file, read it back, then round-trip binary data --- the whole chapter in one program.
 
 ```c
 #include <stdio.h>
-#include <string.h>
 
 int main(void) {
-    // sprintf: format into a string
-    char buf[100];
-    sprintf(buf, "Track %02d: %s", 7, "Hungry Like the Wolf");
-    printf("sprintf: %s\n", buf);
+    // write a text file
+    FILE *f = fopen("mixtape.txt", "w");
+    if (f == NULL) {
+        fprintf(stderr, "cannot open mixtape.txt\n");
+        return 1;
+    }
+    fprintf(f, "Devo %d\n", 1980);
+    fprintf(f, "Survivor %d\n", 1982);
+    fprintf(f, "Prince %d\n", 1984);
+    fclose(f);
 
-    // snprintf: safe version with size limit
+    // read it back with fscanf
+    f = fopen("mixtape.txt", "r");
+    if (f == NULL) {
+        fprintf(stderr, "cannot reopen mixtape.txt\n");
+        return 1;
+    }
+    char artist[50];
+    int year;
+    while (fscanf(f, "%49s %d", artist, &year) == 2) {
+        printf("%s dropped a hit in %d\n", artist, year);
+    }
+    fclose(f);
+
+    // binary round-trip
+    int tracks[] = {4, 8, 15, 16};
+    f = fopen("tracks.bin", "wb");
+    fwrite(tracks, sizeof(int), 4, f);
+    fclose(f);
+
+    int back[4];
+    f = fopen("tracks.bin", "rb");
+    if (fread(back, sizeof(int), 4, f) != 4) {
+        fprintf(stderr, "short read\n");
+        return 1;
+    }
+    fclose(f);
+    printf("%d %d %d %d\n", back[0], back[1], back[2], back[3]);
+
+    // format into a string with snprintf
     char small[15];
-    snprintf(small, sizeof(small), "Year: %d", 1984);
-    printf("snprintf: %s\n", small);
-
-    // sscanf: parse from a string
-    int track;
-    char title[50];
-    sscanf(buf, "Track %d: %49[^\n]", &track, title);
-    printf("sscanf: track=%d title='%s'\n", track, title);
-
-    // fprintf to stderr
-    fprintf(stderr, "This goes to stderr\n");
-
-    // fwrite/fread round-trip
-    int nums[] = {10, 20, 30};
-    FILE *f = fopen("/tmp/tryit_data.bin", "wb");
-    fwrite(nums, sizeof(int), 3, f);
-    fclose(f);
-
-    int result[3];
-    f = fopen("/tmp/tryit_data.bin", "rb");
-    fread(result, sizeof(int), 3, f);
-    fclose(f);
-
-    printf("fread: %d %d %d\n", result[0], result[1], result[2]);
-
+    snprintf(small, sizeof(small), "Jenny: %d", 8675309);
+    printf("%s\n", small);
     return 0;
 }
 ```
 
-- Compile with `cc -Wall -Wextra -pedantic`.
-- Run it as `./a.out > out.txt` and show that the `stderr` line stays on the screen.
-- Shrink `small` to `char small[8]` and watch `snprintf` truncate safely.
+Expected output:
 
-## 11. Wrap-up Quiz (5 min)
+```
+Devo dropped a hit in 1980
+Survivor dropped a hit in 1982
+Prince dropped a hit in 1984
+4 8 15 16
+Jenny: 8675309
+```
+
+Experiments to run with the class:
+
+- `cat mixtape.txt` to see the text file; `xxd tracks.bin` to see the 16 raw bytes.
+- Change `"w"` to `"a"` and run twice --- the mixtape doubles.
+- Remove the `&` from `&year` in the `fscanf` call and read the compiler warning.
+- Run `./mixtape > out.txt` --- everything from `printf` lands in the file; only `stderr` would reach the screen.
+- Shrink the buffer to `char small[8]` --- `snprintf` truncates safely to `Jenny: `, and `-Wall` warns at compile time: `'%d' directive output truncated writing 7 bytes into a region of size 1`.
+
+## 10. Wrap-up Quiz (5 min)
 
 **Q1.** What does this print?
 
 ```c
-char buf[50];
-sprintf(buf, "%s: %d", "Score", 100);
+char buf[20];
+snprintf(buf, sizeof(buf), "Track %02d", 7);
 printf("%zu\n", strlen(buf));
 ```
 
-A. `10`
-B. `9`
-C. `11`
-D. `50`
+A. 6
+B. 7
+C. 8
+D. 10
 E. Ben got this wrong
 
-*Answer: A*
+*Answer: C*
 
-**Q2.** Where is the bug?
+**Q2.** Run at a terminal, what appears?
 
 ```c
-int x;
-scanf("%d", x);
+printf("Working...");
+sleep(2);
+printf(" done!\n");
 ```
 
-A. `%d` should be `%i`
-B. Missing `&` before `x` --- `scanf` needs the address
-C. `x` must be initialized first
-D. `scanf` cannot read integers
+A. `Working...` now, ` done!` 2 seconds later
+B. Nothing for 2 seconds, then `Working... done!` all at once
+C. `Working...` after 2 seconds, then ` done!` 2 seconds after that
+D. Nothing --- the program deadlocks without `fflush`
 E. Ben got this wrong
 
 *Answer: B*
@@ -383,21 +374,21 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 12. Course Wrap-up (2 min)
+## 11. Assignment / Reading (2 min)
 
-This is the final lecture of the course.
+This was the final lecture --- congratulations, you now speak C.
 
-- **Optional reading:** chapter 11 (Low-Level I/O) and chapter 12 (Odds and Ends) of *Gorgo C for C++ Programmers* as reference material. Not required for the final exam, but you will see all of it in real C code.
-- Review all prior chapters for the final exam.
-- Bring your end-of-term questions --- we will hold an open Q&A session next class period.
+**Read (optional):** chapters 11 (Low-Level I/O) and 12 (Odds and Ends) of *Gorgo C for C++ Programmers*, for the curious --- file descriptors, `qsort`, and the odds and ends we did not have time for.
+**Exam prep:** review the study guides in `c4c++/study-guides/` and redo the wrap-up quizzes from lectures 1-8.
 
 ## Key Points to Reinforce
 
 - `printf` writes to `stdout`; `fprintf` writes to any `FILE *`
-- `scanf` needs `&` for scalars; arrays already decay to pointers
-- Always width-limit string input: `%49s`, `%79[^\n]`
+- `scanf` needs `&` for scalars; arrays decay, so no `&`
 - `fopen` returns `NULL` on failure --- always check before using the pointer
 - Add `"b"` to the mode string for binary files; it matters on Windows
-- `fread` and `fwrite` transfer raw bytes --- no format conversion
-- `snprintf` over `sprintf` --- respect the buffer size
-- `stdout` is line buffered at a terminal, fully buffered when redirected; `fflush` forces output
+- `fread`/`fwrite` move raw bytes: pointer, element size, count, stream
+- `fgets` reads at most `size - 1` chars, keeps the newline, and returns `NULL` at end of file
+- `sprintf` can overflow; `snprintf` takes the buffer size and never exceeds it
+- `stdout` is line buffered at a terminal, fully buffered when redirected; `fflush` forces output out
+- C's whole I/O story is return values --- no exceptions, so check them

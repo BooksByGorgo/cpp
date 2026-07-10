@@ -117,9 +117,9 @@ if (p) {
 ```
 
 - Dereferencing `NULL` is undefined behavior; usually a segfault.
-- C only picked up `nullptr` in C23; in practice you will see `NULL`.
+- C++11 introduced `nullptr` as a type-safe null pointer; C only picked it up in C23, so most C code you will see uses `NULL`.
 
-## 6. Pointers and Arrays (7 min)
+## 6. Pointers and Arrays (8 min)
 
 - Same type (`int *`) whether it points to one int or the first of many.
 - You are responsible for staying in bounds --- the compiler will not help.
@@ -135,6 +135,11 @@ printf("%d\n", p[2]);     // 30 — yes, [] works on pointers
 
 - `a[i]` means exactly `*(a + i)`.
 - Pointer arithmetic advances by `sizeof(*p)` bytes, not by 1 byte.
+
+::: {.tip}
+**Wut:** `2[nums]` compiles and runs --- indexing is just `*(a + i)`, so `2[nums]` is `*(2 + nums)`, the same as `nums[2]`.
+Don't write it, but it shows how arrays and pointers relate.
+:::
 
 ## 7. Pointers and Structs --- `->` (5 min)
 
@@ -154,8 +159,9 @@ printf("%s\n", p->title);     // idiomatic
 - `.` has higher precedence than `*`, so `(*p).title` needs the parentheses.
 - `p->field` is just `(*p).field`, written more cleanly.
 
-## 8. Pass by Value and the Pointer Workaround (15 min)
+## 8. Pass by Value and the Pointer Workaround (14 min)
 
+- In C++ you would write `void increment(int &x) { x++; }` --- references do not exist in C.
 - **Every** C parameter is pass by value --- the function gets a copy.
 - To modify a caller's variable, pass a pointer.
 
@@ -238,11 +244,11 @@ E. Ben got this wrong
 
 A. 2
 B. 4
-C. Depends on the int it points to
-D. 8
+C. 8
+D. Depends on the int it points to
 E. Ben got this wrong
 
-*Answer: D*
+*Answer: C*
 
 ## 11. Assignment / Reading (2 min)
 

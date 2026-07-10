@@ -50,12 +50,12 @@ The high-level differences table from the chapter:
 | `bool` built-in | `_Bool` or `<stdbool.h>` |
 | `// comments` | `/* comments */` (C89); `//` since C99 |
 
-## 2. The Book: K&R (8 min)
+## 2. The Book: K&R (4 min)
 
-- The go-to C textbook: *The C Programming Language (Second Edition)* by Brian Kernighan and Dennis Ritchie --- everyone calls it "K&R".
-- One of the most influential programming books ever written; short, precise, and still worth owning.
+- The classic C reference: *The C Programming Language (Second Edition)* by Brian Kernighan and Dennis Ritchie --- "K&R".
+- One of the most influential programming books ever written, and still the go-to C textbook.
 - Its famous opening advice: the only way to learn a new programming language is by writing programs in it.
-- Show the book's original hello, world exactly as printed in 1988:
+- It opens with the original hello, world:
 
 ```c
 #include <stdio.h>
@@ -65,10 +65,10 @@ main()
 }
 ```
 
-- Compile it live with `cc -Wall -Wextra -pedantic` and let the class watch it fail with `error: return type defaults to 'int'`.
+- Compile it live and let the class watch it fail with `error: return type defaults to 'int'` --- C has tightened up since 1988.
 
 ::: {.tip}
-**Trap:** That listing is from 1988, and C has tightened up since then.
+**Trap:** That listing is from 1988.
 Modern C compilers require an explicit return type, so bare `main()` is now an error.
 Write `int main(void)` instead --- with that one change, the program compiles cleanly today.
 :::
@@ -102,17 +102,17 @@ int printf(const char *format, ...);
 The first argument is a format string.
 `%`-prefixed specifiers consume one argument each:
 
-| Specifier | Type | Output for 255 / "hola" / 3.14 |
-|:---|:---|:---|
-| `%d` | `int` (decimal) | `255` |
-| `%x` | `int` (hex, lower) | `ff` |
-| `%X` | `int` (hex, upper) | `FF` |
-| `%f` | `double` | `3.140000` |
-| `%e` | `double` (scientific) | `3.140000e+00` |
-| `%c` | `char` | `A` |
-| `%s` | `char *` | `hola` |
-| `%p` | pointer (cast to `void *`) | `0x7ffd...` |
-| `%zu` | `size_t` | `4` |
+| Specifier | Type | Example | Output |
+|:---|:---|:---|:---|
+| `%d` | `int` (decimal) | `printf("%d", 42)` | `42` |
+| `%x` | `int` (hex, lowercase) | `printf("%x", 255)` | `ff` |
+| `%X` | `int` (hex, uppercase) | `printf("%X", 255)` | `FF` |
+| `%f` | `double` | `printf("%f", 3.14)` | `3.140000` |
+| `%e` | `double` (scientific) | `printf("%e", 3.14)` | `3.140000e+00` |
+| `%c` | `char` | `printf("%c", 'A')` | `A` |
+| `%s` | `char *` (string) | `printf("%s", "hola")` | `hola` |
+| `%p` | pointer | `printf("%p", (void *)ptr)` | `0x7ffd...` |
+| `%zu` | `size_t` | `printf("%zu", sizeof(int))` | `4` |
 
 ### Width, precision, zero-fill
 
@@ -129,7 +129,7 @@ printf("%d%%\n", 95);           // 95%  (%% prints a literal %)
 - **Format-string attack:** never write `printf(str)` with a user-controlled `str`. Always write `printf("%s", str)`.
 - **Mismatched specifier/type:** `printf("%d\n", 3.14)` is undefined behavior. The compiler may warn but will not stop you.
 
-## 5. `scanf` for Input (12 min)
+## 5. `scanf` for Input (10 min)
 
 ```c
 int scanf(const char *format, ...);
@@ -169,7 +169,7 @@ if (scanf("%d %s", &track, name) != 2) {
 **Trap:** `scanf` does no bounds checking on `%s`. Always cap with a width specifier.
 :::
 
-## 6. Live Coding: Try It (12 min)
+## 6. Live Coding: Try It (15 min)
 
 Type in and run the chapter's Try It program in class:
 
@@ -201,10 +201,10 @@ int main(void) {
 ```
 
 - Compile with `cc -Wall -Wextra -pedantic tryit.c`
-- Point out that `printf("Enter a number: ")` deliberately has no `\n`, so the cursor waits at the end of the prompt; add a `\n`, rerun, and discuss buffering (preview for lecture 10/11)
+- Point out that `printf("Enter a number: ")` deliberately has no `\n`, so the cursor waits at the end of the prompt line; add a `\n`, rerun, and discuss buffering (preview: chapters 10 and 11)
 - Deliberately mismatch a specifier (`%d` with a `double`) and let the class see the warning
 
-## 7. Wrap-up Quiz (6 min)
+## 7. Wrap-up Quiz (5 min)
 
 **Q1.** What does this print?
 

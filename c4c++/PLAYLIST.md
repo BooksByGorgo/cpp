@@ -81,3 +81,12 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 
 ## Appendix A: Macros
 - Sire Records (80s record label)
+
+## Lectures (references not used in the book text)
+- 867-5309/Jenny --- Tommy Tutone (lectures 7, 8)
+- 1999 --- Prince (lecture 7)
+- Xanadu --- Olivia Newton-John (lecture 7)
+- Whip It --- Devo (lectures 7, 8)
+- Eye of the Tiger --- Survivor (lecture 8)
+- Purple Rain --- Prince (lecture 8)
+- Top Gun (1986) callsigns Maverick/Goose/Iceman (lecture 8)

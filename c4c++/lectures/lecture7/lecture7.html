@@ -29,232 +29,214 @@ class: center, middle
 Numbers and Casting
 
 ---
-# Review: What is unsafe here?
+# Review: Why pick calloc over malloc + memset?
 
-```c
-p = realloc(p, n);
-```
-
-1. `realloc` never fails
-1. If `realloc` fails, `p` is `NULL` and the old block leaks
-1. `realloc` requires a cast in C
-1. `realloc` only grows, never shrinks
+1. calloc is always faster
+1. Clearer intent; the library can often skip the memset for fresh pages
+1. malloc cannot allocate arrays
+1. memset only works on chars
 1. Ben got this wrong
 
 ---
 # Learning Objectives
 
-- The CPU sees only numbers
-- `char` math: `'A'` **is** `65`
-- Pointers are addresses --- also numbers
-- No string type: `char` arrays + `'\0'`
-- `strtol` and friends
-- Integer sizes, promotion, floating point
-- C casts: one syntax, no magic
+- To the CPU, everything is a number
+- Chars and pointers are numbers
+- Strings are arrays of numbers
+- `strtol` (and why not `atoi`)
+- Integer sizes and ranges
+- Floating-point surprises
+- Casting: `(type) value`
+- The `(int)"1999"` trap
 
 ---
-# Everything is a Number
-
-- The CPU has no characters, strings, pointers, or objects
-- Registers and memory hold numbers --- that is all
-- Types do **not** change the bits
-- Types tell the *compiler* how to interpret the bits
-- Size determines range; semantics: signed/unsigned, int/float
-
----
-# char Is a Small Number
+# Everything Is a Number
 .lc[
 ```c
 char grade = 'A';
-int score = 65;
+// same as: char grade = 65;
 
-printf("grade as char: %c, as int: %d\n",
-       grade, grade);
-printf("score as char: %c, as int: %d\n",
-       score, score);
+printf("%c %d\n",
+       grade, grade);  // A 65
 
-char next_grade = grade + 1;
-printf("Next grade: %c\n", next_grade);
+char next = grade + 1;
+printf("%c\n", next);  // B
 ```
 ]
 .rc[
-- Both hold the exact same value
-- `A 65` prints twice
-- `65 + 1 = 66`, so next grade is `B`
-- Math on chars is just math on small ints
+- The CPU knows only numbers
+- Types tell the **compiler** how to use the bits
+- `'A'` **is** 65 --- no conversion
+- Char math is integer math
 ]
 
 ---
-# Pointers are Numbers Too
+# Pointers Are Numbers Too
 
 ```c
-int val = 1986; // "Danger Zone" charted
-int *p = &val;
+int year = 1999;
+int *p = &year;
 
 printf("Address: %p\n", (void *)p);
-// e.g., 0x7ffd9b8
+// e.g., 0x7ffc965e5104
 ```
 
-- A pointer is an integer holding a memory address
-- `int *` means: treat that number as the location of an `int`
-- `%p` prints it (cast to `void *`), usually in hex
+- A pointer is an integer used as a memory address
+- `int *` means "the number at this address is an `int`"
+- `%p` prints the number, usually in hex
 
 ---
-# Strings are Not Special
+# Strings Are Not Special
 .lc[
 ```c
 char word[] = "Hola";
 
-printf("String: %s\n", word);
-printf("Bytes: ");
+printf("%s\n", word);
 for (int i = 0;
      i < (int)sizeof(word); i++)
     printf("%d ", word[i]);
-printf("\n");
-// String: Hola
-// Bytes: 72 111 108 97 0
+```
+
+Output:
+```
+Hola
+72 111 108 97 0
 ```
 ]
 .rc[
-- C has no string type
-- A string = array of small ints ending in `0`
-- `"Africa"` is `65 102 114 105 99 97 0`
-- `<string.h>` walks the array until the `0` byte
+- No native strings in C
+- Just an array of small integers
+- Ends with a `0` byte
+- `<string.h>` scans until the `0` --- that is the whole illusion
 ]
 
 ---
-# String to Number: strtol
+# strtol
 
 ```c
-long strtol(const char *str, char **endptr,
-            int base);
+long strtol(const char *str,
+            char **endptr, int base);
+
+long jenny = strtol("8675309", NULL, 10);
+// 8675309 --- Jenny, I got your number
 ```
 
-```c
-char *year_str = "1986";
-long year = strtol(year_str, NULL, 10);
-printf("Year: %ld\n", year);  // Year: 1986
-```
-
-- `"1986"` and `1986` are completely different bits
-- `endptr`: first unparsed character (`NULL` if unused)
-- base: 10 decimal, 16 hex, 0 auto-detect
+- `str`: the text to parse
+- `endptr`: points past the digits (`NULL` if you don't care)
+- `base`: 10, 16, or 0 to auto-detect
 
 ---
-# Picking a Base
-.lc[
+# strtol with Base 0
+
 ```c
-strtol("42",   NULL, 0);
-// 42 --- decimal
-strtol("0x2A", NULL, 0);
-// 42 --- hex
-strtol("052",  NULL, 0);
-// 42 --- octal!
+strtol("42",   NULL, 0);   // 42
+strtol("0x2A", NULL, 0);   // 42 --- hex
+strtol("052",  NULL, 0);   // 42 --- octal!
 ```
-]
-.rc[
-**Trap:** with base 0, a leading zero means octal.
 
-`strtol("010", NULL, 0)` returns `8`, not `10`.
+**Trap:** a leading zero silently means octal.
 
-Zero-padded input like `"007"`? Pass base `10` explicitly.
-]
+```c
+strtol("010", NULL, 0);    // 8, not 10
+```
+
+Zero-padded decimal input? Pass base `10` explicitly.
 
 ---
 # atoi and Friends
+.lc[
+```c
+int n = atoi("banana");
+// n == 0
+// bad input, or a real zero?
+```
+]
+.rc[
+- Decimal only, no bases
+- No error reporting at all
+- Overflow = undefined behavior
+- Prefer `strtol` / `strtod`
+- `strtod` = `strtol` for `double` (no base argument)
+- Read `atoi`, don't write it
+]
+
+---
+# Numbers to Strings
 
 ```c
-int n = atoi("banana");  // 0 --- really "0"?
+char buf[16];
+snprintf(buf, sizeof(buf), "%d", 1999);
+// buf is "1999"
 ```
 
-- `atoi`, `atol`, `atoll`, `atof`: look simpler, do less
-- Decimal only, no `endptr`, no error reporting
-- Overflow is undefined behavior
-- `strtod` = `strtol` for `double` (no base argument)
-
-**Tip:** `atoi` is something you read, not something you write.
+- Formatting, in reverse
+- Full `sprintf` / `sscanf` story in chapter 10
 
 ---
 # Integer Types
 
-| Type | Bytes | Range | Suffix |
-|:---|:---:|:---|:---:|
-| `char` | 1 | -128 to 127 | |
-| `short` | 2 | -32,768 to 32,767 | |
-| `int` | 4 | -2^31 to 2^31-1 | |
-| `long` | 8 | -2^63 to 2^63-1 | `L` |
-| `long long` | 8 | -2^63 to 2^63-1 | `LL` |
+| Type | Bytes | Range |
+|------|:-----:|-------|
+| `char` | 1 | -128 to 127 |
+| `short` | 2 | -32,768 to 32,767 |
+| `int` | 4 | about +/- 2.1 billion |
+| `long` | 8 | about +/- 9.2 quintillion |
 
 - Unsigned variants: `0` to `2^n - 1`; suffixes `U`, `UL`, `ULL`
-- Two's complement: one more negative value than positive
+- Two's complement: one extra negative value
 - Explore with `sizeof` and `<limits.h>`
 
 ---
-# char Signedness + Promotion
+# The char Trap
 
-**Trap:** `char` signedness is implementation-defined.
-
-- x86_64: `char` is signed
-- ARM: `char` is unsigned
-- Watch out!
-
-Integer promotion:
-
-- `char` and `short` promote to `int` in expressions
-- Mixed sizes promote to the larger type
+- Every other integer type is signed by default
+- Plain `char`? **Implementation-defined**
+- x86_64: signed. ARM: unsigned.
+- Spell out `signed char` / `unsigned char` when the range matters
 
 ---
-# size_t Subtraction Wraps
+# The size_t Trap
 .lc[
 ```c
-char *a = "Jump";     // strlen 4
-char *b = "Jump!!!!"; // strlen 8
+char *a = "Whip";     // 4
+char *b = "Whip It!"; // 8
 
-size_t diff =
-    strlen(a) - strlen(b);
-printf("%zu\n", diff);
-
-long sdiff = (long)strlen(a)
-           - (long)strlen(b);
-printf("%ld\n", sdiff);
+size_t d = strlen(a)
+         - strlen(b);
+// 18446744073709551612
 ```
 ]
 .rc[
-- `size_t` is **unsigned**
-- `4 - 8` wraps: `18446744073709551612`
-- Cast to signed first: `-4`
+- `strlen` returns `size_t` --- unsigned
+- 4 - 8 wraps to a huge number
+- Cast **before** subtracting:
+
+```c
+(long)strlen(a)
+  - (long)strlen(b);  // -4
+```
 ]
 
 ---
-# Floating Point
-
-| Type | Size | Suffix |
-|:---|:---|:---|
-| `float` | 4 bytes | `F` |
-| `double` | 8 bytes | *(default)* |
-| `long double` | 16 bytes | `L` |
-
-- Always signed; two zeros (`+0`, `-0` --- they compare equal)
-- Special values: infinity, NaN
-- Fractions = sums of 1/2, 1/4, 1/8, ...
-- `0.5` is exact; `0.1` is not; `0.1 + 0.2 != 0.3`
-
----
-# The 1.2 Puzzle
+# Floating-Point Surprises
 .lc[
 ```c
 float f = 1.2;
+
 if (f != 1.2)
     printf("what?!?\n");
 if (f == 1.2f)
     printf("ok\n");
+
+// BOTH print!
 ```
 ]
 .rc[
-- **Both** lines print!
-- `1.2` is a `double`; storing it in `f` rounds
-- Promoting `f` back does not recover the lost bits
-- `1.2f` rounded the same way --- equal
+- `1.2` is a `double` literal
+- Assigning to `f` rounds it
+- Promotion back to `double` cannot recover the lost bits
+- `1.2f` rounded the same way, so it matches
+- `0.1` and `0.2` are not exact in binary
 ]
 
 ---
@@ -262,117 +244,129 @@ if (f == 1.2f)
 
 ```c
 double pi = 3.14159;
-int roughly_pi = (int)pi; // truncates to 3
+int roughly_pi = (int)pi;  // 3 --- truncates
 ```
 
-- One syntax: `(type)value` --- simpler than C++'s four casts
-- Scalar types only: integers, floats, pointers
-- Float to int **truncates**; too big to fit = UB
-- A cast says: "I know what I am doing, drop the warnings"
-- Magic does **not** happen when you cast
+- One syntax: `(type) value` --- C++ has four named casts, C has one
+- Float to int **truncates**, never rounds; too big to fit = UB
+- A cast says: "I know what I am doing, suppress the warnings"
+- No magic happens
+
+---
+# What Casts Are Allowed?
+
+| From / To | Integer | Float | Pointer |
+| :--- | :--- | :--- | :--- |
+| **Integer** | yes | yes | yes |
+| **Float** | yes | yes | no |
+| **Pointer** | yes | no | yes |
+
+- Scalar types only
+- `char` counts as an integer type
 
 ---
 # The Classic Trap
-
-```c
-char *movie_year = "1985"; // The Goonies
-int bad_year = (int)movie_year;
-// THIS IS A BUG! not 1985!!
-```
-
-- The cast converts the **address**, not the text
-- 8-byte pointer into 4-byte `int` --- the compiler warns:
-  `cast from pointer to integer of different size`
-- Parse strings with `strtol`, always
-
----
-# `void *` and `char *`
 .lc[
 ```c
-int nums[] = {1984, 1985,
-              1986, 1987};
+char *year = "1999";
+int bad = (int)year;
 
-void *vp = nums;
-int *ip = (int *)vp;
-printf("First: %d\n", ip[0]);
+printf("%d\n", bad);
+// garbage address bits!
+```
 
-char *bp = (char *)nums;
-printf("0x%02x\n",
-       (unsigned char)bp[0]);
-// First: 1984
-// 0xc0
+```
+warning: cast from pointer
+to integer of different size
 ```
 ]
 .rc[
-- `void *` points at anything --- why `malloc` needs no cast
-- `char *` = byte-level access
-- Know your memory layout before casting pointers
+- Converts the **address**, not the text
+- 8-byte pointer chopped into a 4-byte `int`
+- The compiler even warns you
+- Parsing text is `strtol`'s job
+]
+
+---
+# void * and Byte Access
+.lc[
+```c
+int nums[] =
+    {1984, 1985, 1986, 1987};
+
+void *vp = nums;
+int *ip = (int *)vp;
+// ip[0] == 1984
+
+char *bp = (char *)nums;
+// bp[0] == 0xc0
+```
+]
+.rc[
+- `void *` points at anything
+- Why `malloc` needs no cast in C
+- `char *` = byte-by-byte view
 - `1984 = 0x7C0`; low byte first (little-endian)
+- Pointer-to-pointer casts: **you** must know the layout
 ]
 
 ---
 # Live Coding
 .lc[
 ```c
-char ch = 'A';
-printf("'%c' is %d\n", ch, ch);
+long jenny = strtol(
+    "8675309", NULL, 10);
 
-long bpm =
-    strtol("120", NULL, 10);
+double tempo = 118.9;
+// (int)tempo == 118
 
-long color =
-    strtol("FF8000", NULL, 16);
-
-double tempo = 120.7;
-int whole = (int)tempo; // 120
+int hex_val = 0xbadd00d;
+unsigned char *raw =
+    (unsigned char *)&hex_val;
+// 0d d0 ad 0b
 ```
 ]
 .rc[
-```c
-char *year_str = "1982";
-long bad  = (long)year_str;
-long good =
-    strtol(year_str, NULL, 10);
-```
-
 - `cc -Wall -Wextra -pedantic`
-- Change `(long)` to `(int)` and read the warning
+- Dump the bytes of `"Xanadu"`
+- Cast `"1999"` to `(int)` and read the warning
+- Dump the bytes of `0xbadd00d` --- why backwards? (little-endian)
 ]
 
 ---
 # What does this print?
 
 ```c
-char letter = 'C';
-printf("%c %d\n", letter + 2, letter + 2);
+char c = 'A';
+printf("%c %d\n", c + 1, c + 1);
 ```
 
-1. `E 69`
-1. `C 67`
-1. `E E`
-1. `69 69`
+1. `B 66`
+1. `A 65`
+1. `B 65`
+1. `66 B`
 1. Ben got this wrong
 
 ---
 # Where is the bug?
 
 ```c
-char *score_str = "100";
-int score = (int)score_str;
-printf("You got a %d percent!\n", score);
+char *track_str = "42";
+int track = (int)track_str;
+printf("Track %d\n", track);
 ```
 
-1. `score_str` needs a `&` in the cast
-1. Cast converts the address, not the string --- use `strtol`
+1. `track_str` needs an `&`
 1. `%d` should be `%s`
-1. `score_str` must be `const`
+1. Cast converts the address, not the text
+1. `"42"` is missing a null terminator
 1. Ben got this wrong
 
 ---
-# What does strtol("010", NULL, 0) return?
+# What does this print?
 
 ```c
-long n = strtol("010", NULL, 0);
+printf("%ld\n", strtol("010", NULL, 0));
 ```
 
 1. `10`
@@ -384,14 +378,14 @@ long n = strtol("010", NULL, 0);
 ---
 # Key Points
 
-- Everything (characters, pointers) is just a number
-- Types tell the compiler how to interpret the bits
-- No strings --- arrays of numbers ended with `0`
-- `strtol`/`strtod` to parse; `atoi` is legacy
-- `char` signedness is implementation-defined
-- `size_t` is unsigned; subtraction can wrap
-- `(type)value` asserts intent --- no magic happens
-- Casting a `char *` to an int gives the address
+- Everything is a number; types instruct the compiler
+- `'A'` is 65; char math is int math
+- Strings = arrays of small ints ending in `0`
+- `strtol` over `atoi`
+- `size_t` subtraction wraps
+- Compare floats with float literals
+- `(type) value` --- no magic
+- `(int)"1999"` gives the address, not 1999
 
 **Read:** chapter 10 of *Gorgo C for C++ Programmers*. **Do:** exercises 1-7.
 

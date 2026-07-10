@@ -29,7 +29,7 @@ class: center, middle
 Pointers
 
 ---
-# Review: strlen vs sizeof
+# Review: What does this print?
 
 ```c
 char s[] = "Ghostbusters";
@@ -142,7 +142,7 @@ if (p) {
 ```
 
 - Dereferencing `NULL` is **undefined** (usually segfault)
-- C only picked up `nullptr` in C23 --- in practice you will see `NULL`
+- `nullptr`: C++11; C added it in C23 --- most C code uses `NULL`
 
 ---
 # Pointers and Arrays
@@ -172,9 +172,11 @@ p++;               // now at nums[1]
 ```
 
 - `p + 1` advances by `sizeof(*p)` bytes
-- `int *` where `int` is 4 bytes: `p++` moves 4 bytes
-- `char *` moves 1 byte, `double *` moves 8
+- `int *`: if `int` is 4 bytes, `p++` moves 4 bytes
+- `char *` moves 1 byte (guaranteed); `double *` typically 8
 - You never multiply by byte size yourself
+
+**Wut:** `2[nums]` works --- it is `*(2 + nums)`
 
 ---
 # Structs via Pointers
@@ -216,6 +218,7 @@ increment(&score);
 ```
 ]
 .rc[
+- C++: `void increment(int &x)` --- C has no references
 - Every C parameter is copied
 - To modify caller's variable: pass a pointer
 - Function gets a **copy** of the address
@@ -257,7 +260,7 @@ int *get_value(void) {
 - `result` lives on the stack
 - Its memory is reclaimed when the function returns
 - Returned pointer points at garbage
-- Fix: return the value, use an out-param, or `malloc` (lecture 5+6)
+- Fix: return the value, use an out-param, or `malloc` (lectures 5+6)
 
 ---
 # What does this print?
@@ -299,8 +302,8 @@ printf("%s\n", p->title);
 
 1. 2
 1. 4
-1. Depends on the int it points to
 1. 8
+1. Depends on the int it points to
 1. Ben got this wrong
 
 ---

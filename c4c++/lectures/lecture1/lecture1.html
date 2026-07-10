@@ -32,7 +32,7 @@ Introduction to C
 # Learning Objectives
 
 - Describe how C and modern C++ differ
-- Know the K&R book and modern `int main(void)`
+- Know the K&R book and why modern C requires `int main(void)`
 - Compile a C program with `cc`
 - Use the core `printf` format specifiers
 - Control width, precision, and zero-fill
@@ -46,24 +46,6 @@ Introduction to C
 - Modern C++ has drifted far from C
 - Operating systems, firmware, databases, runtimes are all C
 - You *will* meet C in a C++ job
-
----
-# The Book: K&R
-.lc[
-```c
-#include <stdio.h>
-main()
-{
-    printf("hello, world\n");
-}
-```
-]
-.rc[
-- *The C Programming Language (2nd ed.)*, Kernighan & Ritchie --- the classic C reference
-- This is its 1988 hello, world
-- Bare `main()` is now an **error**
-- Write `int main(void)` instead
-]
 
 ---
 # C++ vs C (1 of 2)
@@ -91,14 +73,33 @@ main()
 | smart pointers | raw pointers |
 | classes | structs + functions |
 | references (`&`) | pointers (`*`) |
-| `bool` built-in | `<stdbool.h>` |
+| `bool` built-in | `_Bool` / `<stdbool.h>` |
 | `// comments` | `/* ... */` (C89) |
 ]
 .rc[
 - `//` comments OK since C99
-- `_Bool` since C99, or `<stdbool.h>`
-- `bool` a keyword only since C23
-- `&` declares a reference in C++ but is address-of in C --- confusing
+- `_Bool` arrived in C99
+- `<stdbool.h>` provides `bool`
+- `bool` a real keyword since C23
+- References look like addresses --- confusing
+]
+
+---
+# The Book: K&R
+.lc[
+```c
+#include <stdio.h>
+main()
+{
+    printf("hello, world\n");
+}
+```
+]
+.rc[
+- *The C Programming Language* (2nd ed.) --- Kernighan & Ritchie
+- The classic reference, still the go-to C textbook
+- **Trap:** that listing is 1988 style --- bare `main()` is an error today
+- Write `int main(void)`
 ]
 
 ---
@@ -136,7 +137,7 @@ int main(void) {
 ]
 .rc[
 - Cast pointer to `void *` before `%p`
-- `%zu` for `sizeof` results
+- `%zu` for `sizeof` and `strlen`
 - Mismatch between specifier and type is **undefined behavior**
 ]
 
@@ -148,7 +149,7 @@ printf("%f\n",   98.6);   // 98.600000
 printf("%.2f\n", 98.6);   // 98.60
 printf("%02d\n", 3);      // 03
 printf("%06X\n", 0xFF8800);
-                           // FF8800
+                          // FF8800
 printf("%d%%\n", 95);     // 95%
 ```
 ]
@@ -156,7 +157,7 @@ printf("%d%%\n", 95);     // 95%
 - `.N` sets precision
 - Leading `0` pads with zeros instead of spaces
 - `%%` prints a literal `%`
-- Same syntax in `fprintf`, `snprintf` --- coming in chapter 10
+- Same syntax works in `fprintf`, `snprintf`
 ]
 
 ---

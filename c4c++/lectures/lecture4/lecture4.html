@@ -31,6 +31,8 @@ Functions
 ---
 # Review: What does this print?
 
+Inside `main`:
+
 ```c
 int a[] = {10, 20, 30, 40, 50};
 int *p = a + 2;
@@ -50,7 +52,7 @@ printf("%d %d %d\n",
 - Prototype vs definition
 - `()` vs `(void)` --- it matters in C
 - No overloading, no defaults, no references
-- Faking defaults: sentinels, name variations
+- Faking defaults: sentinels and name variations
 - `const` parameters
 - Pass structs by `const T *`
 - Recursion and stack depth
@@ -80,16 +82,15 @@ int add(int a, int b) {
 # () vs (void)
 
 ```c
-int get_score(void); // really no params
-int get_score();     // C17: UNSPECIFIED
-                     // C23: same as (void)
+int get_score(void);   // really no params
+int get_score();       // UNSPECIFIED in C17
 ```
 
 - In C++, `()` means "no parameters."
-- C17 and earlier: `()` turns off argument checking.
-- C23 matches C++: extra args are now an error.
-- gcc 15 defaults to C23 --- old behavior needs `-std=gnu17`.
-- Always write `(void)`.
+- In C17 and earlier, `()` means unspecified params --- calls are not checked.
+- C23 changed it: `()` now means `(void)`, matching C++.
+- Our classroom compiler (gcc 15) defaults to C23, so calling `get_score(1, 2, 3)` through `()` is a hard error --- demo the old hole with `-std=c17`.
+- Always write `(void)` --- correct in every version of C.
 
 **Tip:** `int main(void)` for this exact reason.
 
@@ -109,12 +110,14 @@ int get_score();     // C17: UNSPECIFIED
 void greet(const char *name,
            int times) {
     if (times <= 0) times = 1;
-    for (int i = 0; i < times; i++)
+    for (int i = 0;
+         i < times; i++) {
         printf("I am %s\n", name);
+    }
 }
 
-greet("She-Ra", 0);  // once
-greet("He-Man", 3);  // three times
+greet("She-Ra", 0); // once
+greet("He-Man", 3); // three times
 
 // name variation
 void play(const char *title) {
@@ -156,7 +159,8 @@ swap(&x, &y);
 # const Parameters
 .lc[
 ```c
-void print_name(const char *name) {
+void print_name(
+    const char *name) {
     printf("I am %s\n", name);
     // name[0] = 'X';  // ERROR
 }
@@ -278,7 +282,8 @@ typedef int
 int add(int, int);
 int sub(int, int);
 
-void apply(binop_fn fn, int x, int y) {
+void apply(binop_fn fn,
+           int x, int y) {
     printf("%d\n", fn(x, y));
 }
 ```
@@ -311,7 +316,8 @@ int restar(int a, int b) {
     return a - b;
 }
 
-void compute(math_fn fn, int x, int y) {
+void compute(math_fn fn,
+             int x, int y) {
     printf("%d\n", fn(x, y));
 }
 ```
@@ -328,22 +334,27 @@ compute(restar, 8, 3);
 
 ---
 # What does this print?
-
+.lc[
 ```c
 void mystery(int x) {
     x = x * 2;
 }
 
-int val = 5;
-mystery(val);
-printf("%d\n", val);
+int main(void) {
+    int val = 5;
+    mystery(val);
+    printf("%d\n", val);
+    return 0;
+}
 ```
-
+]
+.rc[
 1. `10`
 1. `5`
 1. Undefined
 1. Depends on compiler
 1. Ben got this wrong
+]
 
 ---
 # Where is the bug?
@@ -367,7 +378,7 @@ int count_chars(const char *s) {
 
 ---
 # What does this print?
-
+.lc[
 ```c
 int mul(int a, int b) {
     return a * b;
@@ -377,21 +388,26 @@ int apply(int (*fn)(int, int),
     return fn(a, b);
 }
 
-printf("%d\n", apply(mul, 6, 7));
+int main(void) {
+    printf("%d\n",
+           apply(mul, 6, 7));
+    return 0;
+}
 ```
-
+]
+.rc[
 1. `13`
 1. `42`
 1. `67`
 1. Compile error
 1. Ben got this wrong
+]
 
 ---
 # Key Points
 
 - `(void)` for empty parameter lists
 - No overloading, no defaults
-- Fake defaults: sentinels, name variations
 - Every parameter is pass by value
 - `const T *` for read-only pointer params
 - Pass large structs by `const T *`

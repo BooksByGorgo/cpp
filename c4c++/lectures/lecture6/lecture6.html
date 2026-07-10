@@ -65,6 +65,7 @@ int *a = calloc(
 .rc[
 - `calloc(count, size)`
 - Allocates **and zeroes** the bytes
+- Equivalent to `malloc` + `memset(0)`
 - Checks `count * size` for overflow --- `malloc(count * size)` silently wraps
 - Clearer intent; sometimes faster on fresh pages
 ]
@@ -149,7 +150,7 @@ memset(nums, 1, sizeof(nums));
 ]
 .rc[
 - `memset` fills **bytes**, not elements
-- Zeroing works because zero bytes = zero value for ints, floats, pointers
+- Zeroing works because zero bytes = zero value for ints, floats, pointers (on all mainstream platforms)
 - Any other value: use a loop
 ]
 
@@ -188,10 +189,11 @@ free(b);             // UB
 .lc[
 ```c
 int *a = calloc(5, sizeof(int));
+if (!a) return 1;
 // ...
 
-int *tmp = realloc(a,
-                   10*sizeof(int));
+int *tmp =
+    realloc(a, 10 * sizeof(int));
 if (!tmp) { free(a); return 1; }
 a = tmp;
 
@@ -202,8 +204,8 @@ free(a);
 ```
 ]
 .rc[
-- Force failure: `size_t huge = (size_t)-1 / argc;`
-- `realloc(a, huge)` returns `NULL` at runtime
+- Force failure with a runtime size: `size_t huge = (size_t)-1 / argc;`
+- `realloc(a, huge)` returns `NULL` --- a huge literal returns `NULL` too, plus a compile warning
 - Try `memcpy` with overlap, then switch to `memmove`
 - Leak a buffer and run under valgrind
 ]
@@ -252,7 +254,7 @@ free(b);
 - Two pointers, one block = double-free risk
 - Ownership means "who frees it"
 
-**Read:** chapter 9 of *Gorgo C for C++ Programmers*. **Do:** exercises 1, 2, 3, 4, 5.
+**Read:** chapter 9 of *Gorgo C for C++ Programmers*. **Do:** exercises 1-5.
 
 </textarea>
 <script>

@@ -50,7 +50,7 @@ printf("%05d %x\n", 42, 255);
 - Concatenate safely
 - `strdup` / `strtok` pitfalls
 - Classify characters with `<ctype.h>`
-- Preview `sprintf`/`sscanf`; prefer `snprintf`
+- `sprintf` / `sscanf` preview
 
 ---
 # What Is a C String?
@@ -242,19 +242,22 @@ toupper((unsigned char)c)
 .lc[
 ```c
 char result[50];
+int year = 1985;
 sprintf(result,
   "The year is %d. Que bueno!",
-  1985);
+  year);
 
 char buf[20];
 snprintf(buf, sizeof(buf),
   "The year is %d", 2112);
+// "The year is 2112"
 ```
 ]
 .rc[
 - `sprintf` = `printf` into a buffer
 - `sscanf` = `scanf` from a string
-- `snprintf` caps the write --- the safe sibling
+- `sprintf` has **no bounds check**
+- `snprintf` is the safe sibling --- pass `sizeof(buf)`
 - Details in the Standard I/O chapter
 ]
 
@@ -262,25 +265,24 @@ snprintf(buf, sizeof(buf),
 # Live Coding
 .lc[
 ```c
-char song[] = "Sweet Dreams";
-printf("'%s' (%zu)\n",
-       song, strlen(song));
-
-char greet[10] = "Buenos ";
-strncat(greet, "dias",
+char greet[30] = "Buenos ";
+strncat(greet,
+  "dias, buenas tardes",
   sizeof(greet)
   - strlen(greet) - 1);
-puts(greet); // "Buenos di"
-
-char *d = strdup("...");
-puts(d); free(d);
+strncat(greet,
+  " y buenas noches",
+  sizeof(greet)
+  - strlen(greet) - 1);
+puts(greet);
 ```
 ]
 .rc[
 - `cc -Wall -Wextra -pedantic`
-- `strncat` truncates safely: `"Buenos di"`
-- Swap in `strcat`: compiler stays silent
-- Rerun with `-fsanitize=address` --- ASan reports `stack-buffer-overflow`
+- `strncat` truncates safely
+- Swap in `strcat`: compiles **silently**, aborts --- `stack smashing detected`
+- `-O2` warns at compile time
+- Literal writes: `const char *` won't compile; `char *` segfaults
 ]
 
 ---
@@ -310,16 +312,16 @@ printf("%s\n", greeting);
 1. `printf` needs `&greeting`
 1. Strings cannot be lowercase
 1. Modifying a string literal is UB
-1. `printf` cannot print modified strings
+1. `'w'` needs double quotes: `"w"`
 1. Ben got this wrong
 
 ---
-# What does strcmp("A", "C") return?
+# What does strcmp("A", "B") return?
 
 1. `0`
 1. A positive number
 1. A negative number
-1. `-2` exactly
+1. The difference in string lengths
 1. Ben got this wrong
 
 ---
@@ -335,9 +337,8 @@ printf("%s\n", greeting);
 - `(unsigned char)` before `<ctype.h>`
 - `snprintf` over `sprintf`
 
-**Skim:** chapters 4-5 (Expressions, Control Flow) on your own --- familiar territory from C++.
-
 **Read:** chapter 6 of *Gorgo C for C++ Programmers*. **Do:** exercises 1-7.
+**Skim:** chapters 4-5 (Expressions, Control Flow) on your own --- familiar territory from C++.
 
 </textarea>
 <script>

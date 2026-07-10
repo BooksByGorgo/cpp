@@ -142,7 +142,7 @@ free(nums);
 ### The "don't check NULL" debate
 
 - Argument: `NULL` checks clutter the code, and the error paths they guard are almost never exercised or tested.
-- Counter: safety-critical systems need the check --- or ban dynamic allocation entirely.
+- Counter: safety-critical systems need the check --- though they often forbid dynamic allocation entirely.
 - Default advice: check and bail out early in teaching code.
 
 ## 6. Where Variables Live: Summary (3 min)
@@ -280,10 +280,9 @@ void *calloc(size_t count, size_t size);
 ```
 
 - `calloc(5, sizeof(int))` --- 5 ints, **zeroed**.
-- *Not* just `malloc(5 * sizeof(int))` + `memset(p, 0, 20)` in one call.
-- `calloc` checks whether `count * size` overflows and fails cleanly; `malloc(count * size)` silently wraps, handing you a buffer far smaller than you asked for.
-- On demand-paged systems, `calloc` can also skip the zeroing for large blocks --- the kernel's fresh pages are already zero-filled.
-- And it states your intent: "I want zeroed memory."
+- Equivalent to `malloc(5 * sizeof(int))` + `memset(p, 0, 5 * sizeof(int))` --- but clearer intent.
+- `calloc` checks whether `count * size` overflows before allocating --- `malloc(count * size)` silently wraps, handing back a buffer far smaller than you asked for.
+- On demand-paged systems, `calloc` can skip the zeroing for large blocks --- the kernel's fresh pages are already zero-filled.
 
 ## 2. `realloc` (12 min)
 
@@ -357,9 +356,12 @@ free(b);               // UB — double free
 #include <stdlib.h>
 #include <string.h>
 
-int main(void) {
+int main(int argc, char **argv) {
+    (void)argv;
+
     // calloc zeroes for us
     int *a = calloc(5, sizeof(int));
+    if (!a) return 1;
     for (int i = 0; i < 5; i++) printf("%d ", a[i]);
     putchar('\n');
 
@@ -370,6 +372,12 @@ int main(void) {
     for (int i = 5; i < 10; i++) a[i] = i * i;
     for (int i = 0; i < 10; i++) printf("%d ", a[i]);
     putchar('\n');
+
+    // force a realloc failure: size computed at runtime
+    size_t huge = (size_t)-1 / argc;
+    tmp = realloc(a, huge);
+    if (tmp == NULL) puts("huge realloc failed");
+    else a = tmp;
 
     // memcpy round trip
     int src[] = {10, 20, 30};
@@ -383,7 +391,7 @@ int main(void) {
 }
 ```
 
-- Force a `realloc` failure and show the return is `NULL`: compute the huge size at runtime (e.g., `size_t huge = (size_t)-1 / argc;`) --- a huge literal triggers a compile-time warning instead of the runtime `NULL` you want to show.
+- The huge `realloc` returns `NULL` and leaves `a` intact --- computing the size at runtime (dividing by `argc`) just avoids the compile-time warning a huge literal like `(size_t)-1` triggers; the call returns `NULL` either way.
 - Deliberately `memcpy` from an array to itself with overlap and introduce `memmove`.
 
 ## 6. Wrap-up Quiz (5 min)
@@ -428,7 +436,7 @@ E. Ben got this wrong
 ## 7. Assignment / Reading (2 min)
 
 **Read:** chapter 9 of *Gorgo C for C++ Programmers*.
-**Do:** exercises 1, 2, 3, 4, 5.
+**Do:** exercises 1-5.
 
 ## Key Points to Reinforce (Lectures 5+6)
 

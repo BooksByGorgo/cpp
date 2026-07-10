@@ -14,16 +14,16 @@ By the end of this lecture, students should be able to:
 - Use `strdup` and pair it with `free`
 - Tokenize a string with `strtok`/`strtok_r` and explain the gotchas
 - Classify characters with `<ctype.h>` and use the `(unsigned char)` cast
-- Recognize `sprintf`/`sscanf` and prefer `snprintf` as the bounded way to build strings
+- Recognize `sprintf`/`sscanf` and reach for `snprintf` over `sprintf`
 
 ## Materials
 
-- Live coding terminal with `cc -Wall -Wextra -pedantic` (add `-fsanitize=address` for the overflow demo)
+- Live coding terminal with `cc -Wall -Wextra -pedantic`
 - Copy of `c4c++/ch03.md` for reference
 
 ---
 
-## 0. Review (5 min)
+## 0. Review (4 min)
 
 Review multiple choice from lecture 1:
 
@@ -41,7 +41,7 @@ E. Ben got this wrong
 
 *Answer: A*
 
-## 1. What Is a C String? (5 min)
+## 1. What Is a C String? (4 min)
 
 - No `std::string`.
 - A "string" is a `char` array terminated by `'\0'`.
@@ -107,12 +107,20 @@ int strcmp(const char *a, const char *b);
 - `strchr(s, c)` --- first occurrence of byte `c`, or `NULL`
 - `strrchr(s, c)` --- last occurrence
 - `strstr(h, n)` --- first occurrence of substring `n` in haystack `h`
+- Compute the index of a match with pointer subtraction: `p - s`
+- The subtraction yields a `ptrdiff_t` --- print it with `%td`
+
+```c
+char *p = strchr(s, 'e');
+if (p != NULL)
+    printf("first 'e' at %td\n", p - s);
+```
 
 ## 4. `strcat` and the Buffer Overflow (5 min)
 
 ```c
 char buf[12] = "Buenas ";         // 8 used, 4 left
-strcat(buf, "noches");             // "noches" needs 7 --- OVERFLOW
+strcat(buf, "noches");            // "noches" needs 7 --- OVERFLOW
 ```
 
 - `strcat` has no way to know the destination size.
@@ -125,7 +133,7 @@ strncat(buf, ", World!",
         sizeof(buf) - strlen(buf) - 1);
 ```
 
-## 5. `strdup` and `strtok` (5 min)
+## 5. `strdup` and `strtok` (7 min)
 
 ### `strdup`
 
@@ -172,7 +180,7 @@ for (size_t i = 0; title[i]; i++)
 **Wut:** `<ctype.h>` takes an `int`. On platforms where `char` is signed, a high-bit value sign-extends into a negative int --- **undefined behavior**. Always cast to `unsigned char` first.
 :::
 
-## 7. A Preview: `sprintf` and `sscanf` (5 min)
+## 7. A Preview: `sprintf` and `sscanf` (4 min)
 
 ```c
 int sprintf(char *str, const char *format, ...);
@@ -181,6 +189,7 @@ int sscanf(const char *str, const char *format, ...);
 
 - `sprintf` is `printf` that writes into a string buffer.
 - `sscanf` is `scanf` that reads from a string.
+- Full coverage comes in the Standard I/O chapter --- today is just a taste.
 
 ```c
 char result[50];
@@ -189,18 +198,19 @@ sprintf(result, "The year is %d. Que bueno!", year);
 // result is now "The year is 1985. Que bueno!"
 ```
 
-- Just as `strncpy` is the safer sibling of `strcpy`, `snprintf` is the safer sibling of `sprintf`.
+- Like `strcpy` and `strcat`, `sprintf` has no bounds check.
 
 ```c
 char buf[20];
 snprintf(buf, sizeof(buf), "The year is %d", 2112);
-// safely truncated if it were longer
+// buf is "The year is 2112" -- truncated if longer
 ```
 
-- `snprintf` never writes more than the given size --- no buffer overflow.
-- Full detail comes in the Standard I/O chapter.
+::: {.tip}
+**Tip:** Just as `strncpy` is the safer sibling of `strcpy`, `snprintf` is the safer sibling of `sprintf` --- it never writes more than the size you give it.
+:::
 
-## 8. Live Coding: String Starter (8 min)
+## 8. Live Coding: String Starter (9 min)
 
 ```c
 #include <stdio.h>
@@ -215,10 +225,12 @@ int main(void) {
     strcpy(copy, song);
     printf("copy: '%s'\n", copy);
 
-    char greeting[10] = "Buenos ";
-    strncat(greeting, "dias",
+    char greeting[30] = "Buenos ";
+    strncat(greeting, "dias, buenas tardes",
             sizeof(greeting) - strlen(greeting) - 1);
-    puts(greeting);   // "Buenos di" --- truncated, but safe
+    strncat(greeting, " y buenas noches",
+            sizeof(greeting) - strlen(greeting) - 1);
+    puts(greeting);
 
     char *dup = strdup("Never Gonna Give You Up");
     puts(dup);
@@ -228,11 +240,12 @@ int main(void) {
 }
 ```
 
-- Compile with `cc -Wall -Wextra -pedantic`
-- Point out the truncation: `strncat` ran out of room and stopped at `"Buenos di"` instead of overflowing.
-- Swap the `strncat` call for `strcat(greeting, "dias");` and recompile --- the compiler stays silent.
-- Now recompile with `-fsanitize=address` and run: AddressSanitizer aborts with a `stack-buffer-overflow` report naming `greeting`.
-- Lesson: overflows are invisible at compile time; `strncat` truncates, `strcat` corrupts.
+- Compile with `cc -Wall -Wextra -pedantic` and run.
+- The full greeting needs 43 bytes; the second `strncat` runs out of room and truncates safely to `Buenos dias, buenas tardes y `.
+- Now swap both `strncat` calls for `strcat(greeting, ...)`: it compiles with **no warning**, prints the full 42-character greeting, then aborts on return with `*** stack smashing detected ***`.
+- The compiler cannot see the overflow at these flags because no single call looks wrong until the string lengths are tracked across calls; the runtime stack protector catches the corruption instead.
+- Recompile the `strcat` version with `-O2` added: now gcc reports the overflow at compile time (`-Warray-bounds` on the fortified `strcat`).
+- Bonus experiment: `const char *p = "..."; p[0] = 'x';` fails to compile, but plain `char *p = "..."; p[0] = 'x';` compiles silently and segfaults at run time.
 
 ## 9. Wrap-up Quiz (5 min)
 
@@ -262,20 +275,22 @@ printf("%s\n", greeting);
 A. `printf` needs `&greeting`
 B. Strings cannot be lowercase
 C. Modifying a string literal is undefined behavior
-D. `printf` cannot print modified strings
+D. `'w'` needs double quotes: `"w"`
 E. Ben got this wrong
 
-*Answer: C* --- writing through a pointer to a string literal is undefined behavior; declaring `greeting` as a `char` array (`char greeting[] = ...`) is one way to fix it.
+*Answer: C* --- `greeting` points at a string literal, so writing through it is undefined behavior (it crashes on most systems).
+Declaring it as `char greeting[]` would be a fix, not the bug.
 
-**Q3.** What does `strcmp("A", "C")` return?
+**Q3.** What does `strcmp("A", "B")` return?
 
 A. `0`
 B. A positive number
 C. A negative number
-D. `-2` exactly
+D. The difference in string lengths
 E. Ben got this wrong
 
-*Answer: C* --- `"A"` sorts before `"C"`, so the result is negative; the standard does not guarantee any exact value (glibc here returns `-1`).
+*Answer: C* --- the standard only promises a negative value when the first string compares less; the exact number is unspecified.
+*Instructor note:* gcc constant-folds `strcmp` of two string literals at compile time, so a student testing with literals sees the folded value rather than glibc's runtime result --- with variables they may see a different exact number; only the sign is guaranteed.
 
 ## 10. Assignment / Reading (2 min)
 
@@ -291,6 +306,6 @@ E. Ben got this wrong
 - `==` compares addresses; use `strcmp`
 - `strcpy`, `strcat` have no bounds checks --- prefer `strncpy`/`strncat`
 - `strdup` calls `malloc`; match it with `free`
+- `sprintf` has no bounds check --- prefer `snprintf`
 - `strtok` is destructive and non-reentrant --- prefer `strtok_r`/`strtok_s`
 - Cast to `unsigned char` before `<ctype.h>` calls
-- `snprintf` is the safe alternative to `sprintf` --- it limits output to the buffer size
