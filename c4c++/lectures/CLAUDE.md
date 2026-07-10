@@ -1,7 +1,7 @@
 # Content Description
 
 - lecture outlines in markdown format
-- lectures are assumed to be 50 minutes
+- lectures are assumed to be 60 minutes
 - lecture notes are named lectureX.md for lecture X or lectureX+Y.md for lecture X and Y
 - lecture slides are in a directory named lectureX for lecture X in that directory is lectureX.html with any support files also in that directory
 - slides use remark.js. Hand-crafted HTML presentations built from lecture note outlines.
@@ -18,6 +18,8 @@
 - lecture 3: chapter 6
 - lecture 4: chapter 7
 - lecture 5+6: chapter 8
+- lecture 7: chapter 9
+- lecture 8: chapter 10
 
 # Slide Creation Process
 
