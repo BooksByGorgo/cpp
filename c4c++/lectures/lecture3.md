@@ -1,7 +1,7 @@
 # Lecture 3 --- Pointers
 
 **Source:** `c4c++/ch06.md`
-**Duration:** 50 minutes
+**Duration:** 65 minutes
 
 ## Learning Objectives
 
@@ -60,6 +60,9 @@ double *d;     // pointer to double
 
 ```c
 int *p, q;     // p is int*, q is int
+```
+
+```c
 int *p, *q;    // both are int*
 ```
 :::
@@ -114,7 +117,7 @@ if (p) {
 ```
 
 - Dereferencing `NULL` is undefined behavior; usually a segfault.
-- C uses `NULL`; C++ also has `nullptr` (C does not).
+- C only picked up `nullptr` in C23; in practice you will see `NULL`.
 
 ## 6. Pointers and Arrays (7 min)
 
@@ -151,7 +154,7 @@ printf("%s\n", p->title);     // idiomatic
 - `.` has higher precedence than `*`, so `(*p).title` needs the parentheses.
 - `p->field` is just `(*p).field`, written more cleanly.
 
-## 8. Pass by Value and the Pointer Workaround (10 min)
+## 8. Pass by Value and the Pointer Workaround (15 min)
 
 - **Every** C parameter is pass by value --- the function gets a copy.
 - To modify a caller's variable, pass a pointer.
@@ -175,6 +178,7 @@ void swap(int *a, int *b) {
 ```
 
 - The function receives a **copy** of the address, but both copies name the same memory.
+- Trace `swap` on the board with a memory diagram --- this is where pass by value clicks for C++ programmers used to `int &`.
 
 ::: {.tip}
 **Tip:** When you see a `*` on a parameter, ask: does the function need to modify my variable, or does it need a block of memory (like an array)? Often it is both.
@@ -234,16 +238,16 @@ E. Ben got this wrong
 
 A. 2
 B. 4
-C. 6
+C. Depends on the int it points to
 D. 8
-E. Depends on the int it points to
+E. Ben got this wrong
 
 *Answer: D*
 
 ## 11. Assignment / Reading (2 min)
 
 **Read:** chapter 7 of *Gorgo C for C++ Programmers*.
-**Do:** exercises 1, 2, 3, 5, 6, 7.
+**Do:** exercises 1-7.
 
 ## Key Points to Reinforce
 

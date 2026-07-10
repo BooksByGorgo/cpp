@@ -55,7 +55,7 @@ std::println("{:10.2f}", score);
 - Chaining `<<` with manipulators is verbose and sticky
 - `std::format` (C++20) and `std::print`/`std::println` (C++23) give you clean format strings
 
-## 2. `std::format` Basics (8 min)
+## 2. `std::format` Basics (6 min)
 
 Include `<format>`. Returns a `std::string`.
 
@@ -76,6 +76,7 @@ int main() {
 
 - `{}` placeholders are substituted **in order** (implicit numbering)
 - Each argument can be any type the library knows how to format
+- The compiler validates format strings **at compile time** --- a malformed spec or a missing argument is a compile error, not a runtime surprise
 
 ## 3. Indexed Arguments (6 min)
 
@@ -133,25 +134,34 @@ std::format("{:05}", 42);       // "00042"
 std::format("{:#010x}", 255);   // "0x000000ff"
 ```
 
+- The `0` flag pads with zeros and **implies right alignment**
+
 ### Base Types
 
 ```cpp
 std::format("{:d}", 42);    // "42"  (decimal)
 std::format("{:x}", 255);   // "ff"  (hex)
+std::format("{:X}", 255);   // "FF"  (uppercase hex)
 std::format("{:o}", 8);     // "10"  (octal)
-std::format("{:b}", 10);    // "1010"(binary)
+std::format("{:b}", 10);    // "1010" (binary)
 ```
 
-## 6. Floating-Point Precision (8 min)
+- `x` uses lowercase hex digits, `X` uses uppercase
+
+## 6. Precision --- Floats and Strings (6 min)
 
 ```cpp
 std::format("{:.2f}",  3.14159);   // "3.14"
 std::format("{:.4f}",  2.5);       // "2.5000"
 std::format("{:10.2f}", 3.14);     // "      3.14"
+std::format("{:.4}",   3.14159);   // "3.142"
+
+std::format("{:.5}", "Smells Like Teen Spirit");  // "Smell"
 ```
 
-- `.N` controls decimal places
-- `f` is fixed-point; omit for default "general" formatting
+- `.N` with the `f` type means N digits after the decimal point
+- Without `f` you get "general" formatting, and `.N` means N **significant digits**
+- For **strings**, `.N` is a maximum length --- longer strings are truncated
 - Combine with width/alignment as needed
 
 ## 7. `std::print` and `std::println` (C++23) (10 min)
@@ -183,6 +193,7 @@ int main() {
 ```cpp
 #include <format>
 #include <iostream>
+#include <string>
 
 int main() {
     std::cout << std::format("{:<20} {:>5} {:>8}\n", "Song", "Year", "Score");
@@ -244,7 +255,7 @@ E. Ben got this wrong
 ## 10. Assignment / Reading (2 min)
 
 - **Read:** chapter 11 of *Gorgo Starting C++* (Exceptions, `std::expected`)
-- **Do:** all 9 exercises at the end of chapter 11
+- **Do:** all 11 exercises at the end of chapter 11
 - **Bring:** any program from this term that could benefit from `std::format` --- we may use it as an example
 
 ## Key Points to Reinforce

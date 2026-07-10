@@ -54,8 +54,10 @@ int main() {
 ---
 # Learning Objectives
 
-- Name the fundamental types and their sizes
+- Name the fundamental types (including `long double`) and their sizes
+- Use `<cstdint>` fixed-width types when the exact size matters
 - Declare, initialize, and never leave variables uninitialized
+- Know the initialization forms --- braces reject narrowing
 - Use `sizeof` and `std::numeric_limits<T>`
 - Declare and index 1D and 2D arrays safely
 - Use `const` for read-only values (and pointers)
@@ -82,6 +84,7 @@ unsigned int positive = 42;
 
 float price = 9.99f;
 double pi = 3.14159265358979;
+long double e = 2.718281828459045235L;
 
 char grade = 'A';
 bool game_over = false;
@@ -90,8 +93,48 @@ bool game_over = false;
 .rc[
 - Integers differ in **size** and **range**
 - Prefer `double` over `float`
+- `long double` = extra precision, platform-dependent size
 - A `char` is a tiny integer: `'A'` is 65
 - **Single** quotes for chars, **double** for strings
+]
+
+---
+# char Is a Number: ASCII
+.lc[
+```cpp
+char letter = 65;
+int  number = 65;
+
+std::cout << letter << "\n";  // A
+std::cout << number << "\n";  // 65
+
+char c = 'A';
+c = c + 1;                    // 'B'
+```
+]
+.rc[
+- **ASCII** maps 0-127 to characters
+- `'A'` is 65, `'a'` is 97, `'0'` is 48
+- `std::cout` picks the display by **type**: `char` = glyph, `int` = digits
+- Adding 1 gives the next code point
+]
+
+---
+# Fixed-Width Integer Types
+.lc[
+```cpp
+#include <cstdint>
+
+std::int32_t  fans = 1'000'000;
+std::uint8_t  red  = 255;
+std::uint16_t port = 8080;
+```
+]
+.rc[
+- `int`/`long` sizes are only **minimums**
+- `<cstdint>` types are **exactly** the named width
+- Use when size matters: file formats, packets, hardware
+- Plain `int` is still the everyday default
 ]
 
 ---
@@ -116,6 +159,25 @@ auto c = 'T';       // char
 ]
 
 ---
+# Initialization Forms
+.lc[
+```cpp
+int a = 10;    // copy init
+int b(10);     // direct init
+int c{10};     // brace init
+
+int oops = 99.9;  // compiles: 99
+int safer{99.9};  // ERROR
+```
+]
+.rc[
+- All three store 10
+- Braces (C++11) **reject narrowing** conversions
+- `= 99.9` into an `int` silently drops the `.9`
+- Prefer braces to catch suspicious conversions
+]
+
+---
 # sizeof and std::numeric_limits
 .lc[
 ```cpp
@@ -133,7 +195,8 @@ int main() {
 .rc[
 - `sizeof(type)` --- parens required for a type
 - `sizeof(char)` is **always 1**
-- `std::numeric_limits<T>::min()`, `max()`, `lowest()` from `<limits>`
+- `std::numeric_limits<T>` lives in `<limits>`
+- `min()`, `max()`, `lowest()` query the range
 - For floats, `min()` is the smallest **positive** normal --- use `lowest()` for most negative
 ]
 
@@ -227,6 +290,56 @@ Song hit = {"No Scrubs", "TLC", 1999};
 ]
 
 ---
+# Designated Initializers
+.lc[
+```cpp
+struct Song {
+    std::string title;
+    std::string artist;
+    int year;
+};
+
+Song hit = {.title = "No Scrubs",
+            .artist = "TLC",
+            .year = 1999};
+
+Song stub = {.title = "Wonderwall"};
+// artist = "", year = 0
+```
+]
+.rc[
+- Name each member (C++20)
+- Harder to mis-order, self-documenting
+- Members must stay in **declaration order** --- skip, never reorder
+- Skipped members get defaults: `0`, empty string
+]
+
+---
+# Try It: Playlist
+.lc[
+```cpp
+struct Cancion {
+    std::string titulo;
+    std::string artista;
+    int anio;
+};
+
+Cancion playlist[3] = {
+    {"Waterfalls", "TLC", 1995},
+    {"No Scrubs", "TLC", 1999},
+    {"Livin' La Vida Loca",
+     "Ricky Martin", 1999}
+};
+```
+]
+.rc[
+- Predict the output of the print loop
+- What is `sizeof(playlist) / sizeof(playlist[0])`?
+- Add a fourth song --- does the count keep up?
+- Rewrite one entry with designated initializers
+]
+
+---
 # What is printed?
 .lc[
 ```cpp
@@ -277,7 +390,7 @@ On a system where `int` is 4 bytes:
 - Read pointer `const` **right to left**
 - `struct` assignment copies every member
 
-**Read:** chapter 3 of *Gorgo Starting C++*. **Do:** exercises 1-9.
+**Read:** chapter 3 of *Gorgo Starting C++*. **Do:** exercises 1-15.
 
 </textarea>
 <script>

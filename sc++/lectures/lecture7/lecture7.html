@@ -55,6 +55,7 @@ default: std::cout << "other ";
 
 - Distinguish a declaration from a definition
 - Write a forward declaration when needed
+- Use `static` to keep helpers private to a file
 - Use pass-by-value vs pass-by-reference
 - Use `const` references for efficient, safe parameters
 - Give functions default parameter values
@@ -125,7 +126,29 @@ inline int max_volume() {
 - Defining a function in a header without `inline` is an ODR violation when included from multiple `.cpp` files
 - `inline` tells the linker "these are all the same"
 
-**Wut:** `inline` does **not** mean the compiler will inline the call. It is a linkage hint.
+**Wut:** `inline` does **not** mean the compiler will inline the call. It is a linkage instruction.
+]
+
+---
+# Translation Units and static
+.lc[
+```cpp
+// audio.cpp
+static int clamp(int v) {
+    return v < 0 ? 0 : (v > 100 ? 100 : v);
+}
+
+// video.cpp
+static int clamp(int v) {
+    return v < -90 ? -90 : (v > 90 ? 90 : v);
+}
+```
+]
+.rc[
+- Each `.cpp` after `#include` expansion = a **translation unit**
+- Without `static`: duplicate definition at link time
+- `static` = **internal linkage** --- private to this file
+- Anonymous namespace `namespace { ... }` works too
 ]
 
 ---
@@ -196,9 +219,7 @@ int main() {
 # const References
 .lc[
 ```cpp
-void print_song(
-    const std::string &title)
-{
+void print_song(const std::string &title) {
     std::cout << "Now playing: "
               << title << "\n";
     // title = "other";   // ERROR
@@ -239,8 +260,7 @@ void print_good(const Album &a);
 .lc[
 ```cpp
 void play(const std::string &song,
-          int volume = 5)
-{
+          int volume = 5) {
     std::cout << "Playing " << song
               << " at " << volume << "\n";
 }
@@ -294,7 +314,7 @@ void set_volume(int volume = 5,
 .rc[
 1. `volume` should be `const`
 1. Default parameter must be at the **end**
-1. `song` should have a default too
+1. You cannot mix `int` and `std::string` parameters
 1. `void` functions cannot take parameters
 1. Ben got this wrong
 ]
@@ -307,8 +327,8 @@ void set_volume(int volume = 5,
 - `&` for references; add `const` when you do not need to modify
 - Default parameters live on the **right** side of the parameter list
 
-**Read:** chapter 6, remaining sections --- overloading, recursion, function pointers, operators.
-**Do:** exercises 3, 4, 5, 7, 8, 9, 10, 12.
+**Read:** chapter 6, remaining sections --- extern and shared globals, rvalue references and std::move, overloading, recursion, function pointers, operators, [[nodiscard]].
+**Do:** exercises 3-5, 7-10, 12-15.
 
 </textarea>
 <script>

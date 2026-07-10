@@ -35,9 +35,10 @@ By the end of this lecture, students should be able to:
 
 - Today: the last C++ building blocks before we look back at the whole course.
 
-## 1. The Five Special Member Functions (8 min)
+## 1. The Five Special Member Functions (5 min)
 
-The compiler can generate up to **five** special member functions for you:
+The compiler can generate **six** special member functions for you.
+You already know the default constructor from chapter 12; today is about the other **five**:
 
 1. **Destructor** --- `~T()`
 2. **Copy constructor** --- `T(const T &)`
@@ -96,13 +97,19 @@ public:
 ```
 
 - Without the copy constructor, the default one would copy the pointer, leading to a **double-free**
-- Without the move constructor, the vector would copy instead of move during reallocation --- **slow**
+- Without the move constructor, a `std::vector` holding these objects would copy instead of move during reallocation --- **slow**
+
+::: {.tip}
+**Trap:** The copy assignment above is not exception-safe: it does `delete[] text;` before the `new` that replaces it.
+If `new` throws, `text` is left dangling, and the destructor frees it a second time --- a double-free.
+The standard fix is the **copy-and-swap idiom**: build a temporary copy first, then swap it with `*this`.
+:::
 
 ::: {.tip}
 **Tip:** Mark move constructors and move assignment operators `noexcept`. `std::vector` checks for this and falls back to copying if your moves could throw --- a huge performance hit.
 :::
 
-## 3. `= default` and `= delete` (12 min)
+## 3. `= default` and `= delete` (10 min)
 
 ### `= default`
 
@@ -149,13 +156,14 @@ public:
 **Tip:** `= delete` replaces the pre-C++11 trick of making a function `private` and never defining it. The modern approach gives a clearer error message.
 :::
 
-## 4. Rule of Zero (10 min)
+## 4. Rule of Zero (7 min)
 
 **If your class does not manage a resource directly, do not write any of the five special member functions. Let the compiler generate them.**
 
 Rewrite `Lyric` using `std::string` instead of `char*`:
 
 ```cpp
+#include <iostream>
 #include <string>
 
 class Lyric {
@@ -169,6 +177,9 @@ public:
 - Does the same thing
 - **Zero** special members needed --- `std::string` already knows how to copy, move, and clean up
 - Much less code, fewer bugs
+
+This is **RAII** (Resource Acquisition Is Initialization) at work: each member acquires its resource in its constructor and releases it in its destructor.
+The Rule of Zero works because you build your class out of members that already implement RAII.
 
 ::: {.tip}
 **Tip:** Prefer `std::string` over `char *`, `std::vector` over raw arrays, and `std::unique_ptr` over raw `new`/`delete`. When all members manage themselves, you write nothing special.
@@ -260,6 +271,9 @@ class Track {
 public:
     Track(const std::string &t) : title(t) {}
 
+    Track(const Track &) = default;
+    Track &operator=(const Track &) = default;
+
     Track(Track &&other)
         : title(std::move(other.title)),
           samples(std::move(other.samples)) {}
@@ -288,13 +302,13 @@ E. Ben got this wrong
 
 A. 5
 B. 3
-C. 2
-D. 1
-E. 0
+C. 1
+D. 0
+E. Ben got this wrong
 
-*Answer: E* --- the Rule of Zero applies; all members manage themselves.
+*Answer: D* --- the Rule of Zero applies; all members manage themselves.
 
-## 10. Assignment / Reading (5 min)
+## 10. Assignment / Reading (3 min)
 
 This is the final lecture of the course.
 

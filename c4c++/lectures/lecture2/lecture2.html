@@ -50,6 +50,7 @@ printf("%05d %x\n", 42, 255);
 - Concatenate safely
 - `strdup` / `strtok` pitfalls
 - Classify characters with `<ctype.h>`
+- Preview `sprintf`/`sscanf`; prefer `snprintf`
 
 ---
 # What Is a C String?
@@ -98,6 +99,7 @@ strcpy(dest, s);
 - Array size includes `'\0'`
 - `strcpy` trusts dest is big enough
 - `strncpy` may *not* null-terminate
+- Fix: `dest[sizeof(dest) - 1] = '\0';`
 ]
 
 ---
@@ -119,17 +121,19 @@ if (strcmp(a, b) == 0) {
 - Negative: first < second
 - Positive: first > second
 - `strncmp(a, b, n)` for prefix match
+- `puts(s)` prints `s` plus a newline
 ]
 
 ---
 # Finding Characters / Substrings
 .lc[
 ```c
+char s[] = "Take On Me";
 char *p;
 
-p = strchr(s, 'o');   // first 'o'
-p = strrchr(s, 'o');  // last  'o'
-p = strstr(h, "Run"); // substring
+p = strchr(s, 'e');   // first 'e'
+p = strrchr(s, 'e');  // last  'e'
+p = strstr(s, "On");  // substring
 ```
 ]
 .rc[
@@ -234,6 +238,27 @@ toupper((unsigned char)c)
 ]
 
 ---
+# Preview: sprintf and sscanf
+.lc[
+```c
+char result[50];
+sprintf(result,
+  "The year is %d. Que bueno!",
+  1985);
+
+char buf[20];
+snprintf(buf, sizeof(buf),
+  "The year is %d", 2112);
+```
+]
+.rc[
+- `sprintf` = `printf` into a buffer
+- `sscanf` = `scanf` from a string
+- `snprintf` caps the write --- the safe sibling
+- Details in the Standard I/O chapter
+]
+
+---
 # Live Coding
 .lc[
 ```c
@@ -241,11 +266,11 @@ char song[] = "Sweet Dreams";
 printf("'%s' (%zu)\n",
        song, strlen(song));
 
-char greet[30] = "Buenos ";
+char greet[10] = "Buenos ";
 strncat(greet, "dias",
   sizeof(greet)
   - strlen(greet) - 1);
-puts(greet);
+puts(greet); // "Buenos di"
 
 char *d = strdup("...");
 puts(d); free(d);
@@ -253,8 +278,9 @@ puts(d); free(d);
 ]
 .rc[
 - `cc -Wall -Wextra -pedantic`
-- Swap `strncat` for `strcat` and read the warning
-- Try modifying a literal and feel the compiler stop you
+- `strncat` truncates safely: `"Buenos di"`
+- Swap in `strcat`: compiler stays silent
+- Rerun with `-fsanitize=address` --- ASan reports `stack-buffer-overflow`
 ]
 
 ---
@@ -284,8 +310,8 @@ printf("%s\n", greeting);
 1. `printf` needs `&greeting`
 1. Strings cannot be lowercase
 1. Modifying a string literal is UB
-1. `greeting` needs to be `char[]`
-1. Both C and D
+1. `printf` cannot print modified strings
+1. Ben got this wrong
 
 ---
 # What does strcmp("A", "C") return?
@@ -307,8 +333,11 @@ printf("%s\n", greeting);
 - `strdup` needs `free`
 - `strtok` is destructive; prefer `strtok_r`
 - `(unsigned char)` before `<ctype.h>`
+- `snprintf` over `sprintf`
 
-**Read:** chapter 6 of *Gorgo C for C++ Programmers*. **Do:** exercises 1, 2, 3, 4, 5, 6, 7.
+**Skim:** chapters 4-5 (Expressions, Control Flow) on your own --- familiar territory from C++.
+
+**Read:** chapter 6 of *Gorgo C for C++ Programmers*. **Do:** exercises 1-7.
 
 </textarea>
 <script>

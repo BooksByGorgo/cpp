@@ -56,11 +56,36 @@ int main() {
 ---
 # Learning Objectives
 
+- Share a global across files with `extern`
 - Overload functions on parameter type or count
 - Write a recursive function with a correct base case
 - Use function pointers as callbacks
 - Use `[[nodiscard]]` to mark important return values
 - Write operator functions (and know what NOT to overload)
+
+---
+# extern and Shared Globals
+.lc[
+```cpp
+// globals.h
+extern int master_volume;
+
+// audio.cpp
+#include "globals.h"
+int master_volume = 5;
+
+// video.cpp
+#include "globals.h"
+// same master_volume here
+```
+]
+.rc[
+- `extern` = "defined in another translation unit"
+- Declaration in the header, ONE definition in one `.cpp`
+- Function declarations are already implicitly `extern`
+
+**Trap:** Forget `extern` and every file defines its own copy --- duplicate definition at link time.
+]
 
 ---
 # Function Overloading
@@ -70,9 +95,7 @@ void display(int value) {
     std::cout << "Int: " << value << "\n";
 }
 
-void display(
-    const std::string &value)
-{
+void display(const std::string &value) {
     std::cout << "Str: " << value << "\n";
 }
 
@@ -170,14 +193,13 @@ std::cout << op(10, 3) << "\n";
 ```cpp
 void process(
     const std::string songs[], int n,
-    void (*action)(const std::string &))
-{
+    void (*action)(const std::string &)) {
     for (int i = 0; i < n; i++)
         action(songs[i]);
 }
 
 void shout(const std::string &s) {
-    std::cout << ">> " << s << " <<\n";
+    std::cout << ">> " << s << "!! <<\n";
 }
 
 process(playlist, 3, shout);
@@ -239,8 +261,7 @@ Score operator+(const Score &a,
 ```cpp
 std::ostream &operator<<(
     std::ostream &os,
-    const Score &s)
-{
+    const Score &s) {
     os << s.player << ": " << s.points;
     return os;
 }
@@ -317,8 +338,8 @@ std::cout << apply(add, 3, 4) << " "
 - Operator functions should **behave as expected**
 - Do not overload `&&`, `||`, or `,`
 
-**Read:** chapter 7 of *Gorgo Starting C++*, sections on bases, literals, printing, and string/number conversions.
-**Do:** exercises 1, 2, 7.
+**Read:** chapter 7 of *Gorgo Starting C++*, sections on bases, literals and suffixes, printing in other bases, and string/number conversions.
+**Do:** exercises 1, 2, 7, 13, 17, 18.
 
 </textarea>
 <script>

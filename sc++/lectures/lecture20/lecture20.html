@@ -53,7 +53,8 @@ Where `a` is a `std::unique_ptr<int>`:
 ---
 # The Five Special Member Functions
 
-The compiler can generate up to **five** special functions:
+The compiler can generate **six** special member functions.
+You already know the default constructor --- here are the other **five**:
 
 1. **Destructor** --- `~T()`
 1. **Copy constructor** --- `T(const T &)`
@@ -81,8 +82,8 @@ class Lyric {
     char *text;
 public:
     Lyric(const char *t) {
-        text = new char[strlen(t) + 1];
-        strcpy(text, t);
+        text = new char[std::strlen(t) + 1];
+        std::strcpy(text, t);
     }
     ~Lyric() { delete[] text; }
 
@@ -100,11 +101,14 @@ public:
 ```
 ]
 .rc[
+- `std::strlen`/`std::strcpy` come from `<cstring>`
 - Ctor allocates
 - Destructor frees
 - Copies must **deep** copy
 - Moves must leave the source empty
 - Move operations marked `noexcept` so `vector` uses them
+
+**Trap:** delete-then-new copy assignment dangles if `new` throws --- copy-and-swap fixes it
 ]
 
 ---
@@ -166,6 +170,7 @@ public:
 - Copying an active audio stream would mean two objects fighting over the same device
 - `= delete` prevents the call at **compile time**
 - Clear error message (vs pre-C++11 private-and-undefined trick)
+- Works on any function: `void set_volume(double) = delete;` blocks implicit conversions
 ]
 
 ---
@@ -191,6 +196,7 @@ Rewrite `Lyric` with `std::string`:
 
 - **Zero** special members needed
 - `std::string` already knows how to copy, move, and clean up
+- This is **RAII**: members acquire in the constructor, release in the destructor
 ]
 
 ---
@@ -245,8 +251,7 @@ public:
 ```cpp
 std::ostream &operator<<(
     std::ostream &os,
-    const Playlist &p)
-{
+    const Playlist &p) {
     os << p.name << ":\n";
     for (size_t i = 0;
          i < p.songs.size(); ++i) {
@@ -277,11 +282,13 @@ public:
 
 class DJ {
 public:
-    void swap(Playlist &p) {
+    void swap_first_last(Playlist &p) const {
         // can access p.songs directly
-        std::string t = p.songs.front();
-        p.songs.front() = p.songs.back();
-        p.songs.back() = t;
+        if (p.songs.size() > 1) {
+            std::string t = p.songs.front();
+            p.songs.front() = p.songs.back();
+            p.songs.back() = t;
+        }
     }
 };
 ```
@@ -289,6 +296,7 @@ public:
 .rc[
 - `friend class DJ;` grants every member of `DJ` access
 - Friendship is **one-directional**: `DJ` sees `Playlist`, not the other way
+- The size guard matters: `front()` on an empty vector is UB
 ]
 
 ---
@@ -312,10 +320,13 @@ public:
     Track(const std::string &t)
         : title(t) {}
 
+    Track(const Track &) = default;
+    Track &operator=(const Track &)
+        = default;
+
     Track(Track &&other)
         : title(std::move(other.title)),
-          samples(std::move(other.samples))
-    {}
+          samples(std::move(other.samples)) {}
 };
 ```
 ]
@@ -343,9 +354,9 @@ A class has `std::string name`, `std::vector<int> scores`, and `int id`.
 
 1. 5
 1. 3
-1. 2
 1. 1
 1. 0
+1. Ben got this wrong
 
 ---
 # Key Points
@@ -357,7 +368,14 @@ A class has `std::string name`, `std::vector<int> scores`, and `int id`.
 - Mark move operations `noexcept` so containers use them
 - `friend` grants access; use it sparingly
 
+---
+# Before the Final
+
 **Optional reading:** chapter 15 of *Gorgo Starting C++* (odds and ends: `exit()`, `extern "C"`, casting, `<chrono>`, `<random>`). Not required for the final exam --- reference material you will see in real code.
+
+**Review:** all prior chapters for the final exam.
+
+**Next class:** open Q&A --- bring your end-of-term questions.
 
 </textarea>
 <script>

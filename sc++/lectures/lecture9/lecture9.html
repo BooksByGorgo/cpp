@@ -44,6 +44,7 @@ Numbers: Bases and Conversions
 - Convert between decimal, binary, hex, and octal
 - Write integer literals with `0b`, `0x`, and leading `0`
 - Use digit separators (`'`) for readability
+- Pick literal suffixes (`U`, `L`, `LL`, `f`) to control a literal's type
 - Print in a different base with `std::format`/`std::println`
 - Convert strings to/from numbers, including with a base parameter
 
@@ -73,13 +74,21 @@ Numbers: Bases and Conversions
 
 ---
 # Binary Place Values
-
+.lc[
 ```
   1   0   1   0   1   0
-                           binary
-  1*32 + 0 + 1*8 + 0 + 1*2 + 0 = 42
+  |   |   |   |   |   |
+  |   |   |   |   |   +-- 0 * 2^0 =  0
+  |   |   |   |   +------ 1 * 2^1 =  2
+  |   |   |   +---------- 0 * 2^2 =  0
+  |   |   +-------------- 1 * 2^3 =  8
+  |   +------------------ 0 * 2^4 =  0
+  +---------------------- 1 * 2^5 = 32
+                                    --
+                                    42
 ```
-
+]
+.rc[
 | dec | bin |
 |---|---|
 | 0 | 0 |
@@ -88,6 +97,7 @@ Numbers: Bases and Conversions
 | 3 | 11 |
 | 4 | 100 |
 | 5 | 101 |
+]
 
 ---
 # Hex (Base 16)
@@ -143,6 +153,56 @@ int color   = 0xFF'80'00;
 - `'` between digits, anywhere you like
 - The compiler ignores them completely
 - C++14 and later
+]
+
+---
+# Literal Suffixes
+.lc[
+```cpp
+auto a = 42;      // int
+auto b = 42U;     // unsigned int
+auto c = 42L;     // long
+auto d = 42ULL;   // unsigned long long
+
+// BUG: right side overflows in int
+long long ms =
+    365 * 24 * 60 * 60 * 1000;
+
+// OK: LL widens the whole product
+long long ok =
+    365LL * 24 * 60 * 60 * 1000;
+```
+]
+.rc[
+- A suffix sets the literal's **type** at compile time
+- The math happens **before** the assignment --- the left side cannot save you
+- `U` = unsigned, `L` = long, `LL` = long long
+
+**Trap:** Prefer uppercase `L` --- lowercase `l` looks like the digit `1`.
+]
+
+---
+# Float Suffixes and Shifts
+.lc[
+```cpp
+float a = 3.14;    // narrows
+float b = 3.14f;   // float literal
+
+auto x = 3.14;     // double
+auto y = 3.14f;    // float
+```
+
+```cpp
+unsigned long long bug =
+    1    << 40;   // UB: 1 is int
+unsigned long long ok  =
+    1ULL << 40;   // 64-bit shift
+```
+]
+.rc[
+- Float literals default to `double`
+- `f` = `float`, `L` = `long double`
+- Suffix the **operand**, not the result
 ]
 
 ---
@@ -244,6 +304,30 @@ std::string s3 = std::to_string(3.14);
 ]
 
 ---
+# Try It: Number Viewer
+.lc[
+```cpp
+#include <iostream>
+#include <print>
+
+int main() {
+    std::print("Enter a number: ");
+    int val{};
+    std::cin >> val;
+
+    std::println("Decimal: {}",    val);
+    std::println("Binary:  {:#b}", val);
+    std::println("Hex:     {:#x}", val);
+    std::println("Octal:   {:#o}", val);
+}
+```
+]
+.rc[
+- Predict the output for 255, 1984, and a negative number
+- Negative values print as `-0b...` --- sign and magnitude, not the stored bits (that is lecture 10)
+]
+
+---
 # What does std::stoi("1984abc") return?
 
 1. 0
@@ -267,7 +351,7 @@ std::string s3 = std::to_string(3.14);
 1. `std::println("{:#b}", 42)`
 1. `std::println("{:b}", 42)`
 1. `std::println("{b}", 42)`
-1. `std::println("0b{:b}", 42)`
+1. `std::println("{:#x}", 42)`
 1. Ben got this wrong
 
 ---
@@ -276,12 +360,13 @@ std::string s3 = std::to_string(3.14);
 - The same number has many spellings; the stored value is identical
 - `0b`, `0x`, leading `0` set the base of a literal
 - `'` is a digit separator
+- Suffixes (`U`, `L`, `LL`, `f`) set a literal's type before the math runs
 - `{:b}`, `{:x}`, `{:o}` print in other bases; `#` adds the prefix
 - `std::stoi`/`std::stod` parse; the `base` parameter handles other bases
 - Leading zeros in input strings are a minefield
 
 **Read:** chapter 7, remaining sections --- two's complement, integer sizes, bit and shift operators.
-**Do:** exercises 3, 4, 5, 6, 8, 9, 10, 11.
+**Do:** exercises 3, 4, 5, 6, 8, 10, 11, 14, 15.
 
 </textarea>
 <script>

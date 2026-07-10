@@ -1,7 +1,7 @@
 # Lectures 5+6 --- Allocating Memory
 
 **Source:** `c4c++/ch08.md`
-**Duration:** two 50-minute sessions
+**Duration:** two 65-minute sessions
 
 Lecture 5 covers *where variables live* and introduces `malloc` / `free`.
 Lecture 6 builds on that with `calloc`, `realloc`, raw-memory helpers, and common pitfalls.
@@ -71,7 +71,7 @@ void update(int points) {
 **Tip:** Prefer passing data through parameters. Reserve globals for things that truly are program-wide (configuration, logging).
 :::
 
-## 3. Local Variables (7 min)
+## 3. Local Variables (8 min)
 
 ```c
 void greet(void) {
@@ -95,7 +95,7 @@ int *bad(void) {
 
 - Already covered in lecture 3, reinforce here.
 
-## 4. Static Local Variables (5 min)
+## 4. Static Local Variables (6 min)
 
 ```c
 void count_calls(void) {
@@ -109,7 +109,7 @@ void count_calls(void) {
 - Lives in the data segment, not the stack.
 - Great for "remember across calls" without exposing a global.
 
-## 5. Heap Memory: `malloc` and `free` (15 min)
+## 5. Heap Memory: `malloc` and `free` (18 min)
 
 ```c
 void *malloc(size_t size);
@@ -141,7 +141,7 @@ free(nums);
 
 ### The "don't check NULL" debate
 
-- Argument: `NULL` checks everywhere clutter code paths that are almost never exercised.
+- Argument: `NULL` checks clutter the code, and the error paths they guard are almost never exercised or tested.
 - Counter: safety-critical systems need the check --- or ban dynamic allocation entirely.
 - Default advice: check and bail out early in teaching code.
 
@@ -154,7 +154,7 @@ free(nums);
 | Static local | data segment | whole program | `static int n = 0;` |
 | Dynamic | heap | until you `free` | `int *p = malloc(...)` |
 
-## 7. Live Coding (5 min)
+## 7. Live Coding (10 min)
 
 ```c
 #include <stdio.h>
@@ -231,14 +231,14 @@ A. 5
 B. 10
 C. 16
 D. 20
-E. 32
+E. Ben got this wrong
 
 *Answer: D*
 
 ## 9. Assignment / Reading (2 min)
 
 **Read:** chapter 8 of *Gorgo C for C++ Programmers* (second half --- `calloc`, `realloc`, `memcpy`, `memset`).
-**Do:** exercises 1, 2, 3, 6.
+**Do:** exercises 1, 5.
 
 ---
 
@@ -273,16 +273,19 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 1. `calloc` (5 min)
+## 1. `calloc` (8 min)
 
 ```c
 void *calloc(size_t count, size_t size);
 ```
 
 - `calloc(5, sizeof(int))` --- 5 ints, **zeroed**.
-- Equivalent to `malloc(5 * sizeof(int))` + `memset(p, 0, 20)` --- but clearer intent.
+- *Not* just `malloc(5 * sizeof(int))` + `memset(p, 0, 20)` in one call.
+- `calloc` checks whether `count * size` overflows and fails cleanly; `malloc(count * size)` silently wraps, handing you a buffer far smaller than you asked for.
+- On demand-paged systems, `calloc` can also skip the zeroing for large blocks --- the kernel's fresh pages are already zero-filled.
+- And it states your intent: "I want zeroed memory."
 
-## 2. `realloc` (10 min)
+## 2. `realloc` (12 min)
 
 ```c
 void *realloc(void *ptr, size_t size);
@@ -306,7 +309,7 @@ if (tmp == NULL) {
 - `realloc` can grow or shrink.
 - It may return the same address or move the block --- never cache a pointer into the old block across a `realloc`.
 
-## 3. `memset` and `memcpy` (10 min)
+## 3. `memset` and `memcpy` (12 min)
 
 ```c
 void *memset(void *s, int c, size_t n);
@@ -334,7 +337,7 @@ void *memmove(void *dest, const void *src, size_t n);
 
 - Use when source and destination might overlap (e.g., shifting elements inside one array).
 
-## 4. Double-Free via Aliasing (5 min)
+## 4. Double-Free via Aliasing (6 min)
 
 ```c
 int *a = malloc(5 * sizeof(int));
@@ -347,7 +350,7 @@ free(b);               // UB — double free
 - Ownership is about *who gets to free*, not about *who has a pointer*.
 - Pick one owner and document it.
 
-## 5. Live Coding (10 min)
+## 5. Live Coding (15 min)
 
 ```c
 #include <stdio.h>
@@ -380,7 +383,7 @@ int main(void) {
 }
 ```
 
-- Show what happens if you run `realloc` with a huge size and the return is `NULL`.
+- Force a `realloc` failure and show the return is `NULL`: compute the huge size at runtime (e.g., `size_t huge = (size_t)-1 / argc;`) --- a huge literal triggers a compile-time warning instead of the runtime `NULL` you want to show.
 - Deliberately `memcpy` from an array to itself with overlap and introduce `memmove`.
 
 ## 6. Wrap-up Quiz (5 min)

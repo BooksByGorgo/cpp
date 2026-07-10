@@ -9,10 +9,13 @@ By the end of this lecture, students should be able to:
 
 - Create `std::string` objects and use `.size()`, `.length()`, and `.empty()`
 - Concatenate strings with `+` and `+=`, and explain why `"a" + "b"` does not compile
+- Build a `std::string` directly from a literal with the `s` suffix
+- Split long literals across lines with adjacent literals and raw string literals
 - Compare strings with `==` and `<`, and explain why ASCII ordering matters
 - Access characters with `[]` versus `.at()` and choose between them
 - Iterate through a string with a range-based `for` loop
-- Find and extract substrings with `.find()` and `.substr()`
+- Find, extract, and replace substrings with `.find()`, `.substr()`, and `.replace()`
+- Explain why `.size()` counts UTF-8 bytes, not characters
 - Read a whole line with `std::getline` and avoid the `cin >> ... getline` trap
 - Convert between strings and numbers with `std::stoi`, `std::stod`, `std::to_string`
 
@@ -37,7 +40,7 @@ By the end of this lecture, students should be able to:
 
 - Quick reminder: today we move from **single characters** (`char`) to **sequences of characters** (`std::string`)
 
-## 1. Why `std::string`? (5 min)
+## 1. Why `std::string`? (3 min)
 
 - Chapter 2 showed you could shove text into a `char` array, but raw char arrays are painful:
     - you must track the length yourself
@@ -47,7 +50,7 @@ By the end of this lecture, students should be able to:
 - `std::string` manages its own memory, knows its own length, and provides a rich set of operations
 - Always `#include <string>` --- do not rely on `<iostream>` pulling it in for you
 
-## 2. Creating Strings (5 min)
+## 2. Creating Strings (4 min)
 
 ```cpp
 #include <iostream>
@@ -55,7 +58,7 @@ By the end of this lecture, students should be able to:
 
 int main() {
     std::string empty;                  // ""
-    std::string greeting = "Hola";     // literal
+    std::string greeting = "Hola";      // literal
     std::string copy = greeting;        // copy
     std::string repeat(5, '!');         // "!!!!!"
 
@@ -66,7 +69,7 @@ int main() {
 - A default-constructed string is **empty**, not uninitialized --- unlike a bare `int`
 - `std::string(count, char)` repeats the character `count` times
 
-## 3. Length, Size, and Empty (5 min)
+## 3. Length, Size, and Empty (4 min)
 
 ```cpp
 std::string title = "Ice Ice Baby";
@@ -83,7 +86,7 @@ if (nada.empty()) {
 - `.empty()` returns `true` for a zero-length string
 - Both return `size_t` --- an **unsigned** type, so be careful comparing against signed ints
 
-## 4. Concatenation (8 min)
+## 4. Concatenation (6 min)
 
 ```cpp
 std::string first = "Baby";
@@ -98,10 +101,46 @@ lyrics += ", te quiero";               // appends in place
 - You can mix a `std::string` with a char or literal on either side
 
 ::: {.tip}
-**Trap:** `"hello" + " world"` does **not** compile. Both operands are `const char*`, not `std::string`. At least one side of `+` must be a real `std::string`. Fix: `std::string("hello") + " world"` or assign to a `std::string` first.
+**Trap:** `"hello" + " world"` does **not** compile.
+Both operands are `const char*`, not `std::string`.
+At least one side of `+` must be a real `std::string`.
+Wrapping one side in `std::string("hello")` works but is noisy --- the `s` suffix (next section) is the clean fix.
 :::
 
-## 5. Comparing Strings (5 min)
+## 5. The `s` Literal Suffix (4 min)
+
+```cpp
+#include <string>
+using namespace std::string_literals;
+
+std::string chorus = "A little bit of "s + "Monica in my life";
+auto title = "Hola"s;   // std::string, not const char*
+```
+
+- Putting `s` after the closing quote builds a `std::string` instead of a `const char*`
+- The suffix lives in the standard library, so bring it into scope with `using namespace std::string_literals;` (or `std::literals`)
+- Once one side of `+` is a `std::string`, the whole chain concatenates as expected
+- It also fixes `auto`: `auto t = "Hola";` deduces `const char*`, but `auto t = "Hola"s;` deduces `std::string`, so `.size()` and `+=` work directly
+
+## 6. Multi-Line String Literals (4 min)
+
+```cpp
+std::string verse = "Tearin' up my heart "
+                    "when I'm with you";
+
+std::string sql = R"(
+    SELECT id, title
+    FROM   songs
+    WHERE  artist = "Weezer"
+)";
+```
+
+- Adjacent string literals fuse into one at **compile time** --- indent the continuation freely, no run-time cost
+- Fusion only works between literals --- you cannot fuse a literal with a `std::string` variable
+- A raw string literal `R"(...)"` keeps everything between the parentheses verbatim: newlines, backslashes, and embedded quotes, with no escape processing
+- Default to adjacent literals for long strings; reach for raw literals for regexes, SQL, JSON, and Windows paths
+
+## 7. Comparing Strings (4 min)
 
 ```cpp
 std::string a = "Hanson";
@@ -116,7 +155,7 @@ if (a < b) {
 - Uppercase letters sort **before** lowercase letters because `'Z'` (90) < `'a'` (97)
 - Quick board exercise: does `"Zebra" < "apple"` evaluate to true or false?
 
-## 6. Accessing Characters (7 min)
+## 8. Accessing Characters (5 min)
 
 ```cpp
 std::string song = "MMMBop";
@@ -135,7 +174,7 @@ shout[0] = 'H';                    // now "Hey!"
 **Tip:** Use `.at()` when you are not 100% sure the index is valid. The small overhead is worth the early error.
 :::
 
-## 7. Iterating Through a String (5 min)
+## 9. Iterating Through a String (4 min)
 
 ```cpp
 std::string word = "Iris";
@@ -156,7 +195,7 @@ for (size_t i = 0; i < word.size(); ++i) {
 
 - Prefer `size_t` over `int` to avoid signed/unsigned warnings
 
-## 8. Finding and Extracting (8 min)
+## 10. Finding and Extracting (7 min)
 
 ```cpp
 std::string line = "Ice Ice Baby";
@@ -185,7 +224,32 @@ if (pos != std::string::npos) {
 std::cout << msg << "\n";   // press stop
 ```
 
-## 9. Reading Input --- `getline` and the Mix Trap (8 min)
+- `.replace(pos, count, str)` swaps `count` characters starting at `pos` for the new text
+- Pair it with `.find()` --- and check for `npos` before replacing
+
+## 11. Unicode and UTF-8 (4 min)
+
+```cpp
+std::string spanish  = "¡Hola, mundo!";
+std::string japanese = "こんにちは";
+std::string emoji    = "🎵";
+
+std::cout << spanish.size() << "\n";    // 14
+std::cout << japanese.size() << "\n";   // 15
+std::cout << emoji.size() << "\n";      // 4
+```
+
+- **Unicode** gives every character in every writing system its own number, called a **code point**
+- **UTF-8** --- the default encoding for C++ string literals --- stores each code point in 1 to 4 bytes; ASCII characters are exactly 1 byte
+- `"¡Hola, mundo!"` has 13 visible characters but 14 bytes, because `¡` takes 2 bytes
+
+::: {.tip}
+**Trap:** `.size()` returns the number of **bytes**, not characters.
+For pure ASCII text the two match; for anything else they do not.
+Indexing with `[]` or `.at()` also gives you one byte, not one character.
+:::
+
+## 12. Reading Input --- `getline` and the Mix Trap (7 min)
 
 ```cpp
 std::string full_name;
@@ -208,7 +272,9 @@ std::getline(std::cin, name);
 ```
 :::
 
-## 10. Strings to/from Numbers (7 min)
+- **Wut:** bare `std::cin.ignore()` discards exactly **one** character; the robust idiom skips any leftover junk up to the newline: `std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');` (needs `<limits>`)
+
+## 13. Strings to/from Numbers (5 min)
 
 ```cpp
 std::string year_str = "1997";
@@ -231,7 +297,7 @@ std::cout << label << "\n";       // Track 7
 **Trap:** `std::stoi("abc")` **throws an exception** and crashes your program unless you handle it. Exception handling is coming in chapter 11.
 :::
 
-## 11. Try It --- Live Demo (4 min)
+## 14. Try It --- Live Demo (4 min)
 
 ```cpp
 #include <iostream>
@@ -256,7 +322,9 @@ int main() {
 
 Ask the class to predict `song.size()` after the `+=`. Then run it.
 
-## 12. Wrap-up Quiz Questions (3 min)
+Instructor note: have this program pre-typed before class --- 4 minutes covers predicting and running it, not typing it live.
+
+## 15. Wrap-up Quiz Questions (4 min)
 
 **Q1.** What does this print?
 
@@ -298,17 +366,18 @@ E. Ben got this wrong
 
 *Answer: B* --- fix with `std::cin.ignore()`.
 
-## 13. Assignment / Reading (1 min)
+## 16. Assignment / Reading (1 min)
 
 - **Read:** chapter 4 of *Gorgo Starting C++*
-- **Do:** all 9 exercises at the end of chapter 4
-- **Bring:** next time we will build expressions from strings and numbers together
+- **Do:** all 12 exercises at the end of chapter 4
+- **Next time:** expressions --- the arithmetic, logical, and bit operators, and the precedence rules that combine them
 
 ## Key Points to Reinforce
 
 - `std::string` lives in `<string>` --- always include it
-- `.size()` / `.length()` are equal; both return `size_t`
-- Concatenation with `+` requires at least one `std::string` operand
+- `.size()` / `.length()` are equal; both return `size_t` --- and they count UTF-8 **bytes**, not characters
+- Concatenation with `+` requires at least one `std::string` operand --- the `s` suffix is the clean way to get one
+- Adjacent literals fuse at compile time; raw literals `R"(...)"` preserve everything verbatim
 - `==`, `<`, etc. compare by ASCII value, character by character
 - `[]` is fast, `.at()` is safe --- know which you need
 - `std::getline` reads full lines; watch out for leftover newlines after `>>`

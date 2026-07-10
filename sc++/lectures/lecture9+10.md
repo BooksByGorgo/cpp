@@ -5,7 +5,7 @@
 
 Chapter 7 is split across two lectures:
 
-- **Lecture 9 --- Representation and Conversion:** bases (decimal, binary, hex, octal), integer literals in other bases, printing in other bases, string-to-number / number-to-string conversions
+- **Lecture 9 --- Representation and Conversion:** bases (decimal, binary, hex, octal), integer literals in other bases, literal suffixes, printing in other bases, string-to-number / number-to-string conversions
 - **Lecture 10 --- Two's Complement and Bit Manipulation:** two's complement, integer sizes and ranges, overflow, binary addition/subtraction, bit operators, shift operators
 
 ---
@@ -19,6 +19,7 @@ By the end of lecture 9, students should be able to:
 - Count and convert between decimal, binary, hexadecimal, and octal
 - Write integer literals in different bases using `0b`, `0x`, and leading `0`
 - Use digit separators (`'`) to make large literals readable
+- Choose literal suffixes (`U`, `L`, `LL`, `ULL`, `f`) to control a literal's type and avoid overflow
 - Print a value in a different base with `std::format`/`std::println` specifiers
 - Convert strings to numbers with `std::stoi`, `std::stod`, and friends, including the base parameter
 
@@ -70,8 +71,14 @@ Binary place values:
 ```
   1   0   1   0   1   0
   |   |   |   |   |   |
-  |   +---+---+---+---+-- pow(2, n)
-  +-------- 2^5 = 32, etc.
+  |   |   |   |   |   +-- 0 * 2^0 =  0
+  |   |   |   |   +------ 1 * 2^1 =  2
+  |   |   |   +---------- 0 * 2^2 =  0
+  |   |   +-------------- 1 * 2^3 =  8
+  |   +------------------ 0 * 2^4 =  0
+  +---------------------- 1 * 2^5 = 32
+                                    --
+                                    42
 ```
 
 Result: `101010` in binary = 42 in decimal
@@ -141,7 +148,67 @@ int color   = 0xFF'80'00;
 - Compiler ignores them completely
 - C++14 and later
 
-## 5. Printing in Other Bases (7 min)
+## 5. Literal Suffixes (7 min)
+
+Every literal has a type: `42` is an `int`, `3.14` is a `double`.
+A **literal suffix** changes that type at compile time.
+(You already met `s`, which turns a string literal into a `std::string`.)
+
+| suffix | type |
+|---|---|
+| (none) | `int` |
+| `U` | `unsigned int` |
+| `L` | `long` |
+| `UL` | `unsigned long` |
+| `LL` | `long long` |
+| `ULL` | `unsigned long long` |
+
+```cpp
+auto a = 42;       // int
+auto b = 42U;      // unsigned int
+auto c = 42L;      // long
+auto d = 42ULL;    // unsigned long long
+```
+
+### Why It Matters
+
+```cpp
+// BUG: the right side is computed in int and overflows
+long long ms_per_year = 365 * 24 * 60 * 60 * 1000;
+
+// OK: LL makes the whole product compute as long long
+long long ok = 365LL * 24 * 60 * 60 * 1000;   // 31'536'000'000
+```
+
+- The multiplication happens **before** the assignment --- the `long long` on the left cannot save you
+- Same story for shifts:
+
+```cpp
+unsigned long long bug = 1   << 40;   // UB: 1 is an int
+unsigned long long ok  = 1ULL << 40;  // OK: 64-bit shift
+```
+
+### Floating-Point Suffixes
+
+| suffix | type |
+|---|---|
+| (none) | `double` |
+| `f` or `F` | `float` |
+| `L` | `long double` |
+
+```cpp
+float a = 3.14;     // double-to-float narrowing
+float b = 3.14f;    // OK: float literal
+
+auto x = 3.14;      // double
+auto y = 3.14f;     // float
+```
+
+::: {.tip}
+**Tip:** Prefer uppercase `L` --- a lowercase `l` is easy to mistake for the digit `1`.
+:::
+
+## 6. Printing in Other Bases (7 min)
 
 ```cpp
 int val = 42;
@@ -160,7 +227,7 @@ std::println("Hex:    {:#x}", val);   // 0x2a
 - The value does not change; you are only **looking** at it differently
 - `std::format` and `std::println` come from chapter 10 --- full coverage later
 
-## 6. Strings to Numbers (12 min)
+## 7. Strings to Numbers (10 min)
 
 ```cpp
 int a = std::stoi("42");         // 42
@@ -196,7 +263,7 @@ int c = std::stoi("52", nullptr, 8);       // octal  -> 42
 **Tip:** Pass base `0` to auto-detect from the prefix: `std::stoi("0x2A", nullptr, 0)`. **But** with base 0, `"010"` is parsed as **octal 8**, not decimal 10!
 :::
 
-## 7. Numbers to Strings (3 min)
+## 8. Numbers to Strings (3 min)
 
 ```cpp
 std::string s1 = std::to_string(42);      // "42"
@@ -206,7 +273,7 @@ std::string s3 = std::to_string(3.14);    // "3.140000"
 
 For prettier output, use `std::format` (chapter 10).
 
-## 8. Try It --- Number Viewer (5 min)
+## 9. Try It --- Number Viewer (5 min)
 
 ```cpp
 #include <iostream>
@@ -226,7 +293,9 @@ int main() {
 
 Live-code this and ask students to predict the outputs for 255, 1984, and a negative number.
 
-## 9. Wrap-up Quiz (5 min)
+Instructor note: `{:#b}` on a negative int prints a minus sign and the magnitude (`-5` prints `-0b101`), not the two's complement bit pattern --- mention that the stored bits are lecture 10 material.
+
+## 10. Wrap-up Quiz (5 min)
 
 **Q1.** What does `std::stoi("1984abc")` return?
 
@@ -253,15 +322,15 @@ E. Ben got this wrong
 A. `std::println("{:#b}", 42)`
 B. `std::println("{:b}", 42)`
 C. `std::println("{b}", 42)`
-D. `std::println("0b{:b}", 42)`
+D. `std::println("{:#x}", 42)`
 E. Ben got this wrong
 
 *Answer: A* --- `#` turns on the base prefix.
 
-## 10. Assignment / Reading (2 min)
+## 11. Assignment / Reading (2 min)
 
 - **Read:** chapter 7, remaining sections --- two's complement, integer sizes/ranges, overflow, binary arithmetic, bit and shift operators
-- **Do:** chapter 7 exercises 3, 4, 5, 6, 8, 9, 10, 11 (two's complement, ranges, overflow, bit tests)
+- **Do:** chapter 7 exercises 3, 4, 5, 6, 8, 10, 11, 14, 15 (two's complement, ranges, overflow, bit and shift operators)
 - **Bring:** a piece of paper for binary arithmetic by hand
 
 ## Key Points to Reinforce
@@ -269,6 +338,7 @@ E. Ben got this wrong
 - The same number has many spellings; the compiler stores the same value for all of them
 - `0b`, `0x`, and leading `0` set the base of a literal
 - `'` is a digit separator, ignored by the compiler
+- Suffixes (`U`, `L`, `LL`, `f`) set a literal's type **before** any arithmetic happens --- `365LL * 24 * ...` computes in `long long`
 - `{:b}`, `{:x}`, `{:o}` print the same value in a different base
 - `std::stoi`/`std::stod` parse strings; specify a `base` parameter when needed
 - Leading zeros in input strings are a **minefield** --- know what `"010"` means in your context
@@ -318,7 +388,7 @@ By the end of lecture 10, students should be able to:
     - `-0 = 1111 1111`
 - Complicates hardware, comparisons, and arithmetic
 
-## 2. Two's Complement (15 min)
+## 2. Two's Complement (10 min)
 
 Recipe: **flip all bits, then add 1**.
 
@@ -373,7 +443,7 @@ With `n` bits:
 | Type | Range |
 |---|---|
 | `unsigned char` | 0 to 255 |
-| `char`/`signed char` | -128 to 127 |
+| `signed char` | -128 to 127 |
 | `unsigned int` | 0 to ~4.3 billion |
 | `int` | -2.1 to +2.1 billion |
 | `unsigned long long` | 0 to ~1.8 x 10^19 |
@@ -550,7 +620,7 @@ E. Ben got this wrong
 ## 10. Assignment / Reading (2 min)
 
 - **Read:** chapter 8 of *Gorgo Starting C++*, sections on `std::array` and `std::vector` basics (through size/capacity/empty/clear)
-- **Do:** chapter 8 exercises 1, 2, 3, 5, 8, 10 (container basics, copy costs, clear vs capacity)
+- **Do:** chapter 8 exercises 1, 2, 3, 8, 9, 10 (container basics, size vs capacity, clear and empty)
 - **Bring:** questions about bit manipulation --- there will be time to dig deeper if needed
 
 ## Key Points to Reinforce

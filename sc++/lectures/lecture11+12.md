@@ -6,7 +6,7 @@
 Chapter 8 is split across two lectures:
 
 - **Lecture 11 --- Array and Vector Basics:** `std::array` (fixed size), `std::vector` construction, `push_back`/`pop_back`, `[]`/`.at()`/`.front()`/`.back()`, `size`/`capacity`/`empty`/`clear`
-- **Lecture 12 --- Mutation and Iteration:** `insert`/`erase`/`reserve`/`shrink_to_fit`, range-based `for`, iterators, `.begin()`/`.end()` and `auto`
+- **Lecture 12 --- Mutation and Iteration:** `insert`/`erase`/`reserve`/`shrink_to_fit`, range-based `for`, iterators, `.begin()`/`.end()` and `auto`, free `std::begin`/`std::end`, standard algorithms and lambda basics
 
 ---
 
@@ -52,7 +52,7 @@ By the end of lecture 11, students should be able to:
 
 - Today we leave raw C arrays behind and meet the standard library containers
 
-## 1. The Trouble With C-Style Arrays (5 min)
+## 1. The Trouble With C-Style Arrays (3 min)
 
 Review of chapter 2 pain points:
 
@@ -64,7 +64,7 @@ Review of chapter 2 pain points:
 
 The standard library fixes all of this.
 
-## 2. `std::array<T, N>` (15 min)
+## 2. `std::array<T, N>` (12 min)
 
 Include `<array>`. Size is part of the type.
 
@@ -106,7 +106,7 @@ Include `<vector>`. Dynamic size, grows as needed.
 
 std::vector<int> empty;                // size 0
 std::vector<int> zeros(5);             // 5 zeros
-std::vector<int> fives(5, 42);         // 5 copies of 42
+std::vector<int> answers(5, 42);       // 5 copies of 42
 std::vector<std::string> songs =
     {"Wannabe", "A Little Respect"};         // initializer list
 ```
@@ -175,7 +175,7 @@ size=5 cap=8
 
 - Capacity grows in jumps (typically doubling)
 - When capacity is exhausted, the vector **reallocates** a bigger block and copies everything
-- `push_back` is amortized O(1): mostly fast, occasionally does extra work
+- `push_back` is usually fast, but occasionally it has to do extra work (computer scientists call this *amortized constant time*)
 
 ### `empty` and `clear`
 
@@ -245,8 +245,8 @@ E. Ben got this wrong
 
 ## 9. Assignment / Reading (5 min)
 
-- **Read:** chapter 8, remaining sections --- insert/erase/reserve, range-based for with references, iterators and `auto`
-- **Do:** chapter 8 exercises 4, 6, 7, 9, 11, 12 (iteration, insert/erase/reserve, auto references)
+- **Read:** chapter 8, remaining sections --- insert/erase/reserve, range-based for with references, iterators and `auto`, standard algorithms
+- **Do:** chapter 8 exercises 4-6, 10-13, 15-18 (iteration, insert/erase/reserve, iterators, invalidation, algorithms)
 - **Bring:** questions about capacity growth if anything was surprising
 
 ## Key Points to Reinforce
@@ -269,6 +269,8 @@ By the end of lecture 12, students should be able to:
 - Iterate with a range-based `for` loop using `const auto&` or `auto&` as appropriate
 - Use `.begin()` / `.end()` iterators and dereference with `*it`
 - Recognize iterator **invalidation** after insert/erase
+- Call standard algorithms (`std::sort`, `std::count`, `std::find_if`, `std::min_element`) on iterator ranges
+- Read a simple lambda passed to an algorithm
 
 ## Materials
 
@@ -289,9 +291,9 @@ By the end of lecture 12, students should be able to:
 
     *Answer: B* --- capacity 8 minus current size 3 = 5 more elements fit without reallocation.
 
-- Today we finish chapter 8 with **mutation in the middle** and **iteration**
+- Today we finish chapter 8 with **mutation in the middle**, **iteration**, and the **standard algorithms**
 
-## 1. Insert and Erase (15 min)
+## 1. Insert and Erase (12 min)
 
 ```cpp
 std::vector<std::string> lista = {"Creep", "No Rain", "Linger"};
@@ -311,13 +313,13 @@ lista.erase(lista.begin());
 
 - Inserting in the middle shifts every subsequent element over
 - Erasing shifts every subsequent element back
-- Both are O(n) in the worst case --- prefer `push_back`/`pop_back` when you can
+- The more elements after the position, the more work --- prefer `push_back`/`pop_back` when you can
 
 ::: {.tip}
 **Trap:** Insert and erase **invalidate** iterators, pointers, and references into the vector. After either call, get **fresh** iterators before touching the vector again.
 :::
 
-## 2. Reserve and shrink_to_fit (10 min)
+## 2. Reserve and shrink_to_fit (7 min)
 
 ```cpp
 std::vector<int> v;
@@ -334,8 +336,15 @@ v.shrink_to_fit();   // non-binding request to match capacity to size
 
 - `shrink_to_fit` asks the implementation to release excess memory
 - It is **non-binding** --- the implementation may ignore it
+- You can also construct a vector from an iterator range --- it copies that subrange:
 
-## 3. Range-Based `for` Loop (15 min)
+```cpp
+std::vector<int> all = {10, 20, 30, 40, 50};
+std::vector<int> middle(all.begin() + 1, all.begin() + 4);
+// middle is {20, 30, 40}
+```
+
+## 3. Range-Based `for` Loop (12 min)
 
 ```cpp
 std::vector<std::string> songs = {"Wannabe", "A Little Respect"};
@@ -366,7 +375,7 @@ for (auto& v : values) {
 **Tip:** Prefer `const auto&` when reading. Use `auto&` when modifying. **Avoid** plain `auto` (no `&`) for anything larger than a primitive --- it copies every element.
 :::
 
-## 4. Iterators (15 min)
+## 4. Iterators (13 min)
 
 Under the hood, range-based `for` uses **iterators**.
 
@@ -401,11 +410,68 @@ auto it = canciones.begin();
 
 ### Why Use Iterators Directly?
 
-- Standard library algorithms require them (sort, find, copy, ...)
+- Standard library algorithms require them (sort, find, count, ...)
 - You can iterate backward (`rbegin`/`rend`)
-- You can erase while iterating safely
+- More control when you need it --- like erasing elements while iterating (done carefully)
 
-## 5. Try It --- Live Demo (6 min)
+## 5. Standard Algorithms (12 min)
+
+### Free `std::begin` and `std::end`
+
+```cpp
+int  raw[] = {3, 1, 4, 1, 5, 9, 2, 6};
+
+for (auto it = std::begin(raw); it != std::end(raw); ++it) {
+    std::cout << *it << " ";
+}
+```
+
+- `std::begin(c)` / `std::end(c)` (from `<iterator>`) do the same job as the member functions
+- They also work on raw C-style arrays, which have no `.begin()` method
+- Once you can produce a `begin` and `end` for a thing, the algorithm machinery just works
+
+### The `<algorithm>` Header
+
+Small functions that operate on `[first, last)` iterator ranges.
+
+```cpp
+#include <algorithm>
+
+std::vector<int> rankings = {7, 2, 9, 4, 2, 8, 2, 5};
+
+std::sort(rankings.begin(), rankings.end());
+// {2, 2, 2, 4, 5, 7, 8, 9}
+
+auto twos = std::count(rankings.begin(), rankings.end(), 2);
+auto lo   = *std::min_element(rankings.begin(), rankings.end());
+auto hi   = *std::max_element(rankings.begin(), rankings.end());
+// twos == 3, lo == 2, hi == 9
+```
+
+- Less code to read, fewer bugs, usually faster than a hand-rolled loop
+- When a loop searches, counts, or sorts, check `<algorithm>` first
+
+### Lambdas --- Tiny Unnamed Functions
+
+Some algorithms take a **callable** --- most often a **lambda**.
+
+```cpp
+auto big = std::find_if(rankings.begin(), rankings.end(),
+                        [](int n) { return n > 5; });
+
+if (big != rankings.end()) {
+    std::cout << *big << "\n";   // 7 --- first value > 5 after the sort
+}
+```
+
+- `[](int n) { return n > 5; }` is an unnamed function: capture list `[]`, one `int` parameter, body
+- Treat it as a small inline function the algorithm calls on every element
+
+::: {.tip}
+**Wut:** `std::find` and `std::find_if` return `end()` (one past the end) when nothing matches --- not a null pointer, not an exception. Compare the result against `end()` before dereferencing it.
+:::
+
+## 6. Try It --- Live Demo (5 min)
 
 ```cpp
 #include <iostream>
@@ -426,8 +492,9 @@ int main() {
 ```
 
 Walk through how the range-based form rewrites to an explicit iterator loop.
+If time allows, sort `nums` in descending order with `std::sort` and a lambda.
 
-## 6. Wrap-up Quiz (4 min)
+## 7. Wrap-up Quiz (4 min)
 
 **Q1.** What does this print?
 
@@ -459,10 +526,10 @@ for (int i = 0; i <= scores.size(); i++) {
 A. `scores` cannot be iterated
 B. `[]` does not work on `std::vector`
 C. `<=` should be `<` --- reads one past the end
-D. `i` should be `size_t`
-E. Both C and D --- Ben got this wrong
+D. `i++` should be `++i`
+E. Ben got this wrong
 
-*Answer: E* --- the `<=` causes an off-by-one read past the last element, and `int` vs `size_t` is a signed/unsigned mismatch.
+*Answer: C* --- when `i` reaches 3, `scores[i]` reads one past the last element --- undefined behavior. The fix is `i < scores.size()`.
 
 **Q3.** Why is `for (auto x : vec)` usually wrong for `std::vector<std::string>`?
 
@@ -474,10 +541,10 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 7. Assignment / Reading (5 min)
+## 8. Assignment / Reading (5 min)
 
 - **Read:** chapter 9 of *Gorgo Starting C++* (I/O streams --- string streams, file streams, stream manipulators)
-- **Do:** all 9 exercises at the end of chapter 9
+- **Do:** all 12 exercises at the end of chapter 9
 - **Bring:** a plain-text file with 3-5 lines for next lecture's file-reading demo
 
 ## Key Points to Reinforce
@@ -487,3 +554,5 @@ E. Ben got this wrong
 - Range-based `for` with `const auto&` is the default for read-only loops
 - `.end()` is **one past** the last element --- half-open interval `[begin, end)`
 - `auto` saves you from writing `std::vector<T>::iterator` by hand
+- `<algorithm>` has named operations --- sort, find, count, min_element --- prefer them over hand-rolled loops
+- `std::find`/`find_if` return `end()` when nothing matches --- check before dereferencing

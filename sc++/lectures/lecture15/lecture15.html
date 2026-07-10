@@ -61,10 +61,9 @@ Exceptions
 .lc[
 ```cpp
 #include <stdexcept>
+#include <string>
 
-int parse_track(
-    const std::string &s)
-{
+int parse_track(const std::string &s) {
     int n = std::stoi(s);
     if (n < 1) {
         throw std::out_of_range(
@@ -93,6 +92,8 @@ int parse_track(
 
 - All take a `std::string` and provide `.what()`
 - All derive from `std::exception`
+- `out_of_range`/`invalid_argument` derive from `logic_error`; `overflow_error` from `runtime_error`
+- So `catch (const std::logic_error &)` also catches `out_of_range`
 
 ---
 # Catching Exceptions
@@ -134,6 +135,26 @@ try {
 - List **specific** types **before** generic ones
 
 **Tip:** Always catch by `const` reference to avoid slicing.
+]
+
+---
+# Catch-All
+.lc[
+```cpp
+try {
+    risky();
+} catch (const std::exception &e) {
+    std::cout << "known: "
+              << e.what() << "\n";
+} catch (...) {
+    std::cout << "unknown\n";
+}
+```
+]
+.rc[
+- `catch (...)` catches **anything**
+- Last resort for exceptions that are not a `std::exception`
+- Always place it **last**
 ]
 
 ---
@@ -190,6 +211,13 @@ void deep()   {
 void middle() {
     Song s("Save Tonight");
     deep();
+}
+int main() {
+    try { middle(); }
+    catch (const std::exception &e) {
+        std::cout << "caught: "
+                  << e.what() << "\n";
+    }
 }
 ```
 ]
@@ -266,6 +294,8 @@ if (!r2)
 - `*result` or `.value()` for the value
 - `.error()` for the error
 - `if (r)` tests whether a value is present
+
+**Trap:** `*result` on an error is undefined behavior; `.value()` throws `std::bad_expected_access` instead.
 ]
 
 ---
@@ -331,7 +361,8 @@ catch (const std::invalid_argument &e) {}
 .lc[
 ```cpp
 void load(const std::string &file) {
-    throw std::runtime_error("not found");
+    throw std::runtime_error(
+        "file not found: " + file);
 }
 
 void play() noexcept {
@@ -359,7 +390,7 @@ void play() noexcept {
 - `std::expected<T, E>` for routine errors the caller handles
 
 **Read:** chapter 12 of *Gorgo Starting C++*, first half --- struct-to-class, access, constructors, destructors.
-**Do:** exercises 1, 2, 4, 5, 10, 11, 12.
+**Do:** exercises 1, 2, 4, 5, 11.
 
 </textarea>
 <script>

@@ -7,8 +7,10 @@
 
 By the end of this lecture, students should be able to:
 
-- Name the fundamental C++ types (`int`, `char`, `float`, `double`, `bool`) and their common sizes
+- Name the fundamental C++ types (`int`, `char`, `float`, `double`, `long double`, `bool`) and their common sizes
+- Reach for fixed-width types from `<cstdint>` when the exact size matters
 - Declare and initialize variables, and explain why uninitialized variables are dangerous
+- Pick an initialization form and explain why brace initialization rejects narrowing
 - Use `sizeof` and `std::numeric_limits<T>` to reason about memory and ranges
 - Declare one-dimensional and two-dimensional arrays and index them safely
 - Mark a value as read-only with `const`, including both flavors of `const` with pointers
@@ -24,7 +26,7 @@ By the end of this lecture, students should be able to:
 
 ## 0. Welcome and Review (5 min)
 
-- Quick recap of lecture 1: `main()`, `std::cout`, `std::cin`, `argc`/`argv`, and the `-Wall -Wextra -pedantic` flag
+- Quick recap of lecture 1: `main()`, `std::cout`, `std::cin`, `argc`/`argv`, and the `-Wall -Wextra -pedantic` flags
 - Collect and answer any lingering `hello.cpp` questions from the assigned reading
 - Review multiple choice (from lecture 1): **If the user types `Los Del Rio`, what does `std::cin >> name` store in `name`?**
     - A. `Los Del Rio`
@@ -42,7 +44,7 @@ By the end of this lecture, students should be able to:
 - In C++, every variable has a **type**, set at compile time
 - "Object" in C++ just means "a region of memory with a type" --- it does not imply classes (yet)
 
-## 2. Basic Types (10 min)
+## 2. Basic Types (12 min)
 
 Write these on the board and live-code `sizeof` to confirm:
 
@@ -56,21 +58,51 @@ unsigned int positive_only = 42;
 
 float price = 9.99f;
 double pi = 3.14159265358979;
+long double precise = 2.71828182845904523536L;
 
 char grade = 'A';
 bool game_over = false;
 ```
 
 - Integer types differ in **size** and **range** --- walk the typical sizes table from the chapter
-- Prefer `double` over `float` unless you have a reason
-- A `char` is a tiny integer --- `'A'` is 65, and `letter + 1` is `'B'`
+- Prefer `double` over `float` unless you have a reason; `long double` gives extra precision but its size is platform-dependent
 - Single quotes for chars, double quotes for strings
 
 ::: {.tip}
 **Trap:** Mixing signed and unsigned in a comparison can silently convert the negative value to a very large positive number. Keep your types consistent.
 :::
 
-## 3. Declaring and Initializing Variables (5 min)
+### Fixed-Width Integer Types
+
+- The sizes of `int`, `long`, and friends are only *minimums* --- they vary by compiler and platform
+- When the exact size matters (file formats, network packets, hardware), include `<cstdint>`:
+
+```cpp
+#include <cstdint>
+
+std::int32_t  fans = 1'000'000;  // exactly 32 bits, signed
+std::uint8_t  red  = 255;        // exactly 8 bits, unsigned
+std::uint16_t port = 8080;       // exactly 16 bits, unsigned
+```
+
+- For everyday counters and indices, plain `int` is still the right default
+
+### char and ASCII
+
+- A `char` is a tiny integer --- **ASCII** is the standard mapping from the numbers 0-127 to characters
+- `'A'` is 65, `'a'` is 97, `'0'` is 48, and `letter + 1` is the next code point
+- Live-code the chapter's demo --- same value, different display:
+
+```cpp
+char letter = 65;
+int  number = 65;
+std::cout << letter << "\n";   // prints A
+std::cout << number << "\n";   // prints 65
+```
+
+- `std::cout` picks the display by type: a `char` becomes a glyph, an `int` becomes digits
+
+## 3. Declaring and Initializing Variables (6 min)
 
 ```cpp
 int waterfalls = 3;
@@ -82,6 +114,22 @@ int count;          // uninitialized --- garbage!
 - Spell out the type on the left, assign a value on the right
 - You can declare multiple variables of the same type in one statement
 - Uninitialized variables contain **whatever garbage was previously in that memory**
+- Instructor note: live-coding this also triggers `-Wunused-variable` for `count` --- expected; point out that the compiler notices dead variables too
+
+### Initialization Forms
+
+```cpp
+int a = 10;     // copy initialization
+int b(10);      // direct initialization
+int c{10};      // brace initialization
+
+int oops = 99.9;   // compiles --- silently truncates to 99
+int safer{99.9};   // ERROR --- braces reject narrowing
+```
+
+- All three forms store 10 --- the difference shows up with suspect conversions
+- Brace initialization (C++11) rejects **narrowing conversions** --- values that lose information in the target type
+- Prefer braces when you want the compiler to flag suspicious conversions
 
 Show `auto`:
 
@@ -94,7 +142,7 @@ auto initial = 'T';       // char
 - `auto` asks the compiler to deduce the type from the initializer --- C++ is still strictly typed
 - Use `auto` when the type is obvious or painfully long; spell it out when it is not
 
-## 4. sizeof and std::numeric_limits (8 min)
+## 4. sizeof and std::numeric_limits (6 min)
 
 ```cpp
 #include <iostream>
@@ -116,7 +164,7 @@ int main() {
 **Wut:** For floating-point types, `min()` is the smallest positive normal value, not the most negative value. Use `lowest()` for the most negative.
 :::
 
-## 5. Arrays (15 min)
+## 5. Arrays (11 min)
 
 ```cpp
 int scores[5] = {99, 85, 73, 91, 100};
@@ -148,9 +196,11 @@ int grid[3][4] = {
 - First index is row, second is column
 - Elements are stored row by row in memory, so `grid[0][3]` and `grid[1][0]` are neighbors
 
-Live-demo: build a 5x5 multiplication table with nested `for` loops (preview of chapter 5).
+Live-demo: build a 5x5 multiplication table with nested `for` loops.
 
-## 6. const (8 min)
+- Instructor note: the class has not seen loops yet --- tell them the `for` loop is magic for now, explained in chapter 5, and keep the focus on the 2D indexing
+
+## 6. const (6 min)
 
 ```cpp
 const double PI = 3.14159265358979;
@@ -179,7 +229,7 @@ const int *const p3 = &vida; // both
 **Tip:** Read pointer declarations **right to left**. `int *const p` reads as "p is a const pointer to int" --- the pointer is const.
 :::
 
-## 7. Structures (12 min)
+## 7. Structures (11 min)
 
 ```cpp
 struct Song {
@@ -209,6 +259,18 @@ Brace initialization is shorter:
 Song hit = {"No Scrubs", "TLC", 1999};
 ```
 
+Designated initializers (C++20) name each member explicitly:
+
+```cpp
+Song hit = {.title = "No Scrubs", .artist = "TLC", .year = 1999};
+Song stub = {.title = "Wonderwall"};   // artist = "", year = 0
+```
+
+- Harder to mis-order and self-documenting
+- Members must appear in declaration order --- you can skip, never reorder
+- Skipped members get their default value (`0` for `int`, empty for `std::string`)
+- Instructor note: with `-Wextra`, the skip-members line warns `-Wmissing-field-initializers` --- expected and harmless; the skipped members still get their defaults
+
 ### Structure Assignment Is a Copy
 
 ```cpp
@@ -223,7 +285,7 @@ std::cout << b.year << "\n";   // 2000
 - `b = a` copies **every member**; `b` has its own storage
 - This matters when structs get large --- we will revisit in chapter 6 (Functions)
 
-## 8. Try It --- Live Demo (5 min)
+## 8. Try It --- Live Demo (9 min)
 
 ```cpp
 #include <iostream>
@@ -252,9 +314,13 @@ int main() {
 }
 ```
 
-Invite the class to predict the output before you run it. Then add a fourth song and recount.
+Invite the class to predict the output before you run it.
+Then add a fourth song and recount.
+Finish by rewriting one playlist entry with designated initializers.
 
-## 9. Wrap-up Quiz Questions (3 min)
+- Instructor note: the `for` loop is the same chapter 5 magic as the arrays demo --- read it aloud as "for each song in the playlist" and move on
+
+## 9. Wrap-up Quiz Questions (5 min)
 
 **Q1.** On a system where `int` is 4 bytes, what is `sizeof(scores)` for `int scores[10]`?
 
@@ -285,7 +351,7 @@ E. Ben got this wrong
 
 *Answer: C* --- `'C'` is 67, plus 3 is 70, which is `'F'`.
 
-**Q3.** Which declaration lets you change the value of `*p` but **not** what `p` points to?
+**Q3.** Which declaration lets you change the value of `*p` but **not** where `p` points?
 
 A. `const int *p`
 B. `int const *p`
@@ -298,14 +364,17 @@ E. Ben got this wrong
 ## 10. Assignment / Reading (1 min)
 
 - **Read:** chapter 3 of *Gorgo Starting C++*
-- **Do:** all 9 exercises at the end of chapter 3
-- **Bring:** a working program that declares a `struct` and prints it --- we will reuse it next lecture
+- **Do:** all 15 exercises at the end of chapter 3
+- **Bring:** questions about any exercise that fought back
 
 ## Key Points to Reinforce
 
 - Every variable has a type; the type sets the size and the legal operations
+- ASCII maps 0-127 to characters; `std::cout` displays a `char` as a glyph and an `int` as digits
+- `<cstdint>` gives exact-width integers when the size matters; plain `int` for everyday work
 - Always initialize --- uninitialized variables contain garbage
+- Brace initialization rejects narrowing conversions
 - `sizeof` is in bytes; `std::numeric_limits<T>` is for min/max/lowest
 - Arrays are fixed-size and zero-indexed; no bounds checking
 - Read pointer `const` right to left
-- `struct` groups fields; assignment copies every member
+- `struct` groups fields; assignment copies every member; designated initializers name each member

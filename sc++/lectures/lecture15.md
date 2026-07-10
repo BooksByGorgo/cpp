@@ -72,6 +72,10 @@ int parse_track(const std::string &s) {
 
 - All take a `std::string` message and offer `.what()` to retrieve it
 - All derive from `std::exception`
+- The hierarchy splits in two below `std::exception`:
+    - `std::out_of_range` and `std::invalid_argument` derive from `std::logic_error`
+    - `std::overflow_error` derives from `std::runtime_error`
+    - so `catch (const std::logic_error &)` catches `std::out_of_range` but not `std::overflow_error`
 
 ## 3. Catching Exceptions (10 min)
 
@@ -121,7 +125,7 @@ try {
 
 - `catch (...)` is a last resort for anything that is not a `std::exception`
 
-## 4. Catch Order Matters --- The Common Bug (6 min)
+## 4. Catch Order Matters --- The Common Bug (4 min)
 
 ```cpp
 try { /* ... */ }
@@ -133,13 +137,14 @@ catch (const std::out_of_range &e) {    // UNREACHABLE
 }
 ```
 
-- The compiler tries catch blocks **top to bottom**
+- Handlers are tried in source order, **top to bottom**
 - If `std::exception` comes first, `std::out_of_range` (which derives from it) can never match
 - Fix: specific types **before** generic ones
 
 ## 5. Stack Unwinding (10 min)
 
-When an exception is thrown, C++ **unwinds the stack** --- it destroys local variables in each function along the way until it finds a matching handler. Destructors run automatically.
+When an exception is thrown, C++ **unwinds the stack** --- it destroys local variables in each function along the way until it finds a matching handler.
+Destructors run automatically.
 
 ```cpp
 struct Song {
@@ -196,12 +201,14 @@ int add(int a, int b) noexcept {
 **Tip:** Mark move constructors, move assignment operators, and destructors `noexcept` when possible.
 :::
 
-## 7. `std::expected<T, E>` (C++23) (12 min)
+## 7. `std::expected<T, E>` (C++23) (10 min)
 
-Include `<expected>`. Holds **either** a value **or** an error --- never both.
+Include `<expected>`.
+Holds **either** a value **or** an error --- never both.
 
 ```cpp
 #include <expected>
+#include <iostream>
 #include <string>
 
 std::expected<int, std::string> divide(int a, int b) {
@@ -223,6 +230,12 @@ int main() {
 - Use `*result` or `result.value()` for the value
 - Use `result.error()` for the error
 - The boolean check (`if (r)`) tells you whether a value is present
+
+::: {.tip}
+**Trap:** `*result` and `result.value()` are *not* interchangeable.
+`*result` on an error is undefined behavior; `result.value()` checks first and throws `std::bad_expected_access` if there is no value.
+Use `*result` only after the boolean check; reach for `value()` when you want the throw-on-empty safety net.
+:::
 
 ## 8. Exceptions vs `std::expected` (6 min)
 
@@ -287,7 +300,7 @@ E. Ben got this wrong
 
 ```cpp
 void load(const std::string &file) {
-    throw std::runtime_error("file not found");
+    throw std::runtime_error("file not found: " + file);
 }
 
 void play() noexcept {
@@ -306,7 +319,7 @@ E. Ben got this wrong
 ## 10. Assignment / Reading (2 min)
 
 - **Read:** chapter 12 of *Gorgo Starting C++*, sections on struct-to-class, access specifiers, constructors, and destructors (first half)
-- **Do:** chapter 12 exercises 1, 2, 4, 5, 10, 11, 12 (struct vs class, constructor ordering, initializer lists, explicit)
+- **Do:** chapter 12 exercises 1, 2, 4, 5, 11 (struct vs class, constructor ordering, initializer lists, explicit)
 - **Bring:** a struct from a previous lecture that you would like to turn into a class
 
 ## Key Points to Reinforce

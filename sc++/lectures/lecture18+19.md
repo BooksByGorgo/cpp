@@ -5,8 +5,8 @@
 
 Chapter 13 is split across two lectures:
 
-- **Lecture 18 --- Pointers, `new`/`delete`, and `unique_ptr`:** stack vs heap, pointer basics (`&`, `*`, `->`, `nullptr`), `new`/`delete`/`new[]`/`delete[]`, memory leaks and dangling pointers, introduction to `std::unique_ptr` and RAII
-- **Lecture 19 --- `shared_ptr` and Move Semantics:** `std::shared_ptr` with reference counting, `.get()`, `std::move` and move semantics, a complete worked example
+- **Lecture 18 --- Pointers, `new`/`delete`, and `unique_ptr`:** scope, lifetime, and storage duration, stack vs heap, pointer basics (`&`, `*`, `->`, `nullptr`), `new`/`delete`/`new[]`/`delete[]`, memory leaks and dangling pointers, introduction to `std::unique_ptr` and RAII
+- **Lecture 19 --- `shared_ptr` and Move Semantics:** `std::shared_ptr` with reference counting, `std::weak_ptr` and ownership cycles, `.get()`, `std::move` and move semantics, copy elision (RVO), a complete worked example
 
 ---
 
@@ -16,6 +16,8 @@ Chapter 13 is split across two lectures:
 
 By the end of lecture 18, students should be able to:
 
+- Distinguish scope from lifetime and name the four storage durations
+- Explain what a function-local `static` variable does
 - Distinguish stack memory (automatic) from heap memory (manual)
 - Declare and dereference a pointer, and use `->` to access members
 - Allocate and free heap memory with `new` / `delete` and `new[]` / `delete[]`
@@ -58,7 +60,40 @@ By the end of lecture 18, students should be able to:
 
 - Today we finally get to **pointers** and **dynamic memory** --- the dark art of C++
 
-## 1. Stack vs Heap (10 min)
+## 1. Scope, Lifetime, and Storage Duration (8 min)
+
+Every variable answers two questions besides "what type am I?":
+
+- **Scope**: where in the source code the name is visible
+- **Lifetime**: how long the underlying memory exists at runtime
+
+C++ describes lifetime as **storage duration**; there are four kinds:
+
+- **automatic** --- locals; created at the declaration, destroyed when the block exits
+- **static** --- created once, lives until the program ends
+- **dynamic** --- created and destroyed explicitly by your code (today's main topic)
+- **thread-local** --- like static, but one copy per thread (mention only)
+
+### Function-Local `static`
+
+```cpp
+int next_id() {
+    static int counter = 0; // initialized once, survives across calls
+    return ++counter;
+}
+
+std::cout << next_id() << "\n";   // 1
+std::cout << next_id() << "\n";   // 2
+std::cout << next_id() << "\n";   // 3
+```
+
+- `counter` is in scope only inside `next_id`, but its lifetime spans the whole program
+
+::: {.tip}
+**Wut:** A function-local `static` is initialized the first time the function runs, not when the program starts.
+:::
+
+## 2. Stack vs Heap (8 min)
 
 **Stack** --- fast, automatic, scoped.
 
@@ -96,7 +131,7 @@ std::string *make() {
 **Tip:** Prefer the stack. Use the heap only when you must.
 :::
 
-## 2. Pointer Basics (15 min)
+## 3. Pointer Basics (13 min)
 
 A **pointer** holds the address of another variable.
 
@@ -146,7 +181,7 @@ if (ptr != nullptr) {
 
 - Dereferencing `nullptr` is undefined behavior
 
-## 3. `new` and `delete` (10 min)
+## 4. `new` and `delete` (9 min)
 
 ```cpp
 #include <string>
@@ -170,10 +205,22 @@ delete[] scores;   // must match new[]
 ```
 
 ::: {.tip}
-**Trap:** `new` pairs with `delete`; `new[]` pairs with `delete[]`. Mixing them is undefined behavior, and the compiler will not warn you.
+**Trap:** `new` pairs with `delete`; `new[]` pairs with `delete[]`.
+Mixing them is undefined behavior.
+g++ does catch simple mixups like this one (`-Wmismatched-new-delete`), but only when it can see the `new[]` and the `delete` together --- do not count on a warning.
 :::
 
-## 4. Memory Leaks and Dangling Pointers (8 min)
+The warning usually disappears when the pointer crosses a function boundary, while the bug remains:
+
+```cpp
+void free_it(int *p) {
+    delete p;   // still UB --- compiles with no warning
+}
+
+free_it(new int[3]);
+```
+
+## 5. Memory Leaks and Dangling Pointers (7 min)
 
 ### Leak
 
@@ -196,7 +243,7 @@ std::cout << *p;   // DANGER: p is dangling
 
 - Dereferencing freed memory is undefined behavior; may crash or print garbage
 
-## 5. Smart Pointers and RAII (10 min)
+## 6. Smart Pointers and RAII (10 min)
 
 **RAII** --- Resource Acquisition Is Initialization. Resources are acquired in a constructor and released in a destructor. Lifetimes are tied to objects.
 
@@ -229,11 +276,11 @@ std::unique_ptr<int> c = std::move(a);   // OK: ownership transferred
 **Tip:** `std::unique_ptr` should be your default choice for heap allocation. Prefer `std::make_unique` over raw `new`.
 :::
 
-## 6. Try It --- A Song Owner (5 min)
+## 7. Try It --- A Song Owner (8 min)
 
 Live-code a small example where a function returns a `std::unique_ptr<Song>` and the caller uses `->` to access members. Walk through when the destructor runs.
 
-## 7. Wrap-up Quiz (5 min)
+## 8. Wrap-up Quiz (5 min)
 
 **Q1.** What is wrong with this code?
 
@@ -265,14 +312,15 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 8. Assignment / Reading (2 min)
+## 9. Assignment / Reading (2 min)
 
-- **Read:** chapter 13, remaining sections --- `std::shared_ptr`, `.get()`, move semantics, `std::move`
-- **Do:** chapter 13 exercises 2, 4, 5, 6, 7, 8 (shared_ptr ref counts, move semantics, shared ownership)
+- **Read:** chapter 13, remaining sections --- `std::shared_ptr`, `std::weak_ptr`, `.get()`, move semantics, `std::move`
+- **Do:** chapter 13 exercises 2, 4, 5, 7, 8, 14, 16, 18 (shared_ptr ref counts, move semantics, `.get()`, weak_ptr)
 - **Bring:** questions about pointer syntax --- there will be more next lecture
 
 ## Key Points to Reinforce
 
+- Scope is where the name is visible; storage duration (automatic, static, dynamic, thread-local) is how long the memory lives
 - Stack is automatic, heap is manual; prefer stack
 - `&` = address-of, `*` = dereference, `->` = member access through pointer
 - `new` / `delete` are matched; `new[]` / `delete[]` are matched
@@ -289,9 +337,12 @@ By the end of lecture 19, students should be able to:
 
 - Use `std::shared_ptr` with `std::make_shared` for shared ownership
 - Explain how reference counting manages the lifetime of shared memory
+- Explain why reference counting leaks on cycles, and break a cycle with `std::weak_ptr`
+- Access a `weak_ptr`'s object safely with `.lock()` and `.expired()`
 - Get a raw pointer from a smart pointer with `.get()` without transferring ownership
 - Use `std::move` to transfer resources instead of copying them
 - Describe the valid-but-unspecified state of a moved-from object
+- Explain why returning a local object is already cheap (copy elision / RVO)
 
 ## Materials
 
@@ -318,9 +369,9 @@ By the end of lecture 19, students should be able to:
 
     *Answer: B*
 
-- Yesterday we saw `unique_ptr`. Today: **shared ownership** and **moving** values around without copying.
+- Last lecture we saw `unique_ptr`. Today: **shared ownership** and **moving** values around without copying.
 
-## 1. `std::shared_ptr` (15 min)
+## 1. `std::shared_ptr` (13 min)
 
 What if multiple parts of your code need to own the same object?
 
@@ -351,7 +402,71 @@ std::cout << song2.use_count() << "\n";   // 1
 **Tip:** Use `shared_ptr` only when you **truly** need shared ownership. `unique_ptr` is simpler, faster, and enforces clearer ownership.
 :::
 
-## 2. Getting a Raw Pointer from a Smart Pointer (8 min)
+## 2. `std::weak_ptr` (10 min)
+
+Reference counting has one famous failure mode: **cycles**.
+
+```cpp
+struct Song {
+    std::string           title;
+    std::shared_ptr<Song> related;   // BUG: cycle in the making
+    Song(const std::string &t) : title(t) {}
+};
+
+auto a = std::make_shared<Song>("Today");
+auto b = std::make_shared<Song>("Black");
+a->related = b;   // b's count: 1 -> 2
+b->related = a;   // a's count: 1 -> 2
+```
+
+- When `a` and `b` go out of scope, each `Song` still has a count of 1 from the other's `related` member
+- Neither count reaches zero, neither destructor runs, the memory leaks
+- Demo: run under `-fsanitize=address` and let LeakSanitizer report the two leaked `Song`s
+
+### Breaking the Cycle
+
+```cpp
+struct Song {
+    std::string         title;
+    std::weak_ptr<Song> related;     // weak link, no count change
+    Song(const std::string &t) : title(t) {}
+};
+```
+
+- A `std::weak_ptr` is a **non-owning observer** of a `shared_ptr` --- it does not contribute to the reference count
+- With the weak link, the cycle dissolves the moment `a` and `b` go out of scope
+
+### `.lock()` and `.expired()`
+
+You cannot dereference a `weak_ptr` directly --- the object might already be gone.
+
+```cpp
+auto strong = std::make_shared<std::string>("Karma Police");
+std::weak_ptr<std::string> watcher = strong;
+
+if (auto live = watcher.lock()) {   // succeeds
+    std::cout << *live << "\n";     // Karma Police
+}
+
+strong.reset();                     // last shared_ptr gone
+
+if (auto live = watcher.lock()) {   // fails: empty shared_ptr
+    std::cout << *live << "\n";
+} else {
+    std::cout << "expired\n";       // expired
+}
+```
+
+- `.lock()` returns a temporary `shared_ptr`, empty if the object has expired
+- `.expired()` returns `true` once the object is gone
+- Check-then-use via `.lock()` is the only safe way to reach what a `weak_ptr` watches
+
+::: {.tip}
+**Tip:** Reach for `weak_ptr` whenever you need an observer that does not affect lifetime --- the back-pointer in a parent/child tree, the subscriber side of an observer pattern, a cache.
+If everyone holds a `shared_ptr`, nothing ever dies.
+:::
+
+## 3. Getting a Raw Pointer from a Smart Pointer (7 min)
 
 ```cpp
 auto song = std::make_unique<std::string>("Under the Bridge");
@@ -368,7 +483,7 @@ std::cout << *raw << "\n";
 **Trap:** **Never `delete`** a pointer obtained from `.get()`. The smart pointer still owns the memory and will free it. Deleting it yourself is a double-free.
 :::
 
-## 3. Move Semantics (20 min)
+## 4. Move Semantics (18 min)
 
 Copying a large object can be expensive. **Moving** transfers the data instead of duplicating it.
 
@@ -406,7 +521,24 @@ auto b = std::move(a);
 
 - This is the **only** way to transfer ownership between unique_ptrs
 
-## 4. Try It --- Full Worked Example (15 min)
+### Returning Large Objects (RVO)
+
+```cpp
+std::vector<int> make_scores() {
+    std::vector<int> scores = {10, 20, 30, 40, 50};
+    return scores;   // RVO or move --- never a deep copy
+}
+```
+
+- The compiler applies **copy elision** (return value optimization, RVO): the object is built directly in the caller's memory
+- When RVO does not apply, the compiler falls back to a move --- still cheap
+
+::: {.tip}
+**Trap:** Do not write `return std::move(local);`.
+The compiler already treats a returned local as a move candidate, and the explicit `std::move` defeats RVO --- it makes the code slower, not faster.
+:::
+
+## 5. Try It --- Full Worked Example (15 min)
 
 ```cpp
 #include <iostream>
@@ -455,7 +587,7 @@ int main() {
 
 Walk through the output and explain each destructor.
 
-## 5. Wrap-up Quiz (5 min)
+## 6. Wrap-up Quiz (5 min)
 
 **Q1.** What does this print?
 
@@ -498,16 +630,18 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 6. Assignment / Reading (2 min)
+## 7. Assignment / Reading (2 min)
 
 - **Read:** chapter 14 of *Gorgo Starting C++* (Special Members and Friends)
-- **Do:** all 9 exercises at the end of chapter 14
+- **Do:** all 15 exercises at the end of chapter 14
 - **Bring:** your `unique_ptr`/`shared_ptr` questions --- we build on these concepts next lecture
 
 ## Key Points to Reinforce
 
 - `shared_ptr` uses reference counting --- last one out frees the memory
+- Reference counting leaks on cycles; `weak_ptr` observes without owning and breaks them --- always go through `.lock()`
 - `.get()` yields a raw pointer without transferring ownership --- **do not delete** it
 - `std::move` casts to rvalue reference; the **move** is done by the target's move constructor
 - A moved-from object is **valid but unspecified** --- do not use it until reassigned
+- Returning a local object is already cheap (RVO) --- never `return std::move(local)`
 - Prefer `unique_ptr` unless shared ownership is genuinely required

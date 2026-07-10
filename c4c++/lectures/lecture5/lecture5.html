@@ -183,8 +183,8 @@ free(nums);
 # NULL-Check Debate
 
 - *For:* safety, predictable failure
-- *Against:* checks clutter code that almost never trigger
-- Safety-critical systems: ban dynamic allocation entirely
+- *Against:* the checks clutter the code; the error paths they guard almost never run
+- Safety-critical systems still need the check --- though many forbid dynamic allocation anyway
 
 Rule of thumb: for this class, check.
 
@@ -275,7 +275,7 @@ printf("%d\n", p[0]);
 1. `10`
 1. `16`
 1. `20`
-1. `32`
+1. Ben got this wrong
 
 ---
 # Key Points
@@ -286,7 +286,7 @@ printf("%d\n", p[0]);
 - No cast on `malloc` in C
 - `NULL`-check unless you have a reason not to
 
-**Read:** chapter 8 of *Gorgo C for C++ Programmers* (second half --- `calloc`, `realloc`, `memcpy`, `memset`). **Do:** exercises 1, 2, 3, 6.
+**Read:** chapter 8 of *Gorgo C for C++ Programmers* (second half --- `calloc`, `realloc`, `memcpy`, `memset`). **Do:** exercises 1, 5.
 
 </textarea>
 <script>

@@ -50,6 +50,7 @@ printf("%d %d %d\n",
 - Prototype vs definition
 - `()` vs `(void)` --- it matters in C
 - No overloading, no defaults, no references
+- Faking defaults: sentinels, name variations
 - `const` parameters
 - Pass structs by `const T *`
 - Recursion and stack depth
@@ -79,12 +80,15 @@ int add(int a, int b) {
 # () vs (void)
 
 ```c
-int get_score(void);   // really no params
-int get_score();       // UNSPECIFIED params
+int get_score(void); // really no params
+int get_score();     // C17: UNSPECIFIED
+                     // C23: same as (void)
 ```
 
 - In C++, `()` means "no parameters."
-- In C, `()` turns off parameter checking entirely.
+- C17 and earlier: `()` turns off argument checking.
+- C23 matches C++: extra args are now an error.
+- gcc 15 defaults to C23 --- old behavior needs `-std=gnu17`.
 - Always write `(void)`.
 
 **Tip:** `int main(void)` for this exact reason.
@@ -96,6 +100,36 @@ int get_score();       // UNSPECIFIED params
 - Library convention: `abs`, `fabs`, `labs`, `llabs`.
 - No default arguments --- every call passes every arg.
 - Upside: when you see `add(x, y)`, there's only one `add`.
+
+---
+# Faking Default Arguments
+.lc[
+```c
+// sentinel value
+void greet(const char *name,
+           int times) {
+    if (times <= 0) times = 1;
+    for (int i = 0; i < times; i++)
+        printf("I am %s\n", name);
+}
+
+greet("She-Ra", 0);  // once
+greet("He-Man", 3);  // three times
+
+// name variation
+void play(const char *title) {
+    play_n(title, 1);  // default
+}
+```
+]
+.rc[
+- Sentinel: `0`, `-1`, `NULL` = default
+- Name variation: short calls long
+- `printf` wraps `fprintf` (`stdout`)
+- `pthread_create`: `NULL` attrs = defaults
+
+**Tip:** Name variation for a different kind of call; sentinel for an in-range default.
+]
 
 ---
 # swap: the Classic
@@ -122,9 +156,7 @@ swap(&x, &y);
 # const Parameters
 .lc[
 ```c
-void print_name(
-    const char *name)
-{
+void print_name(const char *name) {
     printf("I am %s\n", name);
     // name[0] = 'X';  // ERROR
 }
@@ -246,9 +278,7 @@ typedef int
 int add(int, int);
 int sub(int, int);
 
-void apply(binop_fn fn,
-           int x, int y)
-{
+void apply(binop_fn fn, int x, int y) {
     printf("%d\n", fn(x, y));
 }
 ```
@@ -281,9 +311,7 @@ int restar(int a, int b) {
     return a - b;
 }
 
-void compute(math_fn fn,
-             int x, int y)
-{
+void compute(math_fn fn, int x, int y) {
     printf("%d\n", fn(x, y));
 }
 ```
@@ -363,6 +391,7 @@ printf("%d\n", apply(mul, 6, 7));
 
 - `(void)` for empty parameter lists
 - No overloading, no defaults
+- Fake defaults: sentinels, name variations
 - Every parameter is pass by value
 - `const T *` for read-only pointer params
 - Pass large structs by `const T *`
@@ -370,7 +399,7 @@ printf("%d\n", apply(mul, 6, 7));
 - Function pointers are C's lambdas
 - `typedef` tames the syntax
 
-**Read:** chapter 8 of *Gorgo C for C++ Programmers* (first half, through `malloc`/`free`). **Do:** exercises 2, 3, 4, 5.
+**Read:** chapter 8 of *Gorgo C for C++ Programmers* (first half, through `malloc`/`free`). **Do:** exercises 2, 3, 4, 6.
 
 </textarea>
 <script>

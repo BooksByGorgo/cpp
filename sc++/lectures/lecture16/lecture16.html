@@ -34,7 +34,7 @@ From Struct to Class
 .lc[
 ```cpp
 void load(const std::string &f) {
-    throw std::runtime_error("oops");
+    throw std::runtime_error(f + " not found");
 }
 void play() noexcept {
     load("track01.wav");
@@ -55,8 +55,10 @@ void play() noexcept {
 - Explain the difference between `struct` and `class`
 - Use `public`, `private`, and `protected`
 - Write default and parameterized constructors using member initializer lists
+- Delegate one constructor to another
 - Mark single-arg constructors `explicit`
 - Write a destructor and understand when it runs
+- Overload members and use default parameters
 
 ---
 # Why Classes?
@@ -173,6 +175,33 @@ Song b("Enter Sandman",
 **Trap:** Members are initialized in the order they are **declared** in the class, not the order in the initializer list. Keep them matching.
 
 ---
+# Delegating Constructors
+.lc[
+```cpp
+class Song {
+    std::string title;
+    std::string artist;
+    int year;
+public:
+    Song(const std::string &t,
+         const std::string &a, int y)
+        : title(t), artist(a), year(y) {}
+
+    // delegate with default values
+    Song()
+        : Song("Unknown", "Unknown", 0) {}
+};
+```
+]
+.rc[
+- One constructor calls another via the initializer list
+- Delegated-to constructor runs first, then the delegating body
+- Delegation must be the **only** entry in the list
+
+**Tip:** Delegate from the simplest constructors *to* the most complete one.
+]
+
+---
 # explicit Constructors
 .lc[
 ```cpp
@@ -260,9 +289,81 @@ int main() {
 ]
 .rc[
 - Locals are destroyed in **reverse order of construction**
-- Base classes construct before derived, destruct in reverse
-- Preview of inheritance (advanced)
+- Last constructed, first destroyed --- like a stack
 ]
+
+---
+# Overloading Member Functions
+.lc[
+```cpp
+class Playlist {
+    std::vector<std::string> songs;
+public:
+    void add(const std::string &song) {
+        songs.push_back(song);
+    }
+    void add(const std::string &song,
+             int position) {
+        songs.insert(
+            songs.begin() + position, song);
+    }
+};
+
+Playlist p;
+p.add("Torn");            // 1-arg
+p.add("Basket Case", 0);  // 2-arg
+```
+]
+.rc[
+- Same name, different parameter lists (chapter 6) --- works for members too
+- You already saw it: two constructors **are** overloads
+- One verb per concept keeps the interface clean
+]
+
+---
+# Default Parameters in Members
+.lc[
+```cpp
+class Playlist {
+    std::vector<std::string> songs;
+public:
+    void add(const std::string &song,
+             int position = -1) {
+        int n = static_cast<int>(
+            songs.size());
+        if (position < 0 || position >= n) {
+            songs.push_back(song);
+        } else {
+            songs.insert(
+                songs.begin() + position,
+                song);
+        }
+    }
+};
+
+p.add("Torn");            // appends
+p.add("Basket Case", 1);  // inserts at 1
+```
+]
+.rc[
+- One function replaces the two overloads
+- Defaults go at the **end** of the parameter list
+
+**Trap:** Overloads plus defaults can make a call ambiguous --- the compiler rejects it.
+]
+
+---
+# Try It --- A Song Class
+
+Build a complete `Song` class:
+
+- Three private members
+- A parameterized constructor with an initializer list
+- A delegating default constructor
+- A destructor that prints a message
+- A `print()` member function
+
+Predict the construction/destruction order before you run it.
 
 ---
 # Which is NOT a difference between struct and class?
@@ -270,7 +371,7 @@ int main() {
 1. Default access level
 1. Members of `struct` are public by default
 1. `class` supports constructors but `struct` does not
-1. You can use either for OOP
+1. Members of `class` are private by default
 1. Ben got this wrong
 
 ---
@@ -310,11 +411,13 @@ play(11);
 - `class` = `struct` with private-by-default
 - Use access specifiers to hide implementation
 - **Always** use member initializer lists
+- Delegate from simple constructors to the most complete one
 - Mark single-arg constructors `explicit`
 - Destructors run in **reverse order** of construction
+- Overloads and default parameters work in members --- do not mix them ambiguously
 
-**Read:** chapter 12, remaining sections --- member functions, `this`, operator overloading.
-**Do:** exercises 3, 6, 7, 8, 9, 13.
+**Read:** chapter 12, remaining sections --- member functions, `this`, `static` members, operator overloading.
+**Do:** exercises 3, 6, 7, 8, 9, 10, 12, 13.
 
 </textarea>
 <script>

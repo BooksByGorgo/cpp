@@ -1,7 +1,7 @@
 # Lecture 2 --- Strings
 
 **Source:** `c4c++/ch03.md`
-**Duration:** 50 minutes
+**Duration:** 65 minutes
 
 ## Learning Objectives
 
@@ -14,10 +14,11 @@ By the end of this lecture, students should be able to:
 - Use `strdup` and pair it with `free`
 - Tokenize a string with `strtok`/`strtok_r` and explain the gotchas
 - Classify characters with `<ctype.h>` and use the `(unsigned char)` cast
+- Recognize `sprintf`/`sscanf` and prefer `snprintf` as the bounded way to build strings
 
 ## Materials
 
-- Live coding terminal with `cc -Wall -Wextra -pedantic`
+- Live coding terminal with `cc -Wall -Wextra -pedantic` (add `-fsanitize=address` for the overflow demo)
 - Copy of `c4c++/ch03.md` for reference
 
 ---
@@ -111,7 +112,7 @@ int strcmp(const char *a, const char *b);
 
 ```c
 char buf[12] = "Buenas ";         // 8 used, 4 left
-strcat(buf, "noches");             // "noches" needs 7 — OVERFLOW
+strcat(buf, "noches");             // "noches" needs 7 --- OVERFLOW
 ```
 
 - `strcat` has no way to know the destination size.
@@ -135,6 +136,8 @@ free(copy);   // strdup calls malloc internally
 ```
 
 ### `strtok`
+
+The example below uses `puts(s)`, which prints the string plus a newline --- a handy shorthand for `printf("%s\n", s)`.
 
 ```c
 char line[] = "Girls Just Want to Have Fun";
@@ -169,7 +172,35 @@ for (size_t i = 0; title[i]; i++)
 **Wut:** `<ctype.h>` takes an `int`. On platforms where `char` is signed, a high-bit value sign-extends into a negative int --- **undefined behavior**. Always cast to `unsigned char` first.
 :::
 
-## 7. Live Coding: String Starter (5 min)
+## 7. A Preview: `sprintf` and `sscanf` (5 min)
+
+```c
+int sprintf(char *str, const char *format, ...);
+int sscanf(const char *str, const char *format, ...);
+```
+
+- `sprintf` is `printf` that writes into a string buffer.
+- `sscanf` is `scanf` that reads from a string.
+
+```c
+char result[50];
+int year = 1985;
+sprintf(result, "The year is %d. Que bueno!", year);
+// result is now "The year is 1985. Que bueno!"
+```
+
+- Just as `strncpy` is the safer sibling of `strcpy`, `snprintf` is the safer sibling of `sprintf`.
+
+```c
+char buf[20];
+snprintf(buf, sizeof(buf), "The year is %d", 2112);
+// safely truncated if it were longer
+```
+
+- `snprintf` never writes more than the given size --- no buffer overflow.
+- Full detail comes in the Standard I/O chapter.
+
+## 8. Live Coding: String Starter (8 min)
 
 ```c
 #include <stdio.h>
@@ -184,10 +215,10 @@ int main(void) {
     strcpy(copy, song);
     printf("copy: '%s'\n", copy);
 
-    char greeting[30] = "Buenos ";
+    char greeting[10] = "Buenos ";
     strncat(greeting, "dias",
             sizeof(greeting) - strlen(greeting) - 1);
-    puts(greeting);
+    puts(greeting);   // "Buenos di" --- truncated, but safe
 
     char *dup = strdup("Never Gonna Give You Up");
     puts(dup);
@@ -198,9 +229,12 @@ int main(void) {
 ```
 
 - Compile with `cc -Wall -Wextra -pedantic`
-- Swap `strncat` for `strcat` and watch the warning
+- Point out the truncation: `strncat` ran out of room and stopped at `"Buenos di"` instead of overflowing.
+- Swap the `strncat` call for `strcat(greeting, "dias");` and recompile --- the compiler stays silent.
+- Now recompile with `-fsanitize=address` and run: AddressSanitizer aborts with a `stack-buffer-overflow` report naming `greeting`.
+- Lesson: overflows are invisible at compile time; `strncat` truncates, `strcat` corrupts.
 
-## 8. Wrap-up Quiz (5 min)
+## 9. Wrap-up Quiz (5 min)
 
 **Q1.** What does this print?
 
@@ -228,25 +262,26 @@ printf("%s\n", greeting);
 A. `printf` needs `&greeting`
 B. Strings cannot be lowercase
 C. Modifying a string literal is undefined behavior
-D. `greeting` needs to be `char[]`
-E. Both C and D
+D. `printf` cannot print modified strings
+E. Ben got this wrong
 
-*Answer: E*
+*Answer: C* --- writing through a pointer to a string literal is undefined behavior; declaring `greeting` as a `char` array (`char greeting[] = ...`) is one way to fix it.
 
-**Q3.** What does `strcmp("A", "B")` return?
+**Q3.** What does `strcmp("A", "C")` return?
 
 A. `0`
 B. A positive number
 C. A negative number
-D. `-1` exactly
+D. `-2` exactly
 E. Ben got this wrong
 
-*Answer: C*
+*Answer: C* --- `"A"` sorts before `"C"`, so the result is negative; the standard does not guarantee any exact value (glibc here returns `-1`).
 
-## 9. Assignment / Reading (2 min)
+## 10. Assignment / Reading (2 min)
 
 **Read:** chapter 6 of *Gorgo C for C++ Programmers*.
-**Do:** exercises 1, 2, 3, 4, 5, 6, 7.
+**Do:** exercises 1-7.
+**Skim:** chapters 4 (Expressions) and 5 (Control Flow) on your own --- we skip them in lecture because the material is familiar from C++.
 
 ## Key Points to Reinforce
 
@@ -258,3 +293,4 @@ E. Ben got this wrong
 - `strdup` calls `malloc`; match it with `free`
 - `strtok` is destructive and non-reentrant --- prefer `strtok_r`/`strtok_s`
 - Cast to `unsigned char` before `<ctype.h>` calls
+- `snprintf` is the safe alternative to `sprintf` --- it limits output to the buffer size

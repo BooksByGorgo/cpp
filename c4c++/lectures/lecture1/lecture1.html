@@ -32,6 +32,7 @@ Introduction to C
 # Learning Objectives
 
 - Describe how C and modern C++ differ
+- Know the K&R book and modern `int main(void)`
 - Compile a C program with `cc`
 - Use the core `printf` format specifiers
 - Control width, precision, and zero-fill
@@ -45,6 +46,24 @@ Introduction to C
 - Modern C++ has drifted far from C
 - Operating systems, firmware, databases, runtimes are all C
 - You *will* meet C in a C++ job
+
+---
+# The Book: K&R
+.lc[
+```c
+#include <stdio.h>
+main()
+{
+    printf("hello, world\n");
+}
+```
+]
+.rc[
+- *The C Programming Language (2nd ed.)*, Kernighan & Ritchie --- the classic C reference
+- This is its 1988 hello, world
+- Bare `main()` is now an **error**
+- Write `int main(void)` instead
+]
 
 ---
 # C++ vs C (1 of 2)
@@ -77,8 +96,9 @@ Introduction to C
 ]
 .rc[
 - `//` comments OK since C99
-- `_Bool` is the C89 keyword
-- References look like addresses --- confusing
+- `_Bool` since C99, or `<stdbool.h>`
+- `bool` a keyword only since C23
+- `&` declares a reference in C++ but is address-of in C --- confusing
 ]
 
 ---
@@ -108,7 +128,7 @@ int main(void) {
 | `%d` | `int` | `42` |
 | `%x` `%X` | `int` hex | `ff` / `FF` |
 | `%f` | `double` | `3.140000` |
-| `%e` | `double` sci | `3.14e+00` |
+| `%e` | `double` sci | `3.140000e+00` |
 | `%c` | `char` | `A` |
 | `%s` | `char *` | `hola` |
 | `%p` | pointer | `0x7ffd...` |
@@ -116,7 +136,7 @@ int main(void) {
 ]
 .rc[
 - Cast pointer to `void *` before `%p`
-- `%zu` for `sizeof` and `strlen`
+- `%zu` for `sizeof` results
 - Mismatch between specifier and type is **undefined behavior**
 ]
 
@@ -136,7 +156,7 @@ printf("%d%%\n", 95);     // 95%
 - `.N` sets precision
 - Leading `0` pads with zeros instead of spaces
 - `%%` prints a literal `%`
-- Same syntax works in `fprintf`, `snprintf`
+- Same syntax in `fprintf`, `snprintf` --- coming in chapter 10
 ]
 
 ---
@@ -217,7 +237,7 @@ printf("100%% complete\n");
 .rc[
 - Compile with `cc -Wall -Wextra -pedantic`
 - Intentionally swap `%d` for `%f` and show the warning
-- Drop the `\n` from the prompt and discuss buffering (preview)
+- The prompt has no `\n` --- the cursor waits on the prompt line; add one, rerun, discuss buffering (preview)
 ]
 
 ---
@@ -266,7 +286,9 @@ scanf("%d", count);
 - Always cap `%s` with a width
 - Never `printf(user_string)`
 
-**Read:** chapter 3 of *Gorgo C for C++ Programmers*. **Do:** exercises 1, 2, 4, 5, 7, 8.
+**Read:** chapter 3 of *Gorgo C for C++ Programmers*. **Do:** exercises 1-5, 7-10.
+
+**Skim:** chapter 2 (Variables) on your own --- types, arrays, `const`, structs are familiar from C++.
 
 </textarea>
 <script>

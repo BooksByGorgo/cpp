@@ -42,11 +42,13 @@ Strings
 # Learning Objectives
 
 - Create `std::string` and use `.size()`, `.length()`, `.empty()`
-- Concatenate with `+` and `+=`
+- Concatenate with `+`, `+=`, and the `s` suffix
+- Multi-line literals: adjacent fusion and `R"(...)"`
 - Compare strings (character by character, ASCII)
 - Access characters with `[]` and `.at()`
 - Iterate with range-based `for`
-- `.find()` and `.substr()` to search and extract
+- `.find()`, `.substr()`, `.replace()` to search and edit
+- UTF-8: why `.size()` counts bytes
 - Read lines with `std::getline`
 - Convert strings to/from numbers
 
@@ -81,7 +83,7 @@ int main() {
 .rc[
 - Default-constructed string is `""` (**not** garbage)
 - `std::string(count, char)` repeats the character
-- Copies are deep --- each has its own buffer
+- A copy is independent --- changing one does not change the other
 ]
 
 ---
@@ -122,7 +124,48 @@ lyrics += ", te quiero";
 - `+=` modifies in place
 - At least **one side** of `+` must be a real `std::string`
 
-**Trap:** `"hello" + " world"` does **not** compile --- both are `const char*`.
+**Trap:** `"hello" + " world"` does **not** compile --- both are `const char*`. Fix: the `s` suffix (next slide).
+]
+
+---
+# The s Literal Suffix
+.lc[
+```cpp
+#include <string>
+using namespace std::string_literals;
+
+std::string chorus =
+    "A little bit of "s
+    + "Monica in my life";
+
+auto title = "Hola"s;  // std::string
+```
+]
+.rc[
+- `s` after the quote builds a `std::string`, not a `const char*`
+- Needs `using namespace std::string_literals;`
+- Also fixes `auto` deduction --- `.size()` and `+=` just work
+]
+
+---
+# Multi-Line String Literals
+.lc[
+```cpp
+std::string verse =
+    "Tearin' up my heart "
+    "when I'm with you";
+
+std::string sql = R"(
+    SELECT id, title
+    FROM   songs
+    WHERE  artist = "Weezer"
+)";
+```
+]
+.rc[
+- Adjacent literals fuse at **compile time** --- indent freely
+- `R"(...)"` keeps everything verbatim: newlines, backslashes, quotes
+- Raw literals shine for regexes, SQL, JSON, Windows paths
 ]
 
 ---
@@ -205,6 +248,46 @@ std::string part = line.substr(8, 4);
 - `.find(needle)` returns position or `std::string::npos`
 - **Always** check for `npos`
 - `.substr(pos, len)` extracts; omit `len` for "to the end"
+]
+
+---
+# Finding and Replacing
+.lc[
+```cpp
+std::string msg = "press play";
+
+size_t pos = msg.find("play");
+if (pos != std::string::npos) {
+    msg.replace(pos, 4, "stop");
+}
+
+std::cout << msg << "\n";
+// press stop
+```
+]
+.rc[
+- `.replace(pos, count, str)` swaps a range for new text
+- Pair it with `.find()` --- check `npos` first
+]
+
+---
+# Unicode and UTF-8
+.lc[
+```cpp
+std::string es = "¡Hola, mundo!";
+std::string jp = "こんにちは";
+
+std::cout << es.size() << "\n";
+// 14 --- not 13!
+std::cout << jp.size() << "\n";
+// 15 --- 3 bytes per character
+```
+]
+.rc[
+- Unicode: every character gets a **code point**
+- UTF-8 stores a code point in 1-4 bytes; ASCII is 1 byte
+- `.size()` counts **bytes**, not characters
+- `[]` gives one byte, not one character
 ]
 
 ---
@@ -306,14 +389,15 @@ std::getline(std::cin, name);
 # Key Points
 
 - `std::string` lives in `<string>`
-- `.size()` / `.length()` are equal; both return `size_t`
-- `+` needs at least one `std::string` operand
+- `.size()` / `.length()` return `size_t` --- and count **bytes**
+- `+` needs at least one `std::string` operand; `"..."s` makes one
+- Adjacent literals fuse; `R"(...)"` is verbatim
 - Comparisons are ASCII, character by character
 - `[]` is fast, `.at()` is safe
 - `std::getline` reads lines; watch the `cin >>` newline trap
 - `std::stoi`/`std::stod`/`std::to_string` bridge strings and numbers
 
-**Read:** chapter 4 of *Gorgo Starting C++*. **Do:** exercises 1-9.
+**Read:** chapter 4 of *Gorgo Starting C++*. **Do:** exercises 1-12.
 
 </textarea>
 <script>

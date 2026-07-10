@@ -56,6 +56,7 @@ play(11);
 - Write member functions and mark them `const` when they do not modify
 - Use `this` for name conflicts and to return `*this`
 - Split a class into a header and source file
+- Use `static` members for class-wide state
 - Overload `+`, `+=`, and `==` as member functions
 - Write a conversion operator; know when to mark it `explicit`
 
@@ -107,15 +108,24 @@ void show(const Song &s) {
 ---
 # The this Pointer
 
-`this` is a hidden pointer to the current object, automatic inside every member function.
+`this` is a hidden pointer to the current object, automatic inside every member function; `*this` is the object itself.
 
-- `this->member` to access a member through the pointer
-- `*this` gives you the object itself
+Three key uses:
 
-You rarely need it, but there are two key uses:
-
+.lc[
 1. Resolving name conflicts
-1. Returning `*this` for method chaining
+1. Returning `*this` for chaining
+1. Copying the current object:
+]
+.rc[
+```cpp
+Song with_year(int y) const {
+    Song copy = *this;
+    copy.year = y;
+    return copy;
+}
+```
+]
 
 ---
 # Resolving Name Conflicts
@@ -207,29 +217,75 @@ void Song::print() const {
 ```
 ]
 .rc[
-- `Song::` is the scope resolution operator from chapter 1
-- "This function belongs to the `Song` class"
+- `::` is the scope resolution operator from chapter 1
+- `Song::print` means "this function belongs to the `Song` class"
 - The `const` qualifier must match the declaration
 ]
+
+---
+# static Data Members
+.lc[
+```cpp
+// song.h
+class Song {
+    std::string title;
+    static int count;  // shared
+public:
+    Song(const std::string &t)
+        : title(t) { ++count; }
+    ~Song() { --count; }
+
+    static int instance_count() {
+        return count;
+    }
+};
+
+// song.cpp
+int Song::count = 0;
+```
+]
+.rc[
+- Belongs to the **class**, not any instance --- one `count` total
+- Declare in the header, define in **one** `.cpp` file
+- No `static` keyword on the definition
+
+**Tip:** For constants, `static constexpr` defines inline --- no `.cpp` definition needed.
+]
+
+---
+# static Member Functions
+
+```cpp
+int n = Song::instance_count();
+```
+
+- Call with `Class::function()` --- no object needed
+- No `this` pointer --- can only see other `static` members
+- Library examples: `std::string::npos`, `std::numeric_limits<int>::max()`
+- Use for class-wide constants and counters --- not as stealth globals
+
+**Wut:** on a free function, `static` means internal linkage; in a class, it means class-wide member. Same keyword, unrelated jobs.
 
 ---
 # Operator Overloading --- + and +=
 .lc[
 ```cpp
 class Playlist {
+    std::string name;
     std::vector<std::string> songs;
 public:
+    Playlist(const std::string &n)
+        : name(n) {}
+
     Playlist operator+(
-        const std::string &song) const
-    {
+        const std::string &song) const {
         Playlist copy = *this;
         copy.songs.push_back(song);
         return copy;
     }
 
     Playlist &operator+=(
-        const std::string &song)
-    {
+        const std::string &song) {
         songs.push_back(song);
         return *this;
     }
@@ -247,8 +303,7 @@ public:
 .lc[
 ```cpp
 bool operator==(
-    const Playlist &other) const
-{
+    const Playlist &other) const {
     return name == other.name
         && songs == other.songs;
 }
@@ -284,6 +339,16 @@ int n = static_cast<int>(v);
 - Mark them `explicit` to prevent silent conversions
 - Common: `explicit operator bool()` for testable objects like streams
 ]
+
+---
+# Try It --- Full Playlist Class
+
+Walk through the chapter's full `Playlist`:
+
+- Constructor and member functions
+- `operator+`, `operator+=`, `operator==`
+
+Predict the output at each step.
 
 ---
 # What does this print?
@@ -350,11 +415,12 @@ void show(const Song &s) {
 - Mark read-only methods `const` so they work with `const` references
 - `this` resolves name conflicts; `*this` enables method chaining
 - Split into `.h` and `.cpp`; use include guards or `#pragma once`
+- `static` members belong to the class, not an instance
 - `operator+` is `const`, `operator+=` is not --- mirror the built-ins
 - Conversion operators should be `explicit` by default
 
 **Read:** chapter 13 of *Gorgo Starting C++*, first half --- stack vs heap, pointers, `new`/`delete`, `unique_ptr`.
-**Do:** exercises 1, 3, 9, 10.
+**Do:** exercises 1, 3, 4, 9, 10.
 
 </textarea>
 <script>

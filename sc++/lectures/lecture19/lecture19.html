@@ -50,9 +50,11 @@ delete volumes;
 
 - Use `std::shared_ptr` with `std::make_shared`
 - Explain reference counting
+- Break reference cycles with `std::weak_ptr`; use `.lock()` and `.expired()`
 - Get a raw pointer with `.get()` without transferring ownership
 - Use `std::move` to transfer resources
 - Describe the valid-but-unspecified state of a moved-from object
+- Explain why returning a local is already cheap (RVO)
 
 ---
 # std::shared_ptr
@@ -93,6 +95,61 @@ std::cout << song2.use_count();
 - `.reset()` releases this `shared_ptr`'s ownership
 
 **Tip:** Use `shared_ptr` only when you truly need shared ownership. `unique_ptr` is simpler.
+]
+
+---
+# Reference Counting Leaks on Cycles
+.lc[
+```cpp
+struct Song {
+    std::string           title;
+    std::shared_ptr<Song> related;
+    Song(const std::string &t)
+        : title(t) {}
+};
+
+auto a =
+    std::make_shared<Song>("Today");
+auto b =
+    std::make_shared<Song>("Black");
+a->related = b;
+b->related = a;
+// scope ends: nothing is freed!
+```
+]
+.rc[
+- Each `Song` still holds the other --- both counts stay at 1
+- Neither destructor runs; the memory **leaks**
+- Fix: make `related` a `std::weak_ptr<Song>` --- it observes without owning, and the cycle dissolves
+]
+
+---
+# weak_ptr: .lock() and .expired()
+.lc[
+```cpp
+auto strong =
+    std::make_shared<std::string>(
+        "Karma Police");
+std::weak_ptr<std::string> w = strong;
+
+if (auto live = w.lock()) {
+    std::cout << *live << "\n";
+}   // prints: Karma Police
+
+strong.reset();  // last owner gone
+
+if (auto live = w.lock()) {
+    std::cout << *live << "\n";
+} else {
+    std::cout << "expired\n";
+}   // prints: expired
+```
+]
+.rc[
+- You cannot dereference a `weak_ptr` directly --- the object might be gone
+- `.lock()` returns a temporary `shared_ptr`, empty if expired
+- `.expired()` --- true once the object is gone
+- Use for back-pointers, observers, caches
 ]
 
 ---
@@ -170,13 +227,33 @@ auto b = std::move(a);
 ]
 
 ---
+# Returning Large Objects
+.lc[
+```cpp
+std::vector<int> make_scores() {
+    std::vector<int> scores =
+        {10, 20, 30, 40, 50};
+    return scores;
+    // RVO or move ---
+    // never a deep copy
+}
+```
+]
+.rc[
+- **Copy elision** (RVO): the object is built directly in the caller's memory
+- When RVO does not apply, a **move** happens instead --- still cheap
+
+**Trap:** Do not write `return std::move(local);` --- it defeats RVO and makes the code slower.
+]
+
+---
 # Try It --- Shared Ownership in Action
 .lc[
 ```cpp
 std::shared_ptr<Song> s1;
 {
     auto s2 = std::make_shared<Song>(
-        "Under the Bridge");
+        "Under the Bridge", "RHCP");
     s1 = s2;
     std::cout << s1.use_count();
     // 2
@@ -243,13 +320,15 @@ Where `a` is a `std::unique_ptr<int>`:
 # Key Points
 
 - `shared_ptr` uses reference counting --- last one out frees
+- Counting leaks on cycles; `weak_ptr` observes without owning --- go through `.lock()`
 - `.get()` yields a raw pointer; **do not delete** it
 - `std::move` casts to rvalue reference; the target's move constructor does the work
 - A moved-from object is **valid but unspecified**
+- Returning a local is already cheap (RVO) --- never `return std::move(local)`
 - Prefer `unique_ptr` unless sharing is required
 
 **Read:** chapter 14 of *Gorgo Starting C++* (Special Members and Friends).
-**Do:** exercises 1-9.
+**Do:** exercises 1-15.
 
 </textarea>
 <script>

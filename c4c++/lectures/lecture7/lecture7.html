@@ -1,0 +1,401 @@
+<head><style>
+ol { list-style-type: upper-alpha; }
+
+body {
+    font-family: 'Crimson Text', Georgia, serif;
+    line-height: 1.5;
+    font-size: 64px;
+    color: rgba(33, 33, 33, 1);
+    background: #fff;
+}
+.remark-slide-content { font-size: 32px; padding: 0.25em 0.5em; }
+h1 { margin-top: 0; margin-bottom: 0.2em; }
+.lc {
+  width: 50%;
+  float: left;
+}
+.rc {
+  width: 45%;
+  float: right;
+}
+</style></head>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<textarea id="source">
+
+class: center, middle
+
+# CMPE 30: Lecture 7
+
+Numbers and Casting
+
+---
+# Review: What is unsafe here?
+
+```c
+p = realloc(p, n);
+```
+
+1. `realloc` never fails
+1. If `realloc` fails, `p` is `NULL` and the old block leaks
+1. `realloc` requires a cast in C
+1. `realloc` only grows, never shrinks
+1. Ben got this wrong
+
+---
+# Learning Objectives
+
+- The CPU sees only numbers
+- `char` math: `'A'` **is** `65`
+- Pointers are addresses --- also numbers
+- No string type: `char` arrays + `'\0'`
+- `strtol` and friends
+- Integer sizes, promotion, floating point
+- C casts: one syntax, no magic
+
+---
+# Everything is a Number
+
+- The CPU has no characters, strings, pointers, or objects
+- Registers and memory hold numbers --- that is all
+- Types do **not** change the bits
+- Types tell the *compiler* how to interpret the bits
+- Size determines range; semantics: signed/unsigned, int/float
+
+---
+# char Is a Small Number
+.lc[
+```c
+char grade = 'A';
+int score = 65;
+
+printf("grade as char: %c, as int: %d\n",
+       grade, grade);
+printf("score as char: %c, as int: %d\n",
+       score, score);
+
+char next_grade = grade + 1;
+printf("Next grade: %c\n", next_grade);
+```
+]
+.rc[
+- Both hold the exact same value
+- `A 65` prints twice
+- `65 + 1 = 66`, so next grade is `B`
+- Math on chars is just math on small ints
+]
+
+---
+# Pointers are Numbers Too
+
+```c
+int val = 1986; // "Danger Zone" charted
+int *p = &val;
+
+printf("Address: %p\n", (void *)p);
+// e.g., 0x7ffd9b8
+```
+
+- A pointer is an integer holding a memory address
+- `int *` means: treat that number as the location of an `int`
+- `%p` prints it (cast to `void *`), usually in hex
+
+---
+# Strings are Not Special
+.lc[
+```c
+char word[] = "Hola";
+
+printf("String: %s\n", word);
+printf("Bytes: ");
+for (int i = 0;
+     i < (int)sizeof(word); i++)
+    printf("%d ", word[i]);
+printf("\n");
+// String: Hola
+// Bytes: 72 111 108 97 0
+```
+]
+.rc[
+- C has no string type
+- A string = array of small ints ending in `0`
+- `"Africa"` is `65 102 114 105 99 97 0`
+- `<string.h>` walks the array until the `0` byte
+]
+
+---
+# String to Number: strtol
+
+```c
+long strtol(const char *str, char **endptr,
+            int base);
+```
+
+```c
+char *year_str = "1986";
+long year = strtol(year_str, NULL, 10);
+printf("Year: %ld\n", year);  // Year: 1986
+```
+
+- `"1986"` and `1986` are completely different bits
+- `endptr`: first unparsed character (`NULL` if unused)
+- base: 10 decimal, 16 hex, 0 auto-detect
+
+---
+# Picking a Base
+.lc[
+```c
+strtol("42",   NULL, 0);
+// 42 --- decimal
+strtol("0x2A", NULL, 0);
+// 42 --- hex
+strtol("052",  NULL, 0);
+// 42 --- octal!
+```
+]
+.rc[
+**Trap:** with base 0, a leading zero means octal.
+
+`strtol("010", NULL, 0)` returns `8`, not `10`.
+
+Zero-padded input like `"007"`? Pass base `10` explicitly.
+]
+
+---
+# atoi and Friends
+
+```c
+int n = atoi("banana");  // 0 --- really "0"?
+```
+
+- `atoi`, `atol`, `atoll`, `atof`: look simpler, do less
+- Decimal only, no `endptr`, no error reporting
+- Overflow is undefined behavior
+- `strtod` = `strtol` for `double` (no base argument)
+
+**Tip:** `atoi` is something you read, not something you write.
+
+---
+# Integer Types
+
+| Type | Bytes | Range | Suffix |
+|:---|:---:|:---|:---:|
+| `char` | 1 | -128 to 127 | |
+| `short` | 2 | -32,768 to 32,767 | |
+| `int` | 4 | -2^31 to 2^31-1 | |
+| `long` | 8 | -2^63 to 2^63-1 | `L` |
+| `long long` | 8 | -2^63 to 2^63-1 | `LL` |
+
+- Unsigned variants: `0` to `2^n - 1`; suffixes `U`, `UL`, `ULL`
+- Two's complement: one more negative value than positive
+- Explore with `sizeof` and `<limits.h>`
+
+---
+# char Signedness + Promotion
+
+**Trap:** `char` signedness is implementation-defined.
+
+- x86_64: `char` is signed
+- ARM: `char` is unsigned
+- Watch out!
+
+Integer promotion:
+
+- `char` and `short` promote to `int` in expressions
+- Mixed sizes promote to the larger type
+
+---
+# size_t Subtraction Wraps
+.lc[
+```c
+char *a = "Jump";     // strlen 4
+char *b = "Jump!!!!"; // strlen 8
+
+size_t diff =
+    strlen(a) - strlen(b);
+printf("%zu\n", diff);
+
+long sdiff = (long)strlen(a)
+           - (long)strlen(b);
+printf("%ld\n", sdiff);
+```
+]
+.rc[
+- `size_t` is **unsigned**
+- `4 - 8` wraps: `18446744073709551612`
+- Cast to signed first: `-4`
+]
+
+---
+# Floating Point
+
+| Type | Size | Suffix |
+|:---|:---|:---|
+| `float` | 4 bytes | `F` |
+| `double` | 8 bytes | *(default)* |
+| `long double` | 16 bytes | `L` |
+
+- Always signed; two zeros (`+0`, `-0` --- they compare equal)
+- Special values: infinity, NaN
+- Fractions = sums of 1/2, 1/4, 1/8, ...
+- `0.5` is exact; `0.1` is not; `0.1 + 0.2 != 0.3`
+
+---
+# The 1.2 Puzzle
+.lc[
+```c
+float f = 1.2;
+if (f != 1.2)
+    printf("what?!?\n");
+if (f == 1.2f)
+    printf("ok\n");
+```
+]
+.rc[
+- **Both** lines print!
+- `1.2` is a `double`; storing it in `f` rounds
+- Promoting `f` back does not recover the lost bits
+- `1.2f` rounded the same way --- equal
+]
+
+---
+# Casting
+
+```c
+double pi = 3.14159;
+int roughly_pi = (int)pi; // truncates to 3
+```
+
+- One syntax: `(type)value` --- simpler than C++'s four casts
+- Scalar types only: integers, floats, pointers
+- Float to int **truncates**; too big to fit = UB
+- A cast says: "I know what I am doing, drop the warnings"
+- Magic does **not** happen when you cast
+
+---
+# The Classic Trap
+
+```c
+char *movie_year = "1985"; // The Goonies
+int bad_year = (int)movie_year;
+// THIS IS A BUG! not 1985!!
+```
+
+- The cast converts the **address**, not the text
+- 8-byte pointer into 4-byte `int` --- the compiler warns:
+  `cast from pointer to integer of different size`
+- Parse strings with `strtol`, always
+
+---
+# `void *` and `char *`
+.lc[
+```c
+int nums[] = {1984, 1985,
+              1986, 1987};
+
+void *vp = nums;
+int *ip = (int *)vp;
+printf("First: %d\n", ip[0]);
+
+char *bp = (char *)nums;
+printf("0x%02x\n",
+       (unsigned char)bp[0]);
+// First: 1984
+// 0xc0
+```
+]
+.rc[
+- `void *` points at anything --- why `malloc` needs no cast
+- `char *` = byte-level access
+- Know your memory layout before casting pointers
+- `1984 = 0x7C0`; low byte first (little-endian)
+]
+
+---
+# Live Coding
+.lc[
+```c
+char ch = 'A';
+printf("'%c' is %d\n", ch, ch);
+
+long bpm =
+    strtol("120", NULL, 10);
+
+long color =
+    strtol("FF8000", NULL, 16);
+
+double tempo = 120.7;
+int whole = (int)tempo; // 120
+```
+]
+.rc[
+```c
+char *year_str = "1982";
+long bad  = (long)year_str;
+long good =
+    strtol(year_str, NULL, 10);
+```
+
+- `cc -Wall -Wextra -pedantic`
+- Change `(long)` to `(int)` and read the warning
+]
+
+---
+# What does this print?
+
+```c
+char letter = 'C';
+printf("%c %d\n", letter + 2, letter + 2);
+```
+
+1. `E 69`
+1. `C 67`
+1. `E E`
+1. `69 69`
+1. Ben got this wrong
+
+---
+# Where is the bug?
+
+```c
+char *score_str = "100";
+int score = (int)score_str;
+printf("You got a %d percent!\n", score);
+```
+
+1. `score_str` needs a `&` in the cast
+1. Cast converts the address, not the string --- use `strtol`
+1. `%d` should be `%s`
+1. `score_str` must be `const`
+1. Ben got this wrong
+
+---
+# What does strtol("010", NULL, 0) return?
+
+```c
+long n = strtol("010", NULL, 0);
+```
+
+1. `10`
+1. `8`
+1. `2`
+1. `0`
+1. Ben got this wrong
+
+---
+# Key Points
+
+- Everything (characters, pointers) is just a number
+- Types tell the compiler how to interpret the bits
+- No strings --- arrays of numbers ended with `0`
+- `strtol`/`strtod` to parse; `atoi` is legacy
+- `char` signedness is implementation-defined
+- `size_t` is unsigned; subtraction can wrap
+- `(type)value` asserts intent --- no magic happens
+- Casting a `char *` to an int gives the address
+
+**Read:** chapter 10 of *Gorgo C for C++ Programmers*. **Do:** exercises 1-7.
+
+</textarea>
+<script>
+  var slideshow = remark.create({ ratio: '16:9' });
+</script>

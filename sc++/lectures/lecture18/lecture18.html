@@ -58,12 +58,37 @@ std::cout << c.get();
 ---
 # Learning Objectives
 
+- Distinguish scope, lifetime, and storage duration
 - Distinguish stack from heap memory
 - Declare and dereference a pointer; use `->`
 - Allocate and free heap memory with `new` / `delete`
 - Recognize memory leaks and dangling pointers
 - Use `std::unique_ptr` with `std::make_unique` as the default
 - Explain RAII
+
+---
+# Scope, Lifetime, Storage Duration
+.lc[
+```cpp
+int next_id() {
+    static int counter = 0;
+    // initialized once,
+    // survives across calls
+    return ++counter;
+}
+
+next_id();   // 1
+next_id();   // 2
+next_id();   // 3
+```
+]
+.rc[
+- **Scope**: where the name is visible
+- **Lifetime**: how long the memory exists
+- Storage durations: **automatic** (locals), **static** (whole program), **dynamic** (`new` --- today), thread-local
+
+**Wut:** A function-local `static` initializes on the first call, not at program start.
+]
 
 ---
 # Stack vs Heap
@@ -205,7 +230,7 @@ delete[] scores;
 - `new[]` allocates an array
 - `delete[]` frees an array
 
-**Trap:** `new` pairs with `delete`, `new[]` with `delete[]`. Mixing them is undefined behavior --- the compiler will not warn you.
+**Trap:** `new` pairs with `delete`, `new[]` with `delete[]`. Mixing them is undefined behavior. g++ catches this simple case --- but usually not once the pointer crosses a function boundary.
 ]
 
 ---
@@ -333,8 +358,8 @@ void play() {
 - Raw `new`/`delete` in modern C++ is a red flag
 - `std::unique_ptr` + `std::make_unique` = sole ownership with cleanup
 
-**Read:** chapter 13, remaining sections --- `shared_ptr`, `.get()`, move semantics.
-**Do:** exercises 2, 4, 5, 6, 7, 8.
+**Read:** chapter 13, remaining sections --- `shared_ptr`, `weak_ptr`, `.get()`, move semantics.
+**Do:** exercises 2, 4, 5, 7, 8, 14, 16, 18.
 
 </textarea>
 <script>

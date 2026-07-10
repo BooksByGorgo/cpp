@@ -123,6 +123,26 @@ Three parts of the header:
 ]
 
 ---
+# for Over an Array
+.lc[
+```cpp
+int scores[] = {90, 84, 77, 95, 88};
+int n = sizeof(scores)
+        / sizeof(scores[0]);
+
+for (int i = 0; i < n; i++) {
+    std::cout << "Score " << (i + 1)
+              << ": " << scores[i]
+              << "\n";
+}
+```
+]
+.rc[
+- `sizeof(scores) / sizeof(scores[0])` = element count
+- The index gives you the position, not just the value
+]
+
+---
 # Range-Based for
 .lc[
 ```cpp
@@ -210,6 +230,25 @@ case 2:
 - Silent bug source
 
 **Trap:** End every case with `break` unless you intentionally want fall-through.
+]
+
+---
+# Try It --- Combined Demo
+.lc[
+```cpp
+for (int i = 1; i <= 100; i++) {
+    if (i >= 20) break;
+    if (i % 2 == 0) continue;
+    std::cout << i << " ";
+}
+```
+]
+.rc[
+- Predict the output before running
+- `break` caps the run at 19, not 100
+- `continue` skips the even numbers
+
+Output: `1 3 5 7 9 11 13 15 17 19`
 ]
 
 ---

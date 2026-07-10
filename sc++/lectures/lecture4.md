@@ -8,6 +8,7 @@
 By the end of this lecture, students should be able to:
 
 - Use the arithmetic operators `+ - * / %` and explain the integer-vs-floating-point division trap
+- Predict the result type of mixed-type arithmetic using **integer promotion** and the **usual arithmetic conversions**, and avoid the signed/unsigned comparison trap
 - Build boolean expressions with comparison operators and the logical operators `&& || !`
 - Take advantage of **short-circuit evaluation** to write safe guard conditions
 - Distinguish prefix (`++n`) and postfix (`n++`) increment, and choose the right one
@@ -70,6 +71,7 @@ double also  = 7 / 3.0;      // 2.333...
 ```
 
 - Two integer operands --> fractional part is **truncated**, not rounded
+- Truncation is toward zero: `-7 / 3` is `-2`, not `-3`
 - At least one operand must be floating-point to keep the decimals
 
 ::: {.tip}
@@ -88,7 +90,53 @@ if (number % 2 == 0) {
 
 - `%` only works on integers --- no `%` on `double`
 
-## 3. Comparison Operators (4 min)
+## 3. Mixed-Type Arithmetic and Integer Promotion (9 min)
+
+Mixing types in an expression does not fail --- the compiler silently converts one operand.
+Two rules cover the common cases:
+
+- **Integer promotion**: any integer type smaller than `int` (`char`, `short`, `bool`) is widened to `int` before the operation
+- **Usual arithmetic conversions**: if the operands still differ, the "smaller" one is converted to match the "larger" --- floating-point beats integer, wider beats narrower, unsigned beats signed at the same width
+
+```cpp
+char a = 'A';
+char b = 'B';
+auto sum = a + b;       // sum is an int (131), not a char
+
+int    streams = 1000;
+double rate    = 1.5;
+auto   total   = streams * rate;   // total is double (1500.0)
+```
+
+- This is why `7 / 3.0` gives decimals: the `int` is converted to `double` before the divide
+
+The trap is mixing signed and unsigned at the same width:
+
+```cpp
+int          fans  = -1;
+unsigned int crowd =  10;
+if (fans < crowd) {            // looks obviously true
+    std::cout << "outnumbered\n";
+} else {
+    std::cout << "we are bigger?\n";
+}
+```
+
+- Same width, so `fans` is converted to `unsigned int`: `-1` becomes `4'294'967'295`, which is not less than `10` --- prints `we are bigger?`
+- Compile this live with `-Wall -Wextra` and show the `-Wsign-compare` warning
+- Fix: pick one signedness, or convert explicitly with `static_cast<int>(crowd)`
+
+::: {.tip}
+**Wut:** `char + char` is an `int`, not a `char`.
+Integer promotion only applies to integer types --- `float + float` stays `float`, and `double + double` stays `double`.
+:::
+
+::: {.tip}
+**Trap:** Avoid arithmetic and comparisons that mix signed and unsigned integers.
+The compiler warns, but the conversion still happens.
+:::
+
+## 4. Comparison Operators (4 min)
 
 `==`, `!=`, `<`, `>`, `<=`, `>=` --- all produce a `bool`.
 
@@ -101,7 +149,7 @@ if (number % 2 == 0) {
 
 - Remember from chapter 3: these also work on strings, character by character
 
-## 4. Logical Operators and Short Circuit (10 min)
+## 5. Logical Operators and Short Circuit (10 min)
 
 | operator | name | example |
 |---|---|---|
@@ -134,7 +182,7 @@ if (x != 0 && 10 / x > 2) {
 **Tip:** When in doubt about how logical operators group, use parentheses. `!` binds tighter than `&&` and `||`.
 :::
 
-## 5. Increment and Decrement (6 min)
+## 6. Increment and Decrement (6 min)
 
 ```cpp
 int a = 5;
@@ -150,7 +198,7 @@ int c = a++;   // postfix: c is 6 (old a), then a becomes 7
 **Tip:** Prefer prefix `++n` as a habit. For complex types (like iterators in chapter 8) prefix can be measurably faster because it avoids copying the old value.
 :::
 
-## 6. Compound Assignment (3 min)
+## 7. Compound Assignment (3 min)
 
 ```cpp
 int score = 100;
@@ -162,7 +210,7 @@ score *= 2;    // 250
 - `+=`, `-=`, `*=`, `/=`, `%=`, `&=`, `|=`, `^=`, `<<=`, `>>=`
 - Pure shorthand --- no behavior difference from `x = x + y`
 
-## 7. Bitwise Operators (Preview) (6 min)
+## 8. Bitwise Operators (Preview) (6 min)
 
 ```cpp
 0b1100 & 0b1010   // 0b1000   AND
@@ -173,7 +221,7 @@ score *= 2;    // 250
 0b1000 >> 2       // 0b0010
 ```
 
-- `0b` prefix lets you write binary literals directly
+- Binary literals like `0b1100` are explained in chapter 7 --- for now, just read them as rows of bits
 - Bit-level work is coming in detail in chapter 7 --- today is just a preview
 
 ::: {.tip}
@@ -184,7 +232,7 @@ score *= 2;    // 250
 **Trap:** `^` is **not** exponentiation! `2^2` is **0**, not 4. (XOR of `10` and `10` is `00`.)
 :::
 
-## 8. The Ternary Operator (5 min)
+## 9. The Ternary Operator (5 min)
 
 ```cpp
 int temperature = 30;
@@ -195,7 +243,7 @@ std::string weather = (temperature > 25) ? "hot" : "cool";
 - Equivalent to a simple `if/else`, but as a single **expression**
 - Best for short, obvious choices --- fall back to `if/else` when logic gets hairy
 
-## 9. Operator Precedence (8 min)
+## 10. Operator Precedence (8 min)
 
 Show the chapter's precedence table on the board. Call out the common gotchas:
 
@@ -206,18 +254,21 @@ Show the chapter's precedence table on the board. Call out the common gotchas:
 The classic trap:
 
 ```cpp
-// BUG: parses as flags & (0x02 == 0x02)
-if (flags & 0x02 == 0x02) { ... }
+// BUG: this checks (flags) & (2 == 2), not (flags & 2) == 2
+if (flags & 2 == 2) { ... }
 
 // CORRECT
-if ((flags & 0x02) == 0x02) { ... }
+if ((flags & 2) == 2) { ... }
 ```
+
+- Demo it live with `int flags = 10;` --- bit 2 is set, but the buggy test computes `10 & 1`, which is `0`, so the branch never runs
+- `-Wall` catches it: `-Wparentheses` suggests parentheses around the comparison
 
 ::: {.tip}
 **Tip:** When in doubt, add parentheses. You do not get bonus points for memorizing the precedence table.
 :::
 
-## 10. Try It --- Live Demo (4 min)
+## 11. Try It --- Live Demo (4 min)
 
 ```cpp
 #include <iostream>
@@ -244,7 +295,7 @@ int main() {
 
 Have the class predict the values of `a`, `b`, and `c` before you run it.
 
-## 11. Wrap-up Quiz Questions (3 min)
+## 12. Wrap-up Quiz Questions (3 min)
 
 **Q1.** What does this print?
 
@@ -297,17 +348,18 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 12. Assignment / Reading (1 min)
+## 13. Assignment / Reading (1 min)
 
 - **Read:** chapter 5 of *Gorgo Starting C++*, **sections on `if` and `while` only** (we cover `do-while`/`for`/`switch` next week)
-- **Do:** chapter 5 exercises 1, 5, 7 (decision-making and while loops)
+- **Do:** chapter 5 exercises 7, 13 (`while` loop bug hunt and `if` with initializer)
 - **Bring:** a program that reads a number and classifies it even/odd and positive/negative/zero
 
 ## Key Points to Reinforce
 
 - `=` stores, `==` compares --- do not confuse them
-- Integer `/` truncates; use a `double` operand for real division
+- Integer `/` truncates toward zero; use a `double` operand for real division
 - `%` is integer only
+- `char + char` is an `int` (integer promotion); never compare signed with unsigned without a cast
 - `&&` and `||` short-circuit --- lean on that for guard conditions
 - Prefix vs postfix matters inside an expression
 - Comparison binds tighter than bitwise --- parenthesize bitwise checks

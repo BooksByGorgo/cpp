@@ -1,13 +1,14 @@
 # Lecture 1 --- Introduction to C
 
 **Source:** `c4c++/ch01.md`
-**Duration:** 50 minutes
+**Duration:** 65 minutes
 
 ## Learning Objectives
 
 By the end of this lecture, students should be able to:
 
 - Describe how modern C has diverged from C++ and list the major feature differences
+- Identify *The C Programming Language (Second Edition)* (K&R) as the classic C reference and explain why its 1988-style bare `main()` must be `int main(void)` today
 - Compile a C program with `cc` and explain why the extension is `.c`
 - Use `printf` with the format specifiers `%d`, `%x`, `%X`, `%f`, `%e`, `%c`, `%s`, `%p`, and `%zu`
 - Control width, precision, and zero-fill in `printf` output
@@ -49,7 +50,30 @@ The high-level differences table from the chapter:
 | `bool` built-in | `_Bool` or `<stdbool.h>` |
 | `// comments` | `/* comments */` (C89); `//` since C99 |
 
-## 2. Hello, World in C (5 min)
+## 2. The Book: K&R (8 min)
+
+- The go-to C textbook: *The C Programming Language (Second Edition)* by Brian Kernighan and Dennis Ritchie --- everyone calls it "K&R".
+- One of the most influential programming books ever written; short, precise, and still worth owning.
+- Its famous opening advice: the only way to learn a new programming language is by writing programs in it.
+- Show the book's original hello, world exactly as printed in 1988:
+
+```c
+#include <stdio.h>
+main()
+{
+    printf("hello, world\n");
+}
+```
+
+- Compile it live with `cc -Wall -Wextra -pedantic` and let the class watch it fail with `error: return type defaults to 'int'`.
+
+::: {.tip}
+**Trap:** That listing is from 1988, and C has tightened up since then.
+Modern C compilers require an explicit return type, so bare `main()` is now an error.
+Write `int main(void)` instead --- with that one change, the program compiles cleanly today.
+:::
+
+## 3. Hello, World in C (5 min)
 
 ```c
 #include <stdio.h>
@@ -69,7 +93,7 @@ int main(void) {
 **Tip:** If you compile a `.c` file with `c++`, the compiler may accept syntax real C rejects. Always use `cc`.
 :::
 
-## 3. `printf` Format Specifiers (10 min)
+## 4. `printf` Format Specifiers (12 min)
 
 ```c
 int printf(const char *format, ...);
@@ -95,9 +119,9 @@ The first argument is a format string.
 ```c
 printf("Score: %f\n", 98.6);    // 98.600000  (default: 6 decimals)
 printf("Score: %.2f\n", 98.6);  // 98.60
-printf("Track %02d\n", 3);       // Track 03
-printf("%06X\n", 0xFF8800);      // FF8800
-printf("%d%%\n", 95);            // 95%  (%% prints a literal %)
+printf("Track %02d\n", 3);      // Track 03
+printf("%06X\n", 0xFF8800);     // FF8800
+printf("%d%%\n", 95);           // 95%  (%% prints a literal %)
 ```
 
 ### Traps
@@ -105,7 +129,7 @@ printf("%d%%\n", 95);            // 95%  (%% prints a literal %)
 - **Format-string attack:** never write `printf(str)` with a user-controlled `str`. Always write `printf("%s", str)`.
 - **Mismatched specifier/type:** `printf("%d\n", 3.14)` is undefined behavior. The compiler may warn but will not stop you.
 
-## 4. `scanf` for Input (10 min)
+## 5. `scanf` for Input (12 min)
 
 ```c
 int scanf(const char *format, ...);
@@ -145,7 +169,7 @@ if (scanf("%d %s", &track, name) != 2) {
 **Trap:** `scanf` does no bounds checking on `%s`. Always cap with a width specifier.
 :::
 
-## 5. Live Coding: Try It (10 min)
+## 6. Live Coding: Try It (12 min)
 
 Type in and run the chapter's Try It program in class:
 
@@ -177,10 +201,10 @@ int main(void) {
 ```
 
 - Compile with `cc -Wall -Wextra -pedantic tryit.c`
-- Drop the `\n` from `printf("Enter a number: ")` and discuss buffering (preview for lecture 10/11)
+- Point out that `printf("Enter a number: ")` deliberately has no `\n`, so the cursor waits at the end of the prompt; add a `\n`, rerun, and discuss buffering (preview for lecture 10/11)
 - Deliberately mismatch a specifier (`%d` with a `double`) and let the class see the warning
 
-## 6. Wrap-up Quiz (5 min)
+## 7. Wrap-up Quiz (6 min)
 
 **Q1.** What does this print?
 
@@ -221,10 +245,11 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 7. Assignment / Reading (2 min)
+## 8. Assignment / Reading (2 min)
 
 **Read:** chapter 3 of *Gorgo C for C++ Programmers*.
-**Do:** exercises 1, 2, 4, 5, 7, 8.
+**Do:** exercises 1-5, 7-10.
+**Skim:** chapter 2 (Variables) on your own --- we skip it in lecture because types, arrays, `const`, and structs are familiar from C++.
 
 ## Key Points to Reinforce
 

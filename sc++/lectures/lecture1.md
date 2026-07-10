@@ -9,6 +9,7 @@ By the end of this lecture, students should be able to:
 
 - Write, compile, and run a `Hello, World!` program in C++
 - Explain the role of `#include`, `main()`, semicolons, and curly braces
+- Write comments and use escape sequences like `\n` and `\"`
 - Use `std::cout` to write output and `std::cin` to read input
 - Describe what a namespace is and why `std::` shows up everywhere
 - Read command-line arguments via `argc` and `argv`, and write a USAGE message
@@ -29,14 +30,14 @@ By the end of this lecture, students should be able to:
 - No previous programming experience assumed --- ask questions early and often
 - **No review question this lecture** --- this is the first one
 
-## 1. Why C++? (5 min)
+## 1. Why C++? (3 min)
 
 - C++ is a **compiled** language: source code is translated by a compiler into a runnable program
 - Used for games, browsers, operating systems, embedded devices, finance, scientific computing
 - Tradeoff: more control over the machine, more responsibility for the programmer
 - Today we get the tiniest taste --- we will spend the entire term going deeper
 
-## 2. Hello, World! (10 min)
+## 2. Hello, World! (8 min)
 
 Live-code this with the class typing along:
 
@@ -63,7 +64,7 @@ Mention briefly (do not dive in yet):
 - The `<<` operator can be chained: `std::cout << a << b << c;`
 - `"\n"` is a faster alternative to `std::endl` when you do not need to flush
 
-## 3. Compiling and Running (10 min)
+## 3. Compiling and Running (8 min)
 
 Save the file as `hello.cpp` and run in the terminal:
 
@@ -72,35 +73,57 @@ c++ -o hello hello.cpp
 ./hello
 ```
 
-Then immediately recompile with warnings turned on:
+Then immediately recompile with warnings on and the standard pinned:
 
 ```
-c++ -Wall -Wextra -pedantic -o hello hello.cpp
+c++ -std=c++23 -Wall -Wextra -pedantic -o hello hello.cpp
 ```
 
 Talking points:
 
 - The compiler turns `hello.cpp` into an executable `hello`
 - `-o hello` names the output --- without it you get `a.out`
+- `-std=c++23` pins the language version so the compiler does not silently fall back to an older standard
 - **Always** compile with warnings on; the compiler is your friend
 - Demonstrate a deliberate error (drop the `;` after `std::endl`) so students see what a compiler error looks like
-    - Note that the line number reported is often the line *after* the missing semicolon
+    - Modern g++ points at the end of the line with the missing semicolon and suggests inserting `;`; older compilers sometimes reported the line *after* it instead
 
 ::: {.tip}
-**Tip:** When students see a confusing error, the first instinct should be: read the message, check the line above, look for missing `;` or `}`.
+**Tip:** When students see a confusing error, the first instinct should be: read the message, look where the caret points, and check for a missing `;` or `}`.
+If the message still makes no sense, check the line above the one reported.
 :::
 
-## 4. Semicolons and Curly Braces (5 min)
+## 4. Semicolons, Curly Braces, and Whitespace (4 min)
 
 - Every **statement** ends with `;`
 - `{` and `}` define a **block** of code
 - They always come in pairs --- if you open one, you must close it
-- Indent everything inside a block (4 spaces is standard)
+- The compiler does not care about whitespace --- indentation is purely for human readers
+- Indent everything inside a block (4 spaces is standard) and follow the project's style guide; `clang-format -i hello.cpp` reformats for you
 - Forgetting a `;` or `}` is the most common beginner mistake
 
 Quick demo: comment out the `}` at the end of `main` and watch the compiler complain.
 
-## 5. Namespaces and `std::` (5 min)
+## 5. Comments (4 min)
+
+- A **comment** is a note for human readers that the compiler ignores
+- `//` starts a line comment that runs to the end of the line
+- `/* ... */` is a block comment that can span multiple lines
+- Use comments to explain *why* the code does something --- the code already shows *what*
+
+```cpp
+int year = 1991;   // the year Nevermind came out
+
+/* this is a comment
+   that spans several lines */
+```
+
+::: {.tip}
+**Trap:** Block comments do not nest --- the compiler stops at the *first* `*/`.
+To disable a chunk of code that already contains a block comment, use `//` on each line instead.
+:::
+
+## 6. Namespaces and `std::` (4 min)
 
 - C++ groups standard library names inside the `std` namespace
 - `std::cout` means "the `cout` that lives in `std`"
@@ -126,7 +149,7 @@ int main() {
 
 For the rest of the course we will write `std::` explicitly so we always know where names come from.
 
-## 6. Output with `std::cout` (5 min)
+## 7. Output with `std::cout` (4 min)
 
 Chain output to mix strings and numbers:
 
@@ -144,7 +167,37 @@ int main() {
 - Numbers can be inserted directly --- no special formatting needed yet
 - Anything that does not have a newline stays on the current line
 
-## 7. Input with `std::cin` (10 min)
+## 8. Escape Sequences (5 min)
+
+- `\` tells the compiler the next character is special --- an **escape sequence**
+- `\n` is a single newline character; use it instead of `std::endl` when you do not need to flush
+- `\"` puts a double quote inside a string --- a bare `"` would end the string
+- `\\` writes a literal backslash, since `\` itself is the escape character
+- `\t` is a horizontal tab
+
+```cpp
+#include <iostream>
+
+int main() {
+    std::cout << "Smells Like\nTeen Spirit\n";
+    std::cout << "She said \"hello\" and walked away\n";
+    std::cout << "C:\\Users\\Kurt" << std::endl;
+    return 0;
+}
+```
+
+Output:
+
+```
+Smells Like
+Teen Spirit
+She said "hello" and walked away
+C:\Users\Kurt
+```
+
+Mention the chapter's full table (`\r`, `\0`, `\a`, ...) exists, but `\n`, `\t`, `\\`, and `\"` are the ones students will use constantly.
+
+## 9. Input with `std::cin` (8 min)
 
 ```cpp
 #include <iostream>
@@ -179,7 +232,7 @@ std::cin >> year;
 Use `std::getline` when you want the whole line.
 :::
 
-## 8. Command-Line Arguments (10 min)
+## 10. Command-Line Arguments (8 min)
 
 Programs can also receive input when they launch:
 
@@ -211,7 +264,7 @@ Demonstrate:
 
 Stress: **always validate `argc` before touching `argv[i]`** --- otherwise it is undefined behavior.
 
-## 9. Putting It Together --- "Try It" Demo (5 min)
+## 11. Putting It Together --- "Try It" Demo (8 min)
 
 Live-code the `Try It` example from the chapter:
 
@@ -242,7 +295,7 @@ What year? 1991
 Smells Like Teen Spirit (1991) es una cancion increible!
 ```
 
-## 10. Wrap-up Quiz Questions (5 min)
+## 12. Wrap-up Quiz Questions (5 min)
 
 End-of-lecture multiple choice questions to check comprehension:
 
@@ -294,10 +347,10 @@ E. 5 --- Ben got this wrong
 
 *Answer: C*
 
-## 11. Assignment / Reading (1 min)
+## 13. Assignment / Reading (1 min)
 
-- **Read:** chapter 1 of *Gorgo Starting C++*
-- **Do:** exercises 1-7 at the end of chapter 1
+- **Read:** chapter 2 of *Gorgo Starting C++*
+- **Do:** exercises 1-15 at the end of chapter 2
 - **Bring:** a working `hello.cpp` to next lecture --- you will be modifying it
 
 ## Key Points to Reinforce
@@ -305,8 +358,10 @@ E. 5 --- Ben got this wrong
 - Every program starts at `main()`
 - Every statement ends with `;`
 - `{}` define blocks; they always pair up
+- Comments (`//` and `/* ... */`) are for humans; block comments do not nest
+- Escape sequences (`\n`, `\t`, `\"`, `\\`) put special characters inside strings
 - `#include <iostream>` is required for `std::cout` / `std::cin`
 - `<<` writes, `>>` reads
 - `std::` tells the compiler the name comes from the standard library
 - `argc` / `argv` give you command-line arguments --- validate before use
-- Always compile with `-Wall -Wextra -pedantic`
+- Always compile with `-std=c++23 -Wall -Wextra -pedantic`

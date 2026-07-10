@@ -54,8 +54,9 @@ std::cout << a << " "
 
 - Write `if`, `if/else`, `if/else if/else` chains
 - Avoid the `=` vs `==` trap
+- Trace a nested `if` and flatten it with guard clauses
+- Scope a tested variable with `if` with initializer
 - Write a `while` loop that terminates
-- Trace a nested `if` and know when to flatten
 - Use `while` for input validation loops
 
 ---
@@ -70,7 +71,7 @@ if (score >= 90) {
 ```
 ]
 .rc[
-- Condition must be a boolean expression
+- Condition is converted to a boolean --- nonzero counts as true
 - True --> body runs; false --> body is skipped
 - **Always** use `{}` --- saves you from the dangling-if trap
 ]
@@ -116,7 +117,110 @@ if (age >= 18) {
 .rc[
 - Legal, but deep nesting is hard to read
 - Flatten by combining with `&&` / `||`
-- Or by returning early from a function (chapter 6)
+- Or with guard clauses --- next slide
+]
+
+---
+# Guard Clauses --- the Problem
+.lc[
+```cpp
+if (age >= 18) {
+    if (has_ticket) {
+        if (seats_left > 0) {
+            std::cout << "Welcome\n";
+            return true;
+        } else {
+            std::cout << "Sold out\n";
+            return false;
+        }
+    } else {
+        std::cout << "Ticket?\n";
+        return false;
+    }
+} else {
+    std::cout << "18+ only\n";
+    return false;
+}
+```
+]
+.rc[
+- Success case buried four levels deep
+- Each failure message far from the condition that rejected it
+- Tracing = counting open braces
+]
+
+---
+# Guard Clauses --- the Fix
+.lc[
+```cpp
+if (age < 18) {
+    std::cout << "18+ only\n";
+    return false;
+}
+if (!has_ticket) {
+    std::cout << "Ticket?\n";
+    return false;
+}
+if (seats_left <= 0) {
+    std::cout << "Sold out\n";
+    return false;
+}
+std::cout << "Welcome\n";
+return true;
+```
+]
+.rc[
+- **Guard clause** = early `return` that rejects a bad case immediately
+- Failure sits right next to its condition
+- Happy path unindented at the bottom
+- Functions are chapter 6 --- read `return` as "stop here"
+]
+
+---
+# if with Initializer (C++17)
+.lc[
+```cpp
+// before: rank outlives the if
+int rank = find_rank("Black Hole Sun");
+if (rank > 0) {
+    std::cout << "found at "
+              << rank << "\n";
+}
+
+// after: rank scoped to the if
+if (int rank =
+        find_rank("Black Hole Sun");
+    rank > 0) {
+    std::cout << "found at "
+              << rank << "\n";
+}
+```
+]
+.rc[
+- Before the `;`: init, runs once
+- After the `;`: the actual condition
+- `rank` lives only inside the `if` (and its `else`)
+]
+
+---
+# if with Initializer --- npos
+.lc[
+```cpp
+if (auto pos = name.find("99");
+    pos != std::string::npos) {
+    std::cout << "the 90s start at "
+              << pos << "\n";
+} else {
+    std::cout << "no 99\n";
+}
+```
+]
+.rc[
+- Shines when a call returns "did it work?" plus a value
+- `pos` is visible in both branches
+- Gone when the statement ends
+
+**Tip:** Use this form when the tested value only matters *inside* the `if`.
 ]
 
 ---
@@ -224,6 +328,8 @@ while (i > 10) {
 # Key Points
 
 - `if` / `else if` / `else` chains are top-to-bottom, first match wins
+- Guard clauses reject bad cases early; happy path stays unindented
+- `if (init; cond)` scopes the tested variable to the `if`/`else`
 - `while` tests the condition **before** each iteration
 - Make sure the loop variable changes
 - `==` compares, `=` assigns

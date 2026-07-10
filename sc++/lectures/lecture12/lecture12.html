@@ -46,6 +46,7 @@ Mutation and Iteration
 - Iterate with range-based `for` using `const auto&` and `auto&`
 - Use iterators and `.begin()` / `.end()`
 - Recognize iterator invalidation after insert/erase
+- Call `<algorithm>` functions (`sort`, `count`, `find_if`, `min_element`) on iterator ranges
 
 ---
 # Insert and Erase
@@ -72,7 +73,7 @@ lista.erase(lista.begin());
 
 - Inserting in the middle shifts every following element over
 - Erasing shifts every following element back
-- Both are O(n) in the worst case
+- The more elements after the position, the more work
 - Prefer `push_back`/`pop_back` when you can
 
 **Trap:** insert/erase **invalidate** iterators, pointers, and references. Get fresh ones afterward.
@@ -142,9 +143,7 @@ std::vector<std::string> canciones =
     {"Wannabe", "A Little Respect"};
 
 for (auto it = canciones.begin();
-     it != canciones.end();
-     ++it)
-{
+     it != canciones.end(); ++it) {
     std::cout << *it << "\n";
 }
 ```
@@ -198,8 +197,83 @@ auto it = canciones.begin();
 
 - Standard library algorithms require them (`std::sort`, `std::find`, ...)
 - You can iterate backward (`rbegin`/`rend`)
-- You can erase while iterating safely
+- More control --- like erasing elements while iterating (done carefully)
+- Containers can be built from iterator ranges --- `std::vector<int> mid(all.begin() + 1, all.begin() + 4);`
 - Range-based `for` is a convenience wrapper over iterators
+
+---
+# Standard Algorithms
+
+- `<algorithm>` is full of functions that work on `[begin, end)` iterator ranges
+- `std::sort`, `std::find`, `std::count`, `std::min_element`, `std::max_element`, ...
+- Less code, fewer bugs, usually faster than a hand-rolled loop
+- Free `std::begin(c)` / `std::end(c)` work on any container **and** raw arrays
+
+---
+# Algorithms in Action
+.lc[
+```cpp
+std::vector<int> rankings =
+    {7, 2, 9, 4, 2, 8, 2, 5};
+
+std::sort(rankings.begin(),
+          rankings.end());
+// {2, 2, 2, 4, 5, 7, 8, 9}
+
+auto twos = std::count(
+    rankings.begin(), rankings.end(), 2);
+
+auto lo = *std::min_element(
+    rankings.begin(), rankings.end());
+```
+]
+.rc[
+- `sort` rearranges in place
+- `count` returns how many equal 2 (here: 3)
+- `min_element` returns an **iterator** to the smallest --- `*` to get the value (here: 2)
+]
+
+---
+# Lambdas and find_if
+.lc[
+```cpp
+// a lambda: a tiny unnamed function
+auto big = std::find_if(
+    rankings.begin(), rankings.end(),
+    [](int n) { return n > 5; });
+
+if (big != rankings.end()) {
+    std::cout << *big << "\n";  // 7
+}
+```
+]
+.rc[
+- `[](int n) { return n > 5; }` --- capture list, parameter, body
+- The algorithm calls it on each element
+
+**Wut:** `std::find`/`find_if` return `end()` when nothing matches --- check before dereferencing.
+]
+
+---
+# Try It
+.lc[
+```cpp
+std::vector<int> nums = {1, 2, 3, 4, 5};
+
+for (auto& n : nums) {
+    n *= 2;
+}
+
+for (const auto& n : nums) {
+    std::cout << n << " ";
+}
+std::cout << "\n";
+```
+]
+.rc[
+- Predict the output, then run it
+- Rewrite the loops with explicit iterators
+]
 
 ---
 # What does this print?
@@ -228,18 +302,17 @@ for (const auto& n : v)
 std::vector<int> scores =
     {95, 87, 91};
 for (int i = 0;
-     i <= scores.size(); i++)
-{
+     i <= scores.size(); i++) {
     std::cout << scores[i] << "\n";
 }
 ```
 ]
 .rc[
 1. `scores` cannot be iterated
-1. `[]` does not work on vector
-1. `<=` reads one past the end
-1. `i` should be `size_t`
-1. Both C and D
+1. `[]` does not work on `std::vector`
+1. `<=` should be `<` --- reads one past the end
+1. `i++` should be `++i`
+1. Ben got this wrong
 ]
 
 ---
@@ -259,9 +332,11 @@ for (int i = 0;
 - Range-based `for` with `const auto&` is the default
 - `.end()` is **one past** the last; `[begin, end)` half-open interval
 - `auto` saves you from verbose iterator types
+- `<algorithm>`: `sort`, `find`, `count`, `min_element` --- prefer them over hand-rolled loops
+- `find`/`find_if` return `end()` when nothing matches
 
 **Read:** chapter 9 of *Gorgo Starting C++* (I/O streams).
-**Do:** exercises 1-9.
+**Do:** exercises 1-12.
 
 </textarea>
 <script>

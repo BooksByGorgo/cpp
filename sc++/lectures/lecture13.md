@@ -44,7 +44,7 @@ By the end of this lecture, students should be able to:
 
 - Today we expand `<<` and `>>` beyond the console --- to **strings** and **files**
 
-## 1. Motivation (5 min)
+## 1. Motivation (3 min)
 
 Console I/O is ephemeral. When your program ends, everything you printed is gone.
 
@@ -81,10 +81,12 @@ Before `std::format` (chapter 10), C++ formatted with **manipulators** from `<io
 | `std::boolalpha` | print bool as `true`/`false` |
 | `std::fixed` | fixed-point float output |
 | `std::scientific` | scientific notation |
-| `std::setw(n)` | pad the next value to `n` chars |
-| `std::setprecision(n)` | decimal places |
+| `std::setw(n)` | minimum field width for the next value |
+| `std::setprecision(n)` | significant digits, or decimal places with `std::fixed` |
 | `std::setfill(c)` | fill character |
 | `std::hex` / `std::oct` / `std::dec` | base for integers |
+| `std::ws` | consume all whitespace right now (input, one-shot) |
+| `std::noskipws` | do not skip leading whitespace before `>>` (input) |
 
 ```cpp
 #include <iomanip>
@@ -97,7 +99,7 @@ int main() {
 
     double score = 9.87654;
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << std::setw(10) << score << "\n";    //       9.88
+    std::cout << std::setw(10) << score << "\n";    //      9.88
 }
 ```
 
@@ -109,13 +111,12 @@ int main() {
 **Wut:** `std::setw` is the exception --- it resets after a single `<<`. Every other manipulator is sticky.
 :::
 
-## 4. String Streams --- `std::ostringstream` (10 min)
+## 4. String Streams --- `std::ostringstream` (7 min)
 
 Include `<sstream>`. Treat a `std::string` like a stream.
 
 ```cpp
 #include <sstream>
-
 std::ostringstream oss;
 oss << "Man, it's a hot one" << " --- " << 1999;
 std::string result = oss.str();
@@ -126,6 +127,7 @@ std::cout << result << "\n";
 - Build a string piece by piece with `<<`
 - `.str()` extracts the finished string
 - Especially useful for mixing text and numbers without manual conversions
+- The third flavor, `std::stringstream`, goes both directions --- `std::stringstream ss; ss << 1999; int y; ss >> y;`
 
 ## 5. String Streams --- `std::istringstream` (10 min)
 
@@ -152,12 +154,19 @@ std::string word;
 while (iss >> word) {
     std::cout << "[" << word << "]\n";
 }
-// [I] [get] [knocked] [down] [7] [times]
+// [I]
+// [get]
+// [knocked]
+// [down]
+// [7]
+// [times]
 ```
 
 ## 6. File Streams --- Writing (10 min)
 
 Include `<fstream>`. `std::ofstream` is an **output file stream**.
+
+`std::cerr` is the standard **error stream** --- like `std::cout`, but meant for error messages.
 
 ```cpp
 #include <fstream>
@@ -204,6 +213,7 @@ while (std::getline(infile, line)) {
 ```
 
 - `std::ifstream` for reading
+- The third flavor, `std::fstream`, reads and writes --- `std::fstream f("data.txt", std::ios::in | std::ios::out);`
 - `std::getline(infile, line)` reads one line at a time
 - The loop ends when the stream evaluates to `false` (end of file)
 
@@ -314,7 +324,7 @@ E. Ben got this wrong
 ## 11. Assignment / Reading (2 min)
 
 - **Read:** chapter 10 of *Gorgo Starting C++* (`std::format` and `std::print`)
-- **Do:** all 6 exercises at the end of chapter 10
+- **Do:** all 11 exercises at the end of chapter 10
 - **Bring:** any file that you want to process programmatically next week
 
 ## Key Points to Reinforce

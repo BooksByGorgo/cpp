@@ -5,8 +5,8 @@
 
 Chapter 12 is split across two lectures:
 
-- **Lecture 16 --- From Struct to Class:** struct vs class, access specifiers (public/private/protected), constructors (default, parameterized, member initializer lists, `explicit`), destructors
-- **Lecture 17 --- Behavior and Operators:** member functions, `const` methods, the `this` pointer, separating declaration from definition, operator overloading (`+`, `+=`, `==`), conversion operators
+- **Lecture 16 --- From Struct to Class:** struct vs class, access specifiers (public/private/protected), constructors (default, parameterized, member initializer lists, delegating, `explicit`), destructors, member function overloading and default parameters
+- **Lecture 17 --- Behavior and Operators:** member functions, `const` methods, the `this` pointer, separating declaration from definition, `static` members, operator overloading (`+`, `+=`, `==`), conversion operators
 
 ---
 
@@ -19,8 +19,10 @@ By the end of lecture 16, students should be able to:
 - Explain the difference between a `struct` and a `class` (default access)
 - Use `public`, `private`, and (briefly) `protected` access specifiers
 - Write default and parameterized constructors using member initializer lists
+- Use a delegating constructor to avoid duplicated setup code
 - Mark single-argument constructors `explicit` to prevent surprise conversions
 - Write a destructor and understand when it runs
+- Overload member functions and use default parameters in members
 
 ## Materials
 
@@ -35,7 +37,7 @@ By the end of lecture 16, students should be able to:
 - Review multiple choice (from lecture 15): **Will this compile, and what happens at runtime?**
 
     ```cpp
-    void load(const std::string &file) { throw std::runtime_error("not found"); }
+    void load(const std::string &file) { throw std::runtime_error(file + " not found"); }
     void play() noexcept { load("track01.wav"); }
     ```
 
@@ -68,7 +70,7 @@ s.year = -5;   // nothing stops this!
 - The functions that operate on a `Song` live separately from the data
 - Classes fix both problems: they bundle data *and* behavior, and control access
 
-## 2. Access Specifiers (8 min)
+## 2. Access Specifiers (6 min)
 
 Three keywords:
 
@@ -93,7 +95,7 @@ public:
 **Wut:** `struct` and `class` are almost the same thing. The only difference is the default access level: `struct` is public by default, `class` is private by default.
 :::
 
-## 3. Constructors (15 min)
+## 3. Constructors (10 min)
 
 A **constructor** runs automatically when an object is created. Same name as the class, no return type.
 
@@ -131,7 +133,50 @@ The `: title(t), artist(a), year(y)` part is a **member initializer list** --- a
 **Trap:** Members are initialized in the order they are **declared** in the class, not the order listed in the initializer list. Keep them in the same order to avoid confusion.
 :::
 
-### `explicit` Constructors
+## 4. Delegating Constructors (6 min)
+
+With a default *and* a parameterized constructor, setup code gets duplicated:
+
+```cpp
+Song() : title("Unknown"), artist("Unknown"), year(0) {
+    validate();
+}
+Song(const std::string &t, const std::string &a, int y)
+    : title(t), artist(a), year(y) {
+    validate();
+}
+```
+
+A **delegating constructor** calls another constructor of the same class from its initializer list:
+
+```cpp
+class Song {
+    std::string title;
+    std::string artist;
+    int year;
+public:
+    Song(const std::string &t, const std::string &a, int y)
+        : title(t), artist(a), year(y) {
+        validate();
+    }
+
+    // delegate to the parameterized constructor
+    Song() : Song("Unknown", "Unknown", 0) {}
+
+private:
+    void validate() { /* ... */ }
+};
+```
+
+- The delegated-to constructor runs first, then the delegating constructor's body (if any)
+- The delegation must be the **only** entry in the initializer list --- you cannot delegate and initialize members directly
+- Never delegate in a cycle --- the compiler rejects direct cycles, but indirect ones can recurse forever at runtime
+
+::: {.tip}
+**Tip:** Delegate from the simplest constructors *to* the most complete one, so the actual setup code lives in one place.
+:::
+
+## 5. `explicit` Constructors (5 min)
 
 ```cpp
 class Volume {
@@ -153,7 +198,7 @@ play(Volume(11));    // OK
 **Trap:** Mark single-argument constructors `explicit` unless you specifically want implicit conversion.
 :::
 
-## 4. Destructors (10 min)
+## 6. Destructors (8 min)
 
 A **destructor** runs when the object is destroyed (goes out of scope or is deleted). Name is the class name prefixed with `~`, no parameters.
 
@@ -187,7 +232,7 @@ Black Hole Sun destroyed
 - For classes that only hold standard library types, the compiler-generated destructor is fine
 - Destructors become critical when your class manages raw resources (chapter 13)
 
-## 5. Order of Construction and Destruction (7 min)
+## 7. Order of Construction and Destruction (5 min)
 
 ```cpp
 int main() {
@@ -202,27 +247,77 @@ int main() {
 ```
 
 - Local objects are destroyed in **reverse order of construction**
-- Base classes construct before derived classes, and destruct in reverse (preview of inheritance)
+- Last constructed, first destroyed --- like a stack
 
-## 6. Try It --- A Song Class (10 min)
+## 8. Overloading Members and Default Parameters (9 min)
+
+Function overloading (chapter 6) works on member functions too --- same name, different parameter lists:
+
+```cpp
+class Playlist {
+    std::vector<std::string> songs;
+public:
+    void add(const std::string &song) {
+        songs.push_back(song);
+    }
+
+    void add(const std::string &song, int position) {
+        if (position >= 0 &&
+            position <= static_cast<int>(songs.size())) {
+            songs.insert(songs.begin() + position, song);
+        }
+    }
+};
+
+Playlist p;
+p.add("Torn");             // calls add(const std::string &)
+p.add("Basket Case", 0);   // calls add(const std::string &, int)
+```
+
+- You have already seen this: a default constructor plus a parameterized constructor are overloads of the same name
+- Overloading keeps the interface clean --- one verb per concept
+
+Default parameters (chapter 6) also work in member functions, and one defaulted function can replace the two overloads:
+
+```cpp
+void add(const std::string &song, int position = -1) {
+    int n = static_cast<int>(songs.size());
+    if (position < 0 || position >= n) {
+        songs.push_back(song);
+    } else {
+        songs.insert(songs.begin() + position, song);
+    }
+}
+```
+
+- `add("Torn")` appends (default `-1`); `add("Basket Case", 1)` inserts at position 1
+- Defaults must go at the **end** of the parameter list
+
+::: {.tip}
+**Trap:** Mixing overloading with default parameters can create ambiguous calls.
+If both `set_volume(int v)` and `set_volume(int v, int max = 100)` exist, `set_volume(9)` matches both and the compiler rejects the call.
+:::
+
+## 9. Try It --- A Song Class (8 min)
 
 Live-code a complete `Song` class with:
 
 - Three private members
 - A parameterized constructor using an initializer list
+- A delegating default constructor
 - A destructor that prints a message
 - A simple `print()` member function
 
 Ask the class to predict the construction/destruction order.
 
-## 7. Wrap-up Quiz (6 min)
+## 10. Wrap-up Quiz (5 min)
 
 **Q1.** Which is NOT a difference between `struct` and `class` in C++?
 
 A. Default access level
 B. Members of `struct` are public by default
 C. `class` supports constructors but `struct` does not
-D. You can use either for OOP
+D. Members of `class` are private by default
 E. Ben got this wrong
 
 *Answer: C* --- both support constructors.
@@ -258,10 +353,10 @@ E. Ben got this wrong
 
 *Answer: C*
 
-## 8. Assignment / Reading (4 min)
+## 11. Assignment / Reading (3 min)
 
-- **Read:** chapter 12, remaining sections --- member functions, `const` methods, `this`, operator overloading, conversion operators
-- **Do:** chapter 12 exercises 3, 6, 7, 8, 9, 13 (const methods, operator overloads, `this->`, ambiguity, full class)
+- **Read:** chapter 12, remaining sections --- member functions, `const` methods, `this`, separating declaration from definition, `static` members, operator overloading, conversion operators
+- **Do:** chapter 12 exercises 3, 6, 7, 8, 9, 10, 12, 13 (const methods, operator overloads, `this->`, overloading, default parameters, explicit operator bool, full class)
 - **Bring:** the `Song` class from today --- next lecture we add behavior
 
 ## Key Points to Reinforce
@@ -269,8 +364,10 @@ E. Ben got this wrong
 - `class` = `struct` with private-by-default
 - Use access specifiers to hide implementation details
 - Always use member initializer lists
+- Delegate from the simplest constructors to the most complete one
 - Mark single-arg constructors `explicit`
 - Destructors run in **reverse order** of construction
+- Overloading and default parameters work in member functions --- avoid ambiguous mixes
 
 ---
 
@@ -283,6 +380,7 @@ By the end of lecture 17, students should be able to:
 - Write member functions and mark them `const` when they do not modify the object
 - Use the `this` pointer to resolve name conflicts and return references for method chaining
 - Separate a class into a header (`.h`) and source (`.cpp`) file with include guards
+- Use `static` data members and `static` member functions for class-wide state
 - Overload `+`, `+=`, and `==` as member functions
 - Write a conversion operator and know when to mark it `explicit`
 
@@ -316,7 +414,7 @@ By the end of lecture 17, students should be able to:
 
     *Answer: B*
 
-## 1. Member Functions and `const` (15 min)
+## 1. Member Functions and `const` (12 min)
 
 ```cpp
 class Song {
@@ -352,10 +450,10 @@ void show(const Song &s) {
 If `print()` is not `const`, `show()` fails to compile.
 
 ::: {.tip}
-**Tip:** Mark every member function that does not modify the object as `const`. Habit-forming: it catches bugs and keeps your class working smoothly with `const` references.
+**Tip:** Mark every member function that does not modify the object as `const`. Making this a habit catches bugs early and keeps your class working smoothly with `const` references.
 :::
 
-## 2. The `this` Pointer (10 min)
+## 2. The `this` Pointer (8 min)
 
 `this` is a hidden pointer to the current object, automatically available inside every member function.
 
@@ -396,7 +494,7 @@ Song with_year(int y) const {
 }
 ```
 
-## 3. Separating Declaration and Definition (10 min)
+## 3. Separating Declaration and Definition (8 min)
 
 As classes grow, split them into a header and source file.
 
@@ -439,11 +537,61 @@ bool Song::is_90s() const {
 }
 ```
 
-- `Song::` is the scope resolution operator (chapter 1) --- "this belongs to `Song`"
+- `::` is the scope resolution operator (chapter 1) --- `Song::print` means "this belongs to `Song`"
 - `#ifndef`/`#define`/`#endif` is an **include guard** --- prevents duplicate inclusion
 - `#pragma once` is a common non-standard alternative
 
-## 4. Operator Overloading --- `+` and `+=` (12 min)
+## 4. `static` Members (10 min)
+
+Everything so far is *instance* state --- each `Song` has its own `title` and `year`.
+Some state belongs to the **class as a whole**: how many `Song` objects exist? what is the maximum title length?
+
+### `static` Data Members
+
+```cpp
+// song.h
+class Song {
+    std::string title;
+    static int count;    // declaration --- shared by all Songs
+public:
+    Song(const std::string &t) : title(t) { ++count; }
+    ~Song() { --count; }
+
+    static int instance_count() { return count; }
+};
+```
+
+```cpp
+// song.cpp
+int Song::count = 0;     // definition --- exactly one
+```
+
+- There is exactly one `count` for the whole program, no matter how many `Song` objects exist
+- Declare it in the header, define it in **one** `.cpp` file --- the linker needs a place for the storage
+- `static` appears only in the declaration --- repeating it in the definition is a compile error
+
+::: {.tip}
+**Tip:** For class-wide constants, use `static constexpr` --- since C++17 you can give the value inline in the class body (`static constexpr int max_title_length = 200;`) with no separate `.cpp` definition.
+:::
+
+### `static` Member Functions
+
+```cpp
+int n = Song::instance_count();   // no object needed
+```
+
+- Call it as `Class::function()` --- no object required; no `Song`s need to exist at all
+- A `static` member function has **no `this` pointer** --- it can only touch other `static` members
+- Standard library examples: `std::string::npos`, `std::numeric_limits<int>::max()`, `std::chrono::system_clock::now()`
+- Use `static` members for class-wide constants, counters, and factory functions --- not as stealth globals, and not for a "utility class" that is really a namespace in a costume
+
+::: {.tip}
+**Wut:** `static` on a free function (chapter 6) means internal linkage --- private to its `.cpp` file.
+Inside a class it means "belongs to the class, not an instance" and has nothing to do with linkage.
+Same keyword, completely different jobs.
+:::
+
+## 5. Operator Overloading --- `+` and `+=` (10 min)
 
 ```cpp
 class Playlist {
@@ -473,7 +621,7 @@ p += "Vogue";        // in-place
 - `operator+=` is **not** `const` --- modifies in place, returns `*this`
 - Mirrors built-in types: `3 + 2` does not change `3`, but `x += 1` does change `x`
 
-## 5. The `==` Operator (5 min)
+## 6. The `==` Operator (5 min)
 
 ```cpp
 bool operator==(const Playlist &other) const {
@@ -485,7 +633,7 @@ bool operator==(const Playlist &other) const {
 - Has access to **other's** private members --- same class, same rights
 - Should behave symmetrically and consistently
 
-## 6. Conversion Operators (5 min)
+## 7. Conversion Operators (5 min)
 
 ```cpp
 class Volume {
@@ -504,11 +652,11 @@ int n = static_cast<int>(v);   // explicit cast required
 - Mark them `explicit` to prevent silent conversions (same idea as explicit constructors)
 - Common: `explicit operator bool()` for testable objects like streams
 
-## 7. Try It --- Full Playlist Class (5 min)
+## 8. Try It --- Full Playlist Class (4 min)
 
 Walk through the chapter's `Playlist` example that uses constructors, member functions, `operator+`, `operator+=`, and `operator==` together. Let students predict outputs.
 
-## 8. Wrap-up Quiz (5 min)
+## 9. Wrap-up Quiz (5 min)
 
 **Q1.** What does this print?
 
@@ -565,10 +713,10 @@ E. Ben got this wrong
 
 *Answer: B*
 
-## 9. Assignment / Reading (3 min)
+## 10. Assignment / Reading (3 min)
 
 - **Read:** chapter 13 of *Gorgo Starting C++*, sections on stack vs heap, pointers, `new`/`delete`, memory leaks, and intro to `std::unique_ptr` (first half)
-- **Do:** chapter 13 exercises 1, 3, 9, 10 (stack/heap, new/delete, pointer basics)
+- **Do:** chapter 13 exercises 1, 3, 4, 9, 10 (stack/heap, new/delete, pointer basics, unique_ptr ownership)
 - **Bring:** a guess at the difference between `new` and `delete`
 
 ## Key Points to Reinforce
@@ -576,5 +724,6 @@ E. Ben got this wrong
 - `const` member functions are essential for working with `const` references
 - `this` resolves name conflicts and enables method chaining via `*this`
 - Split classes into `.h` and `.cpp`; use include guards or `#pragma once`
+- `static` members belong to the class, not an instance --- define each static data member in exactly one `.cpp` file
 - `operator+` is `const`, `operator+=` is not --- mirror the built-in types
 - Conversion operators should be `explicit` by default

@@ -96,20 +96,23 @@ int main() {
 #include <iomanip>
 
 bool on_tour = true;
-std::cout << on_tour;  // 1
+std::cout << on_tour << "\n";  // 1
 std::cout << std::boolalpha
-          << on_tour;  // true
+          << on_tour << "\n";  // true
 
 double score = 9.87654;
 std::cout << std::fixed
           << std::setprecision(2)
-          << std::setw(10) << score;
-//       9.88
+          << std::setw(10)
+          << score << "\n";
+//      9.88
 ```
 ]
 .rc[
 - `<iomanip>` for setw, setprecision, setfill
 - `<iostream>` for boolalpha, fixed, etc.
+- `setw(n)`: minimum field width
+- `setprecision(n)`: significant digits --- decimal places with `fixed`
 - **Sticky** --- set once, stays set
 - `setw` is the exception --- resets after one `<<`
 ]
@@ -134,6 +137,7 @@ std::cout << result << "\n";
 - `<<` to build piece by piece
 - `.str()` to extract the finished string
 - Great for mixing text and numbers
+- `std::stringstream` = both directions (`<<` and `>>`)
 ]
 
 ---
@@ -205,6 +209,7 @@ out.close();
 .rc[
 - Constructor takes the filename
 - `if (!out)` checks the open
+- `std::cerr` --- the error stream, like `cout` but for errors
 - Use `<<` exactly like `cout`
 - `.close()` is good practice --- destructor closes automatically
 
@@ -233,6 +238,7 @@ while (std::getline(in, line)) {
 - `std::getline(in, line)` reads one line at a time
 - Loop ends when the stream evaluates to `false`
 - You can also read word by word with `>>`
+- `std::fstream` = both directions (read and write)
 ]
 
 ---
@@ -341,7 +347,8 @@ std::cout << d << " " << n
 - Combine file mode flags with `|`; `std::ios::app` appends
 
 **Read:** chapter 10 of *Gorgo Starting C++* (`std::format` and `std::print`).
-**Do:** exercises 1-6.
+**Do:** exercises 1-11.
+**Bring:** any file that you want to process programmatically next week.
 
 </textarea>
 <script>

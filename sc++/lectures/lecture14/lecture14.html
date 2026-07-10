@@ -174,7 +174,7 @@ std::format("{:05}", 42);
 - `+` always shows the sign
 - Space pads with a space for positive
 - `#` adds the base prefix
-- `0` zero-pads to width
+- `0` zero-pads to width (implies right-align)
 ]
 
 ---
@@ -194,22 +194,24 @@ std::format("{:b}", 10);    // "1010"
 ]
 
 ---
-# Floating-Point Precision
+# Precision --- Floats and Strings
 .lc[
 ```cpp
 std::format("{:.2f}",  3.14159);
 // "3.14"
 
-std::format("{:.4f}",  2.5);
-// "2.5000"
+std::format("{:.4}",   3.14159);
+// "3.142"
 
-std::format("{:10.2f}", 3.14);
-// "      3.14"
+std::format("{:.5}",
+    "Smells Like Teen Spirit");
+// "Smell"
 ```
 ]
 .rc[
-- `.N` is the number of decimal places
-- `f` is fixed-point
+- `.N` with `f` --- digits after the decimal point
+- `.N` without `f` --- significant digits
+- `.N` on a string --- max length (truncates)
 - Combine with width for aligned columns
 ]
 
@@ -314,7 +316,7 @@ std::string result = std::format(
 - Prefer `std::format`/`std::println` over `<<` with `setw`/`setprecision`
 
 **Read:** chapter 11 of *Gorgo Starting C++* (Exceptions).
-**Do:** exercises 1-9.
+**Do:** exercises 1-11.
 
 </textarea>
 <script>

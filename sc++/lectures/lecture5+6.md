@@ -5,7 +5,7 @@
 
 Chapter 5 is split across two lectures:
 
-- **Lecture 5 --- Decisions and `while`:** `if`/`else`/`else if`/nested `if`, `while` loops
+- **Lecture 5 --- Decisions and `while`:** `if`/`else`/`else if`/nested `if`, guard clauses, `if` with initializer, `while` loops
 - **Lecture 6 --- Loops, Jumps, and `switch`:** `do-while`, `break`/`continue`, `for` (classic and range-based), `switch` with fall-through
 
 ---
@@ -18,8 +18,10 @@ By the end of lecture 5, students should be able to:
 
 - Write `if`, `if/else`, and `if/else if/else` chains to make decisions
 - Recognize and avoid the `=` vs `==` trap in a condition
+- Trace a nested `if` and flatten it with guard clauses
+- Use `if` with an initializer to keep a tested variable scoped to the `if`
 - Write a `while` loop that terminates correctly
-- Trace a nested `if` and decide when to flatten it
+- Use `while` for input validation loops
 
 ## Materials
 
@@ -60,7 +62,7 @@ if (score >= 90) {
 }
 ```
 
-- The condition must be a boolean expression
+- The condition is converted to a boolean --- any nonzero value counts as true
 - If true, the body runs; if false, it is skipped entirely
 - Always use `{}` around the body --- it costs you nothing and saves you from the dangling-if trap
 
@@ -86,7 +88,7 @@ if (score >= 90) {
 **Trap:** `if (x = 5)` **assigns** 5 to `x`; it does not compare. Use `==`. `-Wall` will warn you.
 :::
 
-## 2. Nested `if` (8 min)
+## 2. Nested `if` (5 min)
 
 ```cpp
 int age = 20;
@@ -104,9 +106,107 @@ if (age >= 18) {
 ```
 
 - Works, but deep nesting is hard to read
-- Flatten by combining conditions with `&&`/`||` or by returning early from a function (we cover functions in chapter 6)
+- Flatten by combining conditions with `&&`/`||`, or with guard clauses --- up next
 
-## 3. `while` Loops (15 min)
+## 3. Guard Clauses (10 min)
+
+Add one more check to the ticket example and the nesting gets out of hand:
+
+```cpp
+bool try_enter_show(int age, bool has_ticket, int seats_left) {
+    if (age >= 18) {
+        if (has_ticket) {
+            if (seats_left > 0) {
+                std::cout << "Welcome to the show\n";
+                return true;
+            } else {
+                std::cout << "Sold out\n";
+                return false;
+            }
+        } else {
+            std::cout << "You need a ticket\n";
+            return false;
+        }
+    } else {
+        std::cout << "Must be 18 or older\n";
+        return false;
+    }
+}
+```
+
+- The success case is buried four levels deep
+- Each failure message sits far away from the condition that rejected it
+
+Rewritten with guard clauses:
+
+```cpp
+bool try_enter_show(int age, bool has_ticket, int seats_left) {
+    if (age < 18) {
+        std::cout << "Must be 18 or older\n";
+        return false;
+    }
+    if (!has_ticket) {
+        std::cout << "You need a ticket\n";
+        return false;
+    }
+    if (seats_left <= 0) {
+        std::cout << "Sold out\n";
+        return false;
+    }
+    std::cout << "Welcome to the show\n";
+    return true;
+}
+```
+
+- A **guard clause** is an early `return` that rejects an invalid case as soon as you detect it
+- Every failure stands on its own at the same indentation level, right next to its message
+- The happy path lives at the bottom of the function, unindented
+- We write our own functions in chapter 6 --- for now, read each `return` as "stop here"
+
+::: {.tip}
+**Tip:** If you find yourself nesting more than two or three levels deep, flatten the logic with `else if` chains or guard clauses.
+:::
+
+## 4. `if` with Initializer (8 min)
+
+Call a function, save the result, test it --- and the variable lingers after you are done:
+
+```cpp
+int rank = find_rank("Black Hole Sun");
+if (rank > 0) {
+    std::cout << "found at " << rank << "\n";
+}
+// rank is still in scope here, but we are done with it
+```
+
+C++17 lets you fuse the temporary into the `if` itself:
+
+```cpp
+if (int rank = find_rank("Black Hole Sun"); rank > 0) {
+    std::cout << "found at " << rank << "\n";
+}
+// rank is gone here --- its scope was the if block
+```
+
+- The piece before the `;` runs once, like the init step of a `for` loop (preview of next lecture)
+- The piece after the `;` is the actual condition
+- The variable lives only inside the `if` (and its `else`), so it cannot leak or be reused by accident
+- Shines when a call returns "did it work?" alongside a value:
+
+```cpp
+if (auto pos = name.find("99"); pos != std::string::npos) {
+    std::cout << "the 90s start at index " << pos << "\n";
+} else {
+    std::cout << "no 99 in the string\n";
+}
+```
+
+::: {.tip}
+**Tip:** Use this form whenever the value being tested is only interesting *inside* the `if`.
+The same trick works for `switch` (next lecture).
+:::
+
+## 5. `while` Loops (15 min)
 
 ```cpp
 int countdown = 5;
@@ -152,7 +252,7 @@ while (n <= 0) {
 - Classic pattern: ask, test, ask again
 - Next lecture we will see that `do-while` makes this even cleaner
 
-## 4. Try It --- Live Demo (15 min)
+## 6. Try It --- Live Demo (15 min)
 
 Live-code a simple guessing game:
 
@@ -181,7 +281,7 @@ int main() {
 - Ask the class for the smallest change that would make the loop infinite
 - Ask what happens if the user types non-numeric input (preview of chapter 9)
 
-## 5. Wrap-up Quiz (4 min)
+## 7. Wrap-up Quiz (4 min)
 
 **Q1.** What does this print?
 
@@ -219,7 +319,7 @@ E. Ben got this wrong
 
 *Answer: A* --- the condition is false from the start.
 
-## 6. Assignment / Reading (3 min)
+## 8. Assignment / Reading (3 min)
 
 - **Read:** chapter 5 of *Gorgo Starting C++*, sections on `do-while`, `break`/`continue`, `for`, and `switch` (the rest of the chapter)
 - **Do:** chapter 5 exercises 2, 3, 4, 6, 8 (loop control, `for`, `switch`, fall-through, day-of-week program)
@@ -228,6 +328,8 @@ E. Ben got this wrong
 ## Key Points to Reinforce
 
 - `if` / `else if` / `else` chains are tested top-to-bottom, first match wins
+- Guard clauses reject bad cases early and keep the happy path unindented
+- `if (init; cond)` scopes the tested variable to the `if`/`else`
 - `while` tests the condition before each iteration
 - Make sure the loop variable changes --- infinite loops are the #1 beginner bug
 - `==` compares, `=` assigns --- do not confuse them
@@ -448,7 +550,7 @@ If `x` is 1, this prints **both** "uno" and "dos".
 **Trap:** End every `case` with `break` unless you intentionally want fall-through. When fall-through is deliberate, add `[[fallthrough]];` (C++17) or at least a comment so the reader knows you meant it.
 :::
 
-## 5. Try It --- Combined Demo (10 min)
+## 5. Try It --- Combined Demo (12 min)
 
 Walk through the chapter's `Try It` combined example that uses `if`, `while`, `do-while`, `for`, range-based `for`, and `switch` together. Ask the class to predict each block's output.
 
@@ -487,7 +589,7 @@ C. `dos tres`
 D. `uno dos tres`
 E. Ben got this wrong
 
-*Answer: C* --- case 2 matches and falls through case 3.
+*Answer: C* --- case 2 matches and falls through to case 3.
 
 **Q2.** How many times does the body run?
 
@@ -530,7 +632,7 @@ E. Ben got this wrong
 
 - **Read:** chapter 6 of *Gorgo Starting C++*, sections on declarations, parameters, pass-by-value, pass-by-reference, `const` parameters, and default parameters (first half of the chapter)
 - **Do:** chapter 6 exercises 1, 2, 6, 11 (pass-by semantics, default params, ODR rule)
-- **Bring:** a `for` loop that surprises you if anything from today is unclear
+- **Bring:** a `for` loop that surprises you, plus questions about anything from today that is unclear
 
 ## Key Points to Reinforce
 

@@ -65,7 +65,7 @@ int *a = calloc(
 .rc[
 - `calloc(count, size)`
 - Allocates **and zeroes** the bytes
-- Equivalent to `malloc` + `memset(0)`
+- Checks `count * size` for overflow --- `malloc(count * size)` silently wraps
 - Clearer intent; sometimes faster on fresh pages
 ]
 
@@ -202,7 +202,8 @@ free(a);
 ```
 ]
 .rc[
-- Try `realloc(a, (size_t)-1)` to force failure
+- Force failure: `size_t huge = (size_t)-1 / argc;`
+- `realloc(a, huge)` returns `NULL` at runtime
 - Try `memcpy` with overlap, then switch to `memmove`
 - Leak a buffer and run under valgrind
 ]
