@@ -1,4 +1,5 @@
 <head><style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 ol { list-style-type: upper-alpha; }
 
 body {
@@ -86,27 +87,23 @@ public:
         std::strcpy(text, t);
     }
     ~Lyric() { delete[] text; }
-
     Lyric(const Lyric &o) { /* copy */ }
     Lyric &operator=(const Lyric &o) {
-        /* copy */
-        return *this;
+        /* copy */ return *this;
     }
     Lyric(Lyric &&o) noexcept { /* move */ }
     Lyric &operator=(Lyric &&o) noexcept {
-        /* move */
-        return *this;
+        /* move */ return *this;
     }
 };
 ```
 ]
 .rc[
-- `std::strlen`/`std::strcpy` come from `<cstring>`
+- `<cstring>` gives `strlen`/`strcpy`
 - Ctor allocates
 - Destructor frees
 - Copies must **deep** copy
 - Moves must leave the source empty
-- Move operations marked `noexcept` so `vector` uses them
 
 **Trap:** delete-then-new copy assignment dangles if `new` throws --- copy-and-swap fixes it
 ]
@@ -167,7 +164,7 @@ public:
 ```
 ]
 .rc[
-- Copying an active audio stream would mean two objects fighting over the same device
+- Copying an active stream means two objects fighting over one device
 - `= delete` prevents the call at **compile time**
 - Clear error message (vs pre-C++11 private-and-undefined trick)
 - Works on any function: `void set_volume(double) = delete;` blocks implicit conversions

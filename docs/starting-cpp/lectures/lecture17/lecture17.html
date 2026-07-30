@@ -1,4 +1,5 @@
 <head><style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 ol { list-style-type: upper-alpha; }
 
 body {
@@ -276,14 +277,12 @@ class Playlist {
 public:
     Playlist(const std::string &n)
         : name(n) {}
-
     Playlist operator+(
         const std::string &song) const {
         Playlist copy = *this;
         copy.songs.push_back(song);
         return copy;
     }
-
     Playlist &operator+=(
         const std::string &song) {
         songs.push_back(song);
