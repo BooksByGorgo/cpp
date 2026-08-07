@@ -5,7 +5,8 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 ## Chapter 1: Introduction
 - Come As You Are --- Nirvana
 - Smells Like Teen Spirit --- Nirvana
-- Macarena --- Los Del Rio
+- Nevermind --- Nirvana (album, line-comment example)
+- Los Del Rio (band name in std::cin word-splitting example)
 
 ## Chapter 2: Variables
 - Waterfalls --- TLC
@@ -22,7 +23,6 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Iris --- Goo Goo Dolls
 - Tearin' Up My Heart --- *NSYNC (multi-line literal example)
 - Weezer (band name in raw-string SQL example)
-- Mambo No. 5 --- Lou Bega (string-suffix concatenation example)
 - Genie in a Bottle --- Christina Aguilera (string-suffix exercise)
 - Wannabe --- Spice Girls (substr exercise; repeat of ch08 entry)
 - Wonderwall --- Oasis (case-sensitivity exercise; repeat of ch02 entry)
@@ -50,7 +50,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Steal My Sunshine --- Len (rvalue reference example)
 
 ## Chapter 7: Numbers
-- (none)
+- 1984 --- George Orwell ("the year George Orwell warned us about" in the bases example)
 
 ## Chapter 8: Containers
 - Wannabe --- Spice Girls

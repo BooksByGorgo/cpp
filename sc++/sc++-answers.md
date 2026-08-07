@@ -198,7 +198,7 @@ int main() {
 **Explain what the compiler sees and rewrite the line so it prints the intended text.**
 
 The compiler reads a string literal as everything between an opening `"` and the next `"`.
-Given `"He said "wassup" and left."` it sees the string `"He said "`, then a stray identifier `wassup`, then another string `" and left."`, and gets confused.
+Given `"He said "wassup" and left."` the string ends after `He said `, and g++ tries to glue `wassup` onto it as a *literal suffix*, complaining about a missing "string literal operator".
 The inner double quotes need to be escaped so they become part of the string instead of ending it:
 
 ```cpp
@@ -353,9 +353,9 @@ int main() {
 }
 ```
 
-**9. What does `std::numeric_limits<uint8_t>::max()` return? Is `std::numeric_limits<double>::min()` a large negative number?**
+**9. What does `std::numeric_limits<std::uint8_t>::max()` return? Is `std::numeric_limits<double>::min()` a large negative number?**
 
-`std::numeric_limits<uint8_t>::max()` returns `255` --- the largest value an 8-bit unsigned integer can hold.
+`std::numeric_limits<std::uint8_t>::max()` returns `255` --- the largest value an 8-bit unsigned integer can hold.
 
 `std::numeric_limits<double>::min()` is *not* a large negative number.
 It returns the smallest *positive* normalized `double` value (approximately 2.2e-308).
@@ -531,7 +531,7 @@ The `[]` operator does not perform bounds checking, and `std::string` stores a n
 
 ```cpp
 std::string s = "MMMBop ba duba dop";
-size_t pos = s.find("dop");
+std::size_t pos = s.find("dop");
 ```
 
 `pos` is 15.
@@ -829,7 +829,7 @@ To get the character count of a string literal at compile time you would need an
 The fractional part is discarded because both operands are integers.
 
 `7.0 / 2` performs floating-point division and produces `3.5`.
-Because at least one operand is a floating-point type (`7.0` is a `double`), the other operand is promoted to `double` before the division.
+Because at least one operand is a floating-point type (`7.0` is a `double`), the other operand is converted to `double` before the division.
 
 This matters because integer division silently drops the decimal part, which can lead to incorrect results if you expect a fractional answer.
 
@@ -863,6 +863,8 @@ It prints:
 int x = 0;
 bool result = (x != 0) && (100 / x > 5);
 ```
+
+**Why does it not crash even though `x` is `0`?**
 
 `result` is `false`.
 
@@ -2091,7 +2093,7 @@ Each suffix selects a different type at compile time --- the value `1` is the sa
 
 **1. Think about it: Why does `std::array` require the size as part of its type (e.g., `std::array<int, 5>`) while `std::vector` does not? What trade-off does this create?**
 
-`std::array` stores its elements directly inside the object (on the stack), so the compiler needs to know the size at compile time to allocate the right amount of space.
+`std::array` stores its elements directly inside the object (no separate heap allocation), so the compiler needs to know the size at compile time to allocate the right amount of space.
 The size is part of the type, which means `std::array<int, 5>` and `std::array<int, 10>` are different types and cannot be assigned to each other.
 
 `std::vector` stores its elements on the heap, and the size can change at runtime with `push_back` and `pop_back`.
@@ -2145,8 +2147,10 @@ When `i` is 3, `scores[3]` is an out-of-bounds access (undefined behavior).
 The fix is to use `<`:
 
 ```cpp
-for (int i = 0; i < scores.size(); i++) {
+for (std::size_t i = 0; i < scores.size(); i++) {
 ```
+
+(Switching `i` to `std::size_t` also avoids the signed/unsigned comparison warning that `-Wall` gives for `int i < scores.size()`.)
 
 **5. What does this print?**
 
@@ -2314,7 +2318,8 @@ for (std::size_t i = 0; i < v.size(); ++i) {
 }
 ```
 
-The general rule: do not modify a container's structure while iterating over it. If you need to add or remove elements based on what you find, build a list of changes first and apply them afterward.
+The general rule: do not modify a container's structure while iterating over it.
+If you need to add or remove elements based on what you find, build a list of changes first and apply them afterward.
 
 **14. Think about it: A function takes three coordinates as a `std::array<double, 3>`:**
 
@@ -2355,7 +2360,7 @@ After `reserve(8)`: `size() == 0`, `capacity() == 8`.
 | 12            | 12   | 16       | no           |
 
 The 9th `push_back` is the only one that reallocates: capacity was full at 8, and the doubling rule grows it to 16.
-That is also the only call where existing iterators, pointers, and references into the vector are invalidated.
+That is also the only call where iterators, pointers, and references to *existing* elements are invalidated (every `push_back` invalidates the past-the-end iterator).
 The 1st through 8th calls only write into already-reserved storage, and the 10th through 12th only fill in the freshly-allocated space, so iterators obtained *after* the reallocation are still valid.
 
 **16. What does this print?**
@@ -2453,8 +2458,8 @@ The cast to `double` is what turns `sum / nums.size()` into a floating-point div
 **1. What does the following program print?**
 
 ```cpp
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 int main() {
     std::ostringstream oss;
@@ -2476,8 +2481,8 @@ The expression `10 + 20` is evaluated to 30 before being streamed.
 **2. What does this program print?**
 
 ```cpp
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 int main() {
@@ -2656,8 +2661,8 @@ The `>>` operator splits on whitespace, so each word and number is a separate to
 **10. What does this print?**
 
 ```cpp
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 int main() {
@@ -2681,7 +2686,7 @@ The first `ss >> word` reads up to the next whitespace, so `word` becomes `"year
 The second `ss >> year` skips the leading whitespace and parses `1999` into the `int year`.
 A `std::stringstream` is just a `std::ios::in | std::ios::out` stream backed by a string, so the same object can both produce text (via `<<`) and consume text (via `>>`).
 
-**11. Calculation: What does each of these `std::ios_base::openmode` combinations do when you open a file with it?**
+**11. Calculation: What does each of these `std::ios::openmode` combinations do when you open a file with it?**
 
 ```cpp
 std::ios::out
@@ -2692,7 +2697,7 @@ std::ios::in  | std::ios::out | std::ios::binary
 
 **Why do you OR the flags together with `|` instead of using `+` or `,`?**
 
-Each flag is one bit in a `std::ios_base::openmode` bitmask, so combinations are made by OR'ing them together.
+Each flag is one bit in a `std::ios::openmode` bitmask, so combinations are made by OR'ing them together.
 You use `|` because that is the bitwise OR operator (the same one introduced in Chapter 4) --- it sets all the bits that are on in either operand, which is exactly what "this mode AND that mode" means.
 You cannot use `+` or `,` because those would either give the wrong numeric value or not produce a valid `openmode` at all.
 
@@ -3099,6 +3104,9 @@ After stack unwinding, the `catch (...)` block runs.
 **5. Will this code compile? If so, what happens when `play()` is called?**
 
 ```cpp
+#include <stdexcept>
+#include <string>
+
 void load(const std::string &file) {
     throw std::runtime_error("file not found: " + file);
 }
@@ -3162,6 +3170,10 @@ Threading error codes through every intermediate function would be tedious and e
 **8. How many destructors run before the `catch` block executes?**
 
 ```cpp
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
 struct Song {
     std::string title;
     Song(const std::string &t) : title(t) {}
@@ -3323,7 +3335,7 @@ int parse_age(const std::string &s) {
 }
 
 int main() {
-    for (const std::string &s : {"42", "abc", "-1"}) {
+    for (const std::string s : {"42", "abc", "-1"}) {
         try {
             int age = parse_age(s);
             std::cout << s << " -> " << age << "\n";
@@ -3580,7 +3592,7 @@ private:
 
 The call `set_volume(50)` is ambiguous.
 It could match either `set_volume(int)` or `set_volume(int, int)` (using the default value of 100 for `max`).
-The compiler cannot decide which one to call and will refuse to compile the code.
+The class definition itself compiles cleanly --- the error only appears when someone makes a one-argument call, which the compiler rejects as ambiguous.
 The fix is to remove one of the overloads or change the default parameter design so the signatures do not overlap.
 
 **10. Why must default parameters appear at the end of the parameter list? What happens if you try to put a default parameter before a non-default one?**
@@ -4060,8 +4072,8 @@ Both follow the same pattern: a stack object that owns something on the heap or 
 **13. Where is the bug?**
 
 ```cpp
-void make_playlist() {
-    std::string *fav = new std::string("Wonderwall");
+void make_playlist(const std::string &title) {
+    std::string *fav = new std::string(title);
     if (fav->size() > 100) {
         return;
     }
@@ -4089,8 +4101,8 @@ The correct fix is to stop using raw `new` for owning the heap object and let RA
 ```cpp
 #include <memory>
 
-void make_playlist() {
-    auto fav = std::make_unique<std::string>("Wonderwall");
+void make_playlist(const std::string &title) {
+    auto fav = std::make_unique<std::string>(title);
     if (fav->size() > 100) {
         return;        // unique_ptr's destructor frees the string here
     }
@@ -4143,7 +4155,7 @@ If a function genuinely needs to take ownership instead, hand it the `unique_ptr
 
 A `std::string` typically stores three values on the stack: a pointer to a heap-allocated character buffer, the string's length, and its capacity.
 When you move a string, the move constructor copies those three stack values (the pointer, length, and capacity) from the source to the destination.
-It then sets the source's pointer to `nullptr` and its length and capacity to 0.
+It then resets the source to an empty string --- with libstdc++ the source's pointer is aimed back at its own small-string buffer and its length set to 0 (not `nullptr`; `.data()` must never return null).
 
 No heap memory is allocated or freed.
 The destination now points to the same heap buffer the source used to own, and the source owns nothing.
@@ -4919,7 +4931,7 @@ The fractional 750 milliseconds is discarded.
 **Why should you use the first to measure how long a piece of code takes to run?**
 
 `steady_clock` is guaranteed to never be adjusted --- it always moves forward at a constant rate.
-`system_clock` represents the system's wall clock, which can jump forward or backward when the clock is adjusted (e.g., NTP synchronization, daylight saving time changes, or manual adjustments).
+`system_clock` represents the system's wall clock, which can jump forward or backward when the clock is adjusted (e.g., NTP synchronization or manual adjustments; it tracks UTC, so daylight saving time does not affect it).
 If `system_clock` jumps during your measurement, you could get a negative elapsed time or an incorrectly large one.
 `steady_clock` avoids this problem entirely.
 
@@ -5201,7 +5213,7 @@ int main() {
 ```
 
 `std::random_device` is a hardware-backed source of entropy where available; on systems without one, the standard library still provides a `std::random_device` that returns *some* unpredictable bits at startup.
-Either way, two runs of this program produce **different** sequences of numbers, because each run reads a fresh seed from `random_device`.
+Either way, on a typical desktop system two runs of this program produce **different** sequences of numbers, because each run reads a fresh seed from `random_device` (recall the chapter's caveat that `random_device` may be deterministic on some platforms).
 
 If you replace the seeding line with a fixed constant:
 
@@ -5213,7 +5225,7 @@ then the engine starts in exactly the same state every run, and **the two runs p
 That is a feature, not a bug: it makes randomized programs reproducible (useful for tests and for debugging a problem you only see "sometimes") at the cost of being predictable.
 For anything where unpredictability matters (games, simulations, anything user-facing), seed from `random_device`; for tests and reproducible experiments, seed from a known constant.
 
-**20. Calculation: Use `<cmath>` and `<numbers>` to write the area and circumference of a circle with radius `r = 4.0`. Show the formulas you used and the values you computed. Why is `std::numbers::pi` preferable to typing `3.14159265` in your code?**
+**20. Calculation: Use `<cmath>` and `<numbers>` to compute the area and circumference of a circle with radius `r = 4.0`. Show the formulas you used and the values you computed. Why is `std::numbers::pi` preferable to typing `3.14159265` in your code?**
 
 ```cpp
 #include <cmath>
@@ -5310,6 +5322,8 @@ int main() {
 - inspect `i` and `v.size()` at each iteration,
 - identify the iteration on which the program reads past the end of `v`.
 
+**What compile flags would you use to build this program for the debugger?**
+
 Compile with debug info and no optimization:
 
 ```
@@ -5339,6 +5353,8 @@ $N = 5
 (gdb) print v[i]
 $M = <garbage or zero or anything>
 ```
+
+(On a hardened standard library --- for example g++ with `-D_GLIBCXX_ASSERTIONS` or recent distro defaults --- `v[5]` may instead abort with an assertion failure rather than returning garbage.)
 
 When `i` reaches `5`, the loop body still runs because the condition is `i <= v.size()` instead of `<`.
 At that point `v[5]` reads past the last valid element, which is undefined behavior.

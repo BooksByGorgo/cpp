@@ -1,16 +1,17 @@
-% lulu-cover.tex --- Lulu Executive wraparound cover for "Gorgo C++ and C".
+% lulu-cover-sc++.tex --- Lulu Executive wraparound cover for the
+% standalone "Gorgo Starting C++" book (sc++-lulu.pdf, 307 pages).
 %
-% Total trim (with bleed): 15.296in x 10.25in (388.52mm x 260.35mm)
+% Total trim (with bleed): 14.996in x 10.25in
 % Book trim: 7in x 10in
 % Bleed: 0.125in
-% Spine width: 1.046in (26.57mm)
+% Spine width: 0.746in (307 pages: 0.06 + 307 * 0.002236)
 %
 % Horizontal layout (left to right, in inches):
 %   left bleed : [0.000, 0.125]
 %   back trim  : [0.125, 7.125]
-%   spine      : [7.125, 8.171]
-%   front trim : [8.171, 15.171]
-%   right bleed: [15.171, 15.296]
+%   spine      : [7.125, 7.871]
+%   front trim : [7.871, 14.871]
+%   right bleed: [14.871, 14.996]
 %
 % Vertical:
 %   bottom bleed: [0.000, 0.125]
@@ -21,7 +22,7 @@
 
 \documentclass[11pt]{article}
 
-\usepackage[paperwidth=15.296in,paperheight=10.25in,margin=0pt]{geometry}
+\usepackage[paperwidth=14.996in,paperheight=10.25in,margin=0pt]{geometry}
 \usepackage{fontspec}
 \usepackage{graphicx}
 \usepackage{xcolor}
@@ -67,42 +68,43 @@
 % ============================================================
 % FULL-BLEED BACKGROUND
 % ============================================================
-\fill[bgcolor] (O) rectangle ($(O)+(15.296,10.25)$);
+\fill[bgcolor] (O) rectangle ($(O)+(14.996,10.25)$);
 
 % ============================================================
 % FRONT COVER  (right side)
-% x in [8.171, 15.171], center x = 11.671
+% x in [7.871, 14.871], center x = 11.371
 % ============================================================
 
-% Gorgo image, centered, 4.5in wide
-\node[anchor=center] at ($(O)+(11.671,6.85)$)
-  {\includegraphics[width=4.5in]{c++c-gorgo-cover.png}};
+% Gorgo image, centered, 4.5in wide (pre-flattened onto the navy background
+% by the Makefile so the PDF stays transparency-free)
+\node[anchor=center] at ($(O)+(11.371,6.85)$)
+  {\includegraphics[width=4.5in]{c++-gorgo-sc-cover.png}};
 
 % Title
-\node[anchor=center, text=textcolor, align=center] at ($(O)+(11.671,3.55)$)
-  {\fontsize{34}{40}\selectfont\bfseries Gorgo Starting C++ and C};
+\node[anchor=center, text=textcolor, align=center] at ($(O)+(11.371,3.55)$)
+  {\fontsize{34}{40}\selectfont\bfseries Gorgo Starting C++};
 
 % Rule under title
-\draw[accent, line width=1.2pt] ($(O)+(9.373,3.1)$) -- ($(O)+(13.973,3.1)$);
+\draw[accent, line width=1.2pt] ($(O)+(9.571,3.1)$) -- ($(O)+(13.171,3.1)$);
 
 % Subtitle: commit date
-\node[anchor=center, text=accent] at ($(O)+(11.671,2.75)$)
+\node[anchor=center, text=accent] at ($(O)+(11.371,2.75)$)
   {\fontsize{18}{22}\selectfont\itshape \CommitDate};
 
 
 % ============================================================
 % SPINE  (middle)
-% x in [7.125, 8.171], center = 7.648
+% x in [7.125, 7.871], center = 7.498
 % Title centered along spine, "Gorgo Books" at the base
 % ============================================================
 
 % Main spine title (centered vertically along the 10in spine)
-\node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.648,5.125)$)
-  {\fontsize{13}{15}\selectfont\bfseries Gorgo Starting C++ and C};
+\node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.498,5.125)$)
+  {\fontsize{13}{15}\selectfont\bfseries Gorgo Starting C++};
 
 % "Gorgo Books" at the base of the spine, horizontal so it reads
 % normally when the book is upright on a shelf
-\node[anchor=center, text=accent, align=center] at ($(O)+(7.648,1.25)$)
+\node[anchor=center, text=accent, align=center] at ($(O)+(7.498,1.25)$)
   {\fontsize{10}{12}\selectfont\scshape Gorgo\\Books};
 
 % ============================================================
@@ -115,12 +117,12 @@
 \node[anchor=center, text=accent] at ($(O)+(3.625,9.15)$)
   {\fontsize{28}{34}\selectfont\bfseries Cheetsheet};
 \node[anchor=center, text=muted] at ($(O)+(3.625,8.70)$)
-  {\fontsize{11}{13}\selectfont\itshape a quick reference for C and C++};
+  {\fontsize{11}{13}\selectfont\itshape a quick reference for C++};
 
 % Accent rule under heading
 \draw[accent, line width=0.8pt] ($(O)+(1.3,8.45)$) -- ($(O)+(5.95,8.45)$);
 
-% ---- Left column: Printf, Bitwise, Compound Assignment ----
+% ---- Left column: Escape Sequences, Bitwise, std::format ----
 % Stacked above the barcode exclusion zone.
 \node[anchor=north west, text=textcolor] at ($(O)+(0.70,8.20)$) {%
   \begin{minipage}{2.80in}
@@ -128,38 +130,40 @@
   \fontsize{8.5}{10.5}\selectfont
   \renewcommand{\arraystretch}{1.05}
 
-  {\color{accent}\fontsize{12}{14}\selectfont\bfseries printf Format Specifiers}\\[1pt]
-  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ programmers, Ch.~1}\\[2pt]
-  \begin{tabular}{@{}l l l@{}}
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries Escape Sequences}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from Starting C++, Ch.~1 \& Ch.~3}\\[2pt]
+  \begin{tabular}{@{}l l@{}}
   \toprule
-  \textbf{Spec} & \textbf{Type} & \textbf{Example output} \\
+  \textbf{Escape} & \textbf{Meaning} \\
   \midrule
-  \op{\%d}  & \op{int} (decimal)        & \op{42}        \\
-  \op{\%x}  & \op{int} (hex lower)      & \op{ff}        \\
-  \op{\%X}  & \op{int} (hex upper)      & \op{FF}        \\
-  \op{\%f}  & \op{double}               & \op{3.140000}  \\
-  \op{\%e}  & \op{double} (sci.)        & \op{3.14e+00}  \\
-  \op{\%c}  & \op{char}                 & \op{A}         \\
-  \op{\%s}  & \op{char\ *}              & \op{hola}      \\
-  \op{\%p}  & pointer                   & \op{0x7ffd...} \\
-  \op{\%zu} & \op{size\_t}              & \op{4}         \\
+  \op{\textbackslash n}     & newline                        \\
+  \op{\textbackslash t}     & horizontal tab                 \\
+  \op{\textbackslash\textbackslash} & backslash              \\
+  \op{\textbackslash "}     & double quote                   \\
+  \op{\textbackslash '}     & single quote                   \\
+  \op{\textbackslash 0}     & null character                 \\
+  \op{\textbackslash r}     & carriage return                \\
+  \op{\textbackslash a}     & alert (bell)                   \\
+  \op{\textbackslash xHH}   & byte with hex value HH         \\
+  \op{\textbackslash uHHHH} & Unicode code point             \\
   \bottomrule
   \end{tabular}
 
   \vspace{0.22in}
 
-  {\color{accent}\fontsize{12}{14}\selectfont\bfseries Bitwise Operators}\\[1pt]
-  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ programmers, Ch.~4}\\[2pt]
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries Bit Operators}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from Starting C++, Ch.~7}\\[2pt]
+  \setlength{\tabcolsep}{4pt}
   \begin{tabular}{@{}c l l l@{}}
   \toprule
   \textbf{Op} & \textbf{Meaning} & \textbf{Example} & \textbf{Result} \\
   \midrule
-  \op{\&}              & bitwise AND & \op{0xF0 \& 0x3C} & \op{0x30}    \\
-  \op{|}               & bitwise OR  & \op{0xF0 | 0x0F}  & \op{0xFF}    \\
-  \op{\^{}}            & bitwise XOR & \op{0xFF \^{} 0x0F} & \op{0xF0}  \\
-  \op{\textasciitilde} & bitwise NOT & \op{\textasciitilde 0x00} & \op{0xFF} \\
-  \op{<<}              & left shift  & \op{1 << 3}       & \op{8}       \\
-  \op{>>}              & right shift & \op{16 >> 2}      & \op{4}       \\
+  \op{\&}              & AND         & \op{0b1100 \& 0b1010}   & \op{0b1000} \\
+  \op{|}               & OR          & \op{0b1100 | 0b1010}    & \op{0b1110} \\
+  \op{\^{}}            & XOR         & \op{0b1100 \^{} 0b1010} & \op{0b0110} \\
+  \op{\textasciitilde} & NOT         & \op{\textasciitilde 0b1100} & flips all \\
+  \op{<<}              & left shift  & \op{0b0001 << 2}        & \op{0b0100} \\
+  \op{>>}              & right shift & \op{0b1000 >> 2}        & \op{0b0010} \\
   \bottomrule
   \end{tabular}
 
@@ -185,7 +189,7 @@
   \end{minipage}
 };
 
-% ---- Right column: Operator Precedence ----
+% ---- Right column: Operator Precedence, Container Methods ----
 \node[anchor=north west, text=textcolor] at ($(O)+(3.80,8.20)$) {%
   \begin{minipage}{2.80in}
   \color{textcolor}
@@ -193,27 +197,27 @@
   \renewcommand{\arraystretch}{1.15}
 
   {\color{accent}\fontsize{12}{14}\selectfont\bfseries Operator Precedence}\\[1pt]
-  {\color{muted}\fontsize{7.5}{9}\selectfont highest to lowest --- C for C++ programmers, Ch.~4}\\[2pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont highest to lowest --- Starting C++, Ch.~4}\\[2pt]
   \setlength{\tabcolsep}{3pt}
   \begin{tabular}{@{}c >{\raggedright\arraybackslash}p{1.48in} l@{}}
   \toprule
   \textbf{Lvl} & \textbf{Operators} & \textbf{Meaning} \\
   \midrule
-  1  & \op{()} \op{[]} \op{->} \op{.}                                & grouping / access \\
-  2  & \op{!} \op{\textasciitilde} \op{++} \op{--} \op{+} \op{-} \op{*} \op{\&} \op{(type)} \op{sizeof} & unary \\
-  3  & \op{*} \op{/} \op{\%}                                         & mul, div, rem    \\
-  4  & \op{+} \op{-}                                                 & add, sub          \\
-  5  & \op{<<} \op{>>}                                               & bitwise shifts    \\
-  6  & \op{<} \op{<=} \op{>} \op{>=}                                 & relational        \\
-  7  & \op{==} \op{!=}                                               & equality          \\
-  8  & \op{\&}                                                       & bitwise AND       \\
-  9  & \op{\^{}}                                                     & bitwise XOR       \\
-  10 & \op{|}                                                        & bitwise OR        \\
-  11 & \op{\&\&}                                                     & logical AND       \\
-  12 & \op{||}                                                       & logical OR        \\
-  13 & \op{?} \op{:}                                                 & ternary           \\
-  14 & \op{=} \op{+=} \op{-=} \ldots                                 & assignment        \\
-  15 & \op{,}                                                        & comma             \\
+  1  & \op{()} \op{[]} \op{.} \op{->}                                & grouping, subscript \\
+  2  & \op{++} \op{--} (postfix)                                     & postfix increment \\
+  3  & \op{++} \op{--} (prefix) \op{!} \op{\textasciitilde} \op{-}   & prefix, unary     \\
+  4  & \op{*} \op{/} \op{\%}                                         & multiplicative    \\
+  5  & \op{+} \op{-}                                                 & additive          \\
+  6  & \op{<<} \op{>>}                                               & shift             \\
+  7  & \op{<} \op{<=} \op{>} \op{>=}                                 & relational        \\
+  8  & \op{==} \op{!=}                                               & equality          \\
+  9  & \op{\&}                                                       & bitwise AND       \\
+  10 & \op{\^{}}                                                     & bitwise XOR       \\
+  11 & \op{|}                                                        & bitwise OR        \\
+  12 & \op{\&\&}                                                     & logical AND       \\
+  13 & \op{||}                                                       & logical OR        \\
+  14 & \op{?:}                                                       & ternary           \\
+  15 & \op{=} \op{+=} \op{-=} \op{*=} \ldots                         & assignment        \\
   \bottomrule
   \end{tabular}
 

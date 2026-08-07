@@ -34,21 +34,35 @@ SRCS := $(FRONTMATTER) \
         $(SC_PART) $(SC_AUTHOR) $(SC_CHAPTERS_PRE15) $(SC_CH15) \
         $(C4_PART) $(C4_AUTHOR) $(C4_CHAPTERS) $(C4_BIBL)
 
+# Lulu executive trim and format shared by every interior build.
+LULU_FMT := --top-level-division=chapter \
+            -V documentclass=book \
+            -M subtitle="$(DATE)" \
+            -V geometry:"paperwidth=7in" \
+            -V geometry:"paperheight=10in" \
+            -V geometry:"top=0.6in" \
+            -V geometry:"bottom=0.9in" \
+            -V geometry:"footskip=0.3in" \
+            -V geometry:"inner=0.8in" \
+            -V geometry:"outer=0.7in" \
+            -V fontsize=11pt
+
 PANDOC_OPTS := $(FILTER) \
                --pdf-engine=latexmk --pdf-engine-opt=-lualatex \
                --citeproc --bibliography=../c4c++/references.bib --csl=../c4c++/ieee.csl \
                --resource-path=.:../sc++:../c4c++ \
-               --top-level-division=chapter \
-               -V documentclass=book \
-               -M subtitle="$(DATE)" \
-               -V geometry:"paperwidth=7in" \
-               -V geometry:"paperheight=10in" \
-               -V geometry:"top=0.6in" \
-               -V geometry:"bottom=0.9in" \
-               -V geometry:"footskip=0.3in" \
-               -V geometry:"inner=0.8in" \
-               -V geometry:"outer=0.7in" \
-               -V fontsize=11pt
+               $(LULU_FMT)
+
+# sc++-only interior: same trim, sc++ bibliography, index.md supplies \printindex.
+SC_LULU_BIBL := .lulu-sc-bib.md
+SC_LULU_SRCS := ../sc++/frontmatter.yaml ../sc++/author-intro.md \
+                $(SC_CHAPTERS_PRE15) ../sc++/ch15.md \
+                $(SC_LULU_BIBL) index.md
+SC_LULU_OPTS := $(FILTER) \
+                --pdf-engine=latexmk --pdf-engine-opt=-lualatex \
+                --citeproc --bibliography=../sc++/references.bib --csl=../sc++/ieee.csl \
+                --resource-path=.:../sc++ \
+                $(LULU_FMT)
 
 # Lulu Executive wraparound cover (15.296in x 10.25in with bleed).
 COVER_IMG := ../images/c++c-gorgo-cover.png
@@ -68,8 +82,16 @@ all: lulu-sc++c.pdf lulu-cover.pdf
 .lulu-c4-author.md: ../c4c++/author-intro.md
 	sed '1{/^\\newpage$$/d;}' $< > $@
 
+# sc++/bibliography.md already ends with \printindex; strip it so index.md
+# is the only source of the index in the sc++-only build.
+.lulu-sc-bib.md: ../sc++/bibliography.md
+	sed '/\\printindex/d' $< > $@
+
 lulu-sc++c.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/ieee.csl Makefile
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
+
+sc++-lulu.pdf: $(SC_LULU_SRCS) ../sc++/callout.lua ../sc++/references.bib ../sc++/ieee.csl Makefile
+	pandoc $(SC_LULU_SRCS) -o $@ $(SC_LULU_OPTS)
 
 # --- Cover ---
 
@@ -86,10 +108,29 @@ lulu-cover-raw.pdf: lulu-cover.tex .commit-date.tex $(COVER_IMG)
 	latexmk -lualatex -interaction=nonstopmode -jobname=lulu-cover-raw lulu-cover.tex
 	latexmk -c -jobname=lulu-cover-raw lulu-cover.tex
 
+# Cover for the standalone sc++ book (sc++-lulu.pdf). The front image is
+# c++-gorgo.png pre-flattened onto the navy background: leaving the alpha
+# channel in makes ghostscript rasterize the whole page (text included)
+# when flattening for PDF 1.3.
+SC_COVER_IMG := ../images/c++-gorgo-sc-cover.png
+
+$(SC_COVER_IMG): ../images/c++-gorgo.png
+	convert "$<" -background '$(COVER_BG)' -alpha remove -alpha off "$@"
+
+lulu-cover-sc++.pdf: lulu-cover-sc++-raw.pdf
+	$(GS_LULU) -sOutputFile=$@ $<
+
+lulu-cover-sc++-raw.pdf: lulu-cover-sc++.tex .commit-date.tex $(SC_COVER_IMG)
+	latexmk -lualatex -interaction=nonstopmode -jobname=lulu-cover-sc++-raw lulu-cover-sc++.tex
+	latexmk -c -jobname=lulu-cover-sc++-raw lulu-cover-sc++.tex
+
 # --- Clean ---
 
 clean:
 	rm -f lulu-sc++c.pdf .lulu-sc++c-raw.pdf .lulu-ch15.md .lulu-sc-author.md .lulu-c4-author.md *.idx *.ilg *.ind
+	rm -f sc++-lulu.pdf .lulu-sc-bib.md
+	rm -f lulu-cover-sc++.pdf lulu-cover-sc++-raw.pdf
+	rm -f lulu-cover-sc++-raw.aux lulu-cover-sc++-raw.log lulu-cover-sc++-raw.fls lulu-cover-sc++-raw.fdb_latexmk
 	rm -f lulu-cover.pdf lulu-cover-raw.pdf
 	rm -f .commit-date.tex lulu-cover-raw.aux lulu-cover-raw.log lulu-cover-raw.fls lulu-cover-raw.fdb_latexmk
 

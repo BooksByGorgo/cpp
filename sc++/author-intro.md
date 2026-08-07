@@ -2,9 +2,9 @@
 # Author Intro {.unnumbered}
 
 C++ is probably the most complicated, powerful, and confusing language you will ever learn.
-It is the language of choice for developers looking for power and efficiency in embedded systems and well as large scale backend systems.
-Very few people understand everything, so as a beginner seek to understand and be comfortable with enough to do the things you want to do.
-Learning C++ also has the advantage of introducing you to a wide variety of programming concepts.
+it is the language of choice for developers looking for power and efficiency in embedded systems and well as large scale backend systems.
+very few people understand everything, so as a beginner seek to understand and be comfortable with enough to do the things you want to do.
+learning C++ also has the advantage of introducing you to a wide variety of programming concepts.
 
 this booklet is to be experimented with.
 if you want a book to read, these are not the droids you are looking for.
