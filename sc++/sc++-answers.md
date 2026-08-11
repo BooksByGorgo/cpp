@@ -2827,7 +2827,7 @@ int main() {
 
     std::string line;
     while (std::getline(infile, line)) {
-        size_t sep = line.find('|');
+        std::size_t sep = line.find('|');
         std::string song = line.substr(0, sep);
         double score = std::stod(line.substr(sep + 1));
         std::cout << std::format("{:<25} {:>6.1f}", song, score) << std::endl;
@@ -4463,7 +4463,7 @@ int main() {
 }
 ```
 
-**10. Write a program that defines a class `Buffer` that owns a heap-allocated `char *` and a `size_t` length. Implement all five special member functions explicitly:**
+**10. Write a program that defines a class `Buffer` that owns a heap-allocated `char *` and a `std::size_t` length. Implement all five special member functions explicitly:**
 
 - destructor
 - copy constructor
@@ -4718,7 +4718,7 @@ Both members are 8-byte aligned and the pointer comes first, so the layout is `d
 `Track` has a single `std::string title` member.
 The libstdc++ `std::string` is 32 bytes on this platform, so `sizeof(Track)` is **32 bytes** --- the same as the `std::string` it contains, with no extra padding because there are no other members.
 
-These results are platform- and library-dependent: libc++ historically uses a 24-byte `std::string`, MSVC's STL uses 32 bytes, and a 32-bit system would shrink the pointer and `size_t` in `Buffer` to 4 bytes each.
+These results are platform- and library-dependent: libc++ historically uses a 24-byte `std::string`, MSVC's STL uses 32 bytes, and a 32-bit system would shrink the pointer and `std::size_t` in `Buffer` to 4 bytes each.
 Use `sizeof` itself when you need a guaranteed answer on a particular target.
 
 # Chapter 15: Odds and Ends
