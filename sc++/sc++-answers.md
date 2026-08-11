@@ -491,6 +491,15 @@ Album smash = {
 
 For `Album partial = {.artist = "Hanson"};`, the omitted members are value-initialized --- `title` becomes the empty string `""`, and `year` and `tracks` become `0`.
 
+**16. Why does `sizeof` return `std::size_t` instead of `int`? Name the two guarantees `std::size_t` gives you that no single named integer type (like `int` or `long`) can promise on every platform.**
+
+`sizeof` must be able to report the size of *any* object the platform can create, and no named integer type fits that job everywhere: `int` is 4 bytes on most modern systems and caps out around 2.1 billion, which is smaller than objects a 64-bit machine can hold, and `long` changes width between platforms (8 bytes on 64-bit Linux, 4 bytes on 64-bit Windows).
+
+The two guarantees:
+
+1. `std::size_t` is unsigned, matching the fact that a size can never be negative.
+2. It is defined by each platform to be big enough to hold the size of the largest object that platform supports --- 8 bytes on a typical 64-bit system, 4 bytes on a 32-bit system.
+
 # Chapter 3: Strings
 
 **1. What is the difference between `std::cin >> str` and `std::getline(std::cin, str)`? When would you use each one?**
