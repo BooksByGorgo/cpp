@@ -194,6 +194,17 @@ build_book() {
             emit_chapter_entry "$dest_subdir" "${base%.md}" "$title" "$include_pdf"
         done
 
+        # Conclusion (if present) renders after the numbered chapters,
+        # unnumbered like the author intro and bibliography.
+        if [ -f "$src_dir/conclusion.md" ]; then
+            local concl_title concl_dest
+            concl_title=$(get_heading "$src_dir/conclusion.md")
+            concl_dest="$DOCS/$dest_subdir/conclusion.html"
+            convert_chapter "$src_dir" "conclusion.md" "$concl_dest" \
+                "$concl_title" "$parent" "99"
+            emit_chapter_entry "$dest_subdir" "conclusion" "$concl_title" "no"
+        fi
+
         for md in "$src_dir"/app*.md; do
             local base letter order title html_dest pdf_src pdf_dst include_pdf
             base=$(basename "$md")
