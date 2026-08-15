@@ -17,7 +17,7 @@
 - [ ] ch06: pointer subtraction / `ptrdiff_t` not covered
 - [ ] ch07: limited 80s reference variety (only "Iron Man")
 - [ ] ch08: add `memset` non-zero trap callout (sets bytes, not ints)
-- [ ] ch08: mention VLAs briefly (C99 feature not in C++)
+- [x] ch08: mention VLAs briefly (C99 feature not in C++)
 - [ ] ch08: mention `static` at file scope / `extern` for globals across translation units
 - [ ] ch09: numbers-to-strings conversion is thin (deferred to ch10 but outline says to cover it)
 - [ ] ch09: `stdint.h` fixed-width types not mentioned
