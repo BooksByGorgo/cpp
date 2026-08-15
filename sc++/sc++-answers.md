@@ -865,6 +865,7 @@ It prints:
 - `17 % 5` = **2** (17 = 3 * 5 + 2)
 - `20 % 4` = **0** (20 = 5 * 4 + 0)
 - `3 % 7` = **3** (3 = 0 * 7 + 3, since 3 is less than 7)
+- `-17 % 5` = **-2** (the result takes the sign of the left operand: -17 / 5 truncates to -3, and -17 - (-3 * 5) = -2)
 
 **4. What does this expression evaluate to?**
 
