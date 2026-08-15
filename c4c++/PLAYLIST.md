@@ -36,6 +36,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 ## Chapter 4: Expressions
 - Crazy Train --- Ozzy Osbourne
 - This Is Spinal Tap (1984 film; volume goes to 11)
+- Little Red Corvette --- Prince (logical operators English example)
 
 ## Chapter 5: Control Flow
 - Rock You Like a Hurricane --- Scorpions
