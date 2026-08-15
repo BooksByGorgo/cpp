@@ -511,7 +511,7 @@ Use separate statements: `y = x + (x + 1); x += 2;` or similar, depending on wha
 
 - `25 / 4` = **6** (integer division truncates toward zero; 25 / 4 = 6.25, truncated to 6)
 - `25 % 4` = **1** (25 = 6*4 + 1)
-- `-25 % 4` = **-1** (C99: the remainder has the same sign as the dividend; -25 = (-6)*4 + (-1))
+- `-25 % 4` = **-1** (the remainder has the same sign as the dividend; -25 = (-6)*4 + (-1))
 - `(1 << 4) | (1 << 1)` = **18** (bit 4 = 16, bit 1 = 2; 16 | 2 = 18; in hex `0x12`)
 - `0xFF & 0x0F` = **15** (0xFF = 11111111, 0x0F = 00001111; AND gives 00001111 = 15 = 0x0F)
 

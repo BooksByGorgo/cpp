@@ -570,7 +570,7 @@ x++;
 - `25 % 4` = **1**.
   The remainder of 25 / 4: 25 - (6 * 4) = 1.
 - `-25 % 4` = **-1**.
-  In C99+, `%` preserves the sign of the dividend (left operand). -25 / 4 = -6 (truncated toward zero), remainder = -25 - (-6 * 4) = -25 + 24 = -1.
+  The `%` operator preserves the sign of the dividend (left operand). -25 / 4 = -6 (truncated toward zero), remainder = -25 - (-6 * 4) = -25 + 24 = -1.
 - `(1 << 4) | (1 << 1)` = **18**.
   `1 << 4` is 16 (binary `10000`), `1 << 1` is 2 (binary `00010`).
   OR-ing them gives binary `10010` = 18.

@@ -32,6 +32,7 @@ a collection of programming texts --- focused on C++ for the moment --- suitable
 - preserve emojis and text emojis (e.g., `:'(`) in the text --- do not remove them
 - refer to the reader as `you`
 - do not wrap sentences in the markdown. every sentence gets its own line
+- treat C11 as the baseline version of C: do not attribute features to C11 or earlier ("C99 added X") except in deliberate historical notes; version notes for C17 and later are fine
 
 ## code examples
 

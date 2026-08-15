@@ -3,7 +3,7 @@
 # Macros
 
 In C++, you have `constexpr` for compile-time constants, templates for generic code, and `inline` functions to avoid call overhead.
-C has no templates, its `constexpr` only arrived in C23 (in a limited form), and `inline` (added in C99) is little more than a hint.
+C has no templates, its `constexpr` only arrived in C23 (in a limited form), and its `inline` is little more than a hint.
 \index{preprocessor}
 Instead, C leans heavily on the **preprocessor** --- the `#define` macro system that rewrites your source code *before* the compiler sees it.
 
