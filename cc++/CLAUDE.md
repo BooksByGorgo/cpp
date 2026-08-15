@@ -51,7 +51,7 @@ This book covers all the topics that a good C++ programmer uses in daily life in
 ## Build
 
 - Build with: `make` (or `make all` for both PDFs)
-- Uses `pandoc` with `--lua-filter=callout.lua` and `--pdf-engine=latexmk --pdf-engine-opt=-lualatex`
+- Uses `pandoc` with `--lua-filter=../callout.lua` and `--pdf-engine=latexmk --pdf-engine-opt=-lualatex`
 - `latexmk` handles the multi-pass build needed for the index
 - Requires `header-includes` for `\usepackage[most]{tcolorbox}` and `\usepackage{makeidx}` (already in frontmatter)
 

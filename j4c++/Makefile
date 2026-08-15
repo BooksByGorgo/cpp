@@ -5,7 +5,7 @@ CHAPTERS := ch00.md ch01.md ch02.md ch03.md ch04.md ch05.md ch06.md ch07.md \
 
 SRCS := frontmatter.yaml $(CHAPTERS)
 
-PANDOC_OPTS := --lua-filter=callout.lua \
+PANDOC_OPTS := --lua-filter=../callout.lua \
                --pdf-engine=latexmk \
                --pdf-engine-opt=-lualatex \
                --top-level-division=chapter \
@@ -22,7 +22,7 @@ OUT := j4c++.pdf
 
 all: $(OUT)
 
-$(OUT): $(SRCS) callout.lua
+$(OUT): $(SRCS) ../callout.lua
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
 
 clean:

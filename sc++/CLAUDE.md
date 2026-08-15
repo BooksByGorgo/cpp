@@ -47,7 +47,7 @@ No previous programming experience is assumed.
 ## Build
 
 - Build with: `make` (or `make all` for both PDFs)
-- Uses `pandoc` with `--lua-filter=callout.lua` and `--pdf-engine=latexmk --pdf-engine-opt=-lualatex`
+- Uses `pandoc` with `--lua-filter=../callout.lua` and `--pdf-engine=latexmk --pdf-engine-opt=-lualatex`
 - `latexmk` handles the multi-pass build needed for the index; `-lualatex` routes it through lualatex so non-ASCII Unicode (CJK, polytonic Greek, emoji) renders correctly
 - Requires `header-includes` for `\usepackage[most]{tcolorbox}` and `\usepackage{makeidx}` (already in frontmatter)
 - Font stack in `frontmatter.yaml`: `mainfont: TeX Gyre Pagella` (Palatino clone) for body text, `monofont: JetBrains Mono` for code with `-calt,-liga,-dlig` to disable code ligatures. luaotfload fallback chains in a raw `{=latex}` header block cover what the primary fonts do not: `main_fallback` adds `NotoSerifCJKJP` (CJK), `DejaVuSerif` (polytonic Greek), and `NotoColorEmoji:mode=harf` (color emoji); `mono_fallback` adds `NotoSansMonoCJKJP`, `DejaVuSansMono`, and `NotoColorEmoji`

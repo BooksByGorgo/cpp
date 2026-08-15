@@ -20,8 +20,9 @@ convert_chapter() {
 
     mkdir -p "$(dirname "$dest")"
 
-    local filter_opt=""
-    [ -f "$src_dir/callout.lua" ] && filter_opt="--lua-filter=callout.lua"
+    # The shared callout filter lives at the repo root; pandoc runs from
+    # the book directory, so it is one level up.
+    local filter_opt="--lua-filter=../callout.lua"
 
     {
         printf '%s\n' "---"
@@ -46,8 +47,7 @@ convert_bibliography() {
 
     mkdir -p "$(dirname "$dest")"
 
-    local filter_opt=""
-    [ -f "$src_dir/callout.lua" ] && filter_opt="--lua-filter=callout.lua"
+    local filter_opt="--lua-filter=../callout.lua"
 
     local -a cite_opts=()
     if [ -f "$src_dir/references.bib" ]; then

@@ -25,7 +25,7 @@ Write a chapter about operators in C++ 23.
 
 ## Build
 
-- Build with: `pandoc operators.md -o operators.pdf --lua-filter=callout.lua`
+- Build with: `pandoc operators.md -o operators.pdf --lua-filter=../callout.lua`
 - Requires `header-includes` for `\usepackage[most]{tcolorbox}` (already in frontmatter)
 
 ## Content

@@ -8,6 +8,10 @@
 -- .png works for both LaTeX (from the book dir, pointing at the top-
 -- level images/) and HTML (from a Jekyll chapter page at
 -- /<book>/chNN.html, pointing at /images/ under docs/).
+--
+-- This is the single shared copy for all books. Every build invokes
+-- pandoc from the book directory with --lua-filter=../callout.lua, so
+-- the ../images relative path above keeps working.
 
 local tcb = "colback=black!5, colframe=black!20, " ..
   "boxrule=0.4pt, arc=2pt, left=5pt, right=5pt, " ..
@@ -29,15 +33,43 @@ local html_style = "background-color: #f5f5f5; border: 1px solid #ccc; " ..
 
 -- Map the bold label text at the start of a callout to its icon basename.
 local function callout_kind(el)
-  local first = el.content[1]
-  if not first or first.t ~= "Para" then return nil end
-  local first_inline = first.content[1]
-  if not first_inline or first_inline.t ~= "Strong" then return nil end
-  local label = pandoc.utils.stringify(first_inline)
-  if label == "Tip:"  then return "tip"  end
-  if label == "Trap:" then return "trap" end
-  if label == "Wut:"  then return "wut"  end
+  for _, block in ipairs(el.content) do
+    if block.t == "Para" then
+      for _, inline in ipairs(block.content) do
+        if inline.t == "Strong" then
+          local label = pandoc.utils.stringify(inline)
+          if label == "Tip:"  then return "tip"  end
+          if label == "Trap:" then return "trap" end
+          if label == "Wut:"  then return "wut"  end
+        end
+      end
+    end
+  end
   return nil
+end
+
+local function clean_callout_blocks(content)
+  local new_blocks = pandoc.List({})
+  for i, block in ipairs(content) do
+    if i == 1 and block.t == "Para" then
+      local new_inlines = pandoc.List({})
+      local stripping = true
+      for _, inline in ipairs(block.content) do
+        if stripping and (inline.t == "SoftBreak" or inline.t == "Space") then
+          -- skip softbreak/space before/between leading raw index inlines
+        else
+          if inline.t ~= "RawInline" then
+            stripping = false
+          end
+          new_inlines:insert(inline)
+        end
+      end
+      new_blocks:insert(pandoc.Para(new_inlines))
+    else
+      new_blocks:insert(block)
+    end
+  end
+  return new_blocks
 end
 
 function Div(el)
@@ -57,7 +89,8 @@ function Div(el)
         "\\vspace*{0.5\\baselineskip}\\includegraphics[width=\\linewidth]{../images/"
         .. kind .. "-callout.png}"))
       blocks:insert(pandoc.RawBlock("latex", "\\tcblower"))
-      for _, cb in ipairs(el.content) do
+      local cleaned = clean_callout_blocks(el.content)
+      for _, cb in ipairs(cleaned) do
         blocks:insert(cb)
       end
       blocks:insert(pandoc.RawBlock("latex", "\\end{tcolorbox}"))

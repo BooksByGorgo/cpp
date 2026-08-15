@@ -1,5 +1,5 @@
 DATE := $(shell git log -1 --format="%ad" --date=format:"%B %d, %Y")
-FILTER := --lua-filter=callout.lua
+FILTER := --lua-filter=../callout.lua
 PANDOC_OPTS_BASE := $(FILTER) --pdf-engine=latexmk --pdf-engine-opt=-lualatex -M subtitle="$(DATE)" -V geometry:margin=1in
 PANDOC_OPTS := $(PANDOC_OPTS_BASE) --top-level-division=chapter -V documentclass=book
 
@@ -19,19 +19,19 @@ all: $(PDFS)
 
 chapters: $(CH_PDFS) $(APP_PDFS)
 
-cc++.pdf: $(CHAPTERS) callout.lua
+cc++.pdf: $(CHAPTERS) ../callout.lua
 	pandoc $(CHAPTERS) -o $@ $(PANDOC_OPTS)
 
-cc++-answers.pdf: cc++-answers.md callout.lua
+cc++-answers.pdf: cc++-answers.md ../callout.lua
 	pandoc $< -o $@ $(PANDOC_OPTS_BASE)
 
-ch%.pdf: frontmatter.yaml ch%.md callout.lua
+ch%.pdf: frontmatter.yaml ch%.md ../callout.lua
 	@NUM=$$(echo $* | sed 's/^0*//'); [ -z "$$NUM" ] && NUM=0; \
 	OFFSET=$$((NUM - 1)); \
 	{ printf '\\setcounter{chapter}{%d}\n\n' $$OFFSET; cat ch$*.md; } \
 	  | pandoc frontmatter.yaml - -o $@ $(PANDOC_OPTS)
 
-app%.pdf: frontmatter.yaml app%.md callout.lua
+app%.pdf: frontmatter.yaml app%.md ../callout.lua
 	@OFFSET=$$(( $$(printf '%d' "'$*") - $$(printf '%d' "'A") )); \
 	{ printf '\\appendix\n\\setcounter{chapter}{%d}\n\n' $$OFFSET; cat app$*.md; } \
 	  | pandoc frontmatter.yaml - -o $@ $(PANDOC_OPTS)

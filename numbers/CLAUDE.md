@@ -27,7 +27,7 @@ A chapter to supplement the textbook about representation and storage of numbers
 
 ## Build
 
-- Build with: `pandoc numbers.md -o numbers.pdf --lua-filter=callout.lua`
+- Build with: `pandoc numbers.md -o numbers.pdf --lua-filter=../callout.lua`
 - Requires `header-includes` for `\usepackage[most]{tcolorbox}` (already in frontmatter)
 
 ## Content

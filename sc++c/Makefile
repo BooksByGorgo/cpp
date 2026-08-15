@@ -1,5 +1,5 @@
 DATE := $(shell git -C .. log -1 --format="%ad" --date=format:"%B %d, %Y")
-FILTER := --lua-filter=../sc++/callout.lua
+FILTER := --lua-filter=../callout.lua
 
 FRONTMATTER := frontmatter-lulu.yaml
 
@@ -87,10 +87,10 @@ all: lulu-sc++c.pdf lulu-cover.pdf
 .lulu-sc-bib.md: ../sc++/bibliography.md
 	sed '/\\printindex/d' $< > $@
 
-lulu-sc++c.pdf: $(SRCS) ../sc++/callout.lua ../c4c++/references.bib ../c4c++/ieee.csl Makefile
+lulu-sc++c.pdf: $(SRCS) ../callout.lua ../c4c++/references.bib ../c4c++/ieee.csl Makefile
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
 
-sc++-lulu.pdf: $(SC_LULU_SRCS) ../sc++/callout.lua ../sc++/references.bib ../sc++/ieee.csl Makefile
+sc++-lulu.pdf: $(SC_LULU_SRCS) ../callout.lua ../sc++/references.bib ../sc++/ieee.csl Makefile
 	pandoc $(SC_LULU_SRCS) -o $@ $(SC_LULU_OPTS)
 
 # --- Cover ---
