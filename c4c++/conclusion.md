@@ -15,7 +15,9 @@ Here are the key takeaways:
 - **`stdio` provides buffered I/O** through `FILE *` pointers. Low-level I/O uses file descriptors and system calls like `read`, `write`, and `open`.
 - **C has no exceptions.** Use return codes for errors and `goto` cleanup to release resources in reverse order.
 - **Function pointers replace lambdas.** `qsort` is the classic example --- pass a comparison function to sort any type.
-- **`exit` terminates from anywhere.** Use it for fatal errors. `extern "C"` bridges C and C++. Always know who owns a pointer.
+- **`exit` terminates from anywhere.** Use it for fatal errors, and register cleanup that must always run with `atexit`.
+- **`extern "C"` bridges C and C++.** It turns off name mangling so the C++ linker can find C functions.
+- **Always know who owns a pointer.** The owner --- and only the owner --- calls `free`.
 
 Es un mundo nuevo, but you have the C++ foundation to build on.
 The syntax will feel familiar even when the idioms are different.
