@@ -36,6 +36,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 
 - "Billie Jean" --- Michael Jackson (1983): bool section printf example
 - "Little Red Corvette" --- Prince (1983): logical operators English example
+- "Some Like It Hot" --- The Power Station (1985): flags and masking example
 
 ## Chapter 5: Control Flow
 
