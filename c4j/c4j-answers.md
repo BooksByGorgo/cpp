@@ -1948,7 +1948,7 @@ Mis ojos lloran por ti!
 
 Explanation: `atexit` registers `farewell` to be called when the program exits.
 `printf` prints the first line.
-`exit(0)` begins the shutdown sequence: it flushes `stdio` buffers and calls all registered `atexit` functions in reverse registration order.
+`exit(0)` begins the shutdown sequence: it calls all registered `atexit` functions in reverse registration order and then flushes `stdio` buffers.
 `farewell` prints the second line before the process terminates.
 
 ---
