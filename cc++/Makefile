@@ -1,6 +1,6 @@
 DATE := $(shell git log -1 --format="%ad" --date=format:"%B %d, %Y")
 FILTER := --lua-filter=../callout.lua
-PANDOC_OPTS_BASE := $(FILTER) --pdf-engine=latexmk --pdf-engine-opt=-lualatex -M subtitle="$(DATE)" -V geometry:margin=1in
+PANDOC_OPTS_BASE := $(FILTER) --pdf-engine=latexmk --pdf-engine-opt=-lualatex --pdf-engine-opt=-e --pdf-engine-opt='$$max_repeat=9' -M subtitle="$(DATE)" -V geometry:margin=1in
 PANDOC_OPTS := $(PANDOC_OPTS_BASE) --top-level-division=chapter -V documentclass=book
 
 PDFS := cc++.pdf cc++-answers.pdf
