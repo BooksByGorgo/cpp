@@ -173,17 +173,17 @@ All other rows give the reason the statement stands uncited.
 | ch11 | 1159 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
 | ch11 | 1184 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
 | ch12 | 8 | opinion | You would have to thread error codes back through every function in the chain, and every caller would have to check the return value --- tedious and easy to get wrong. | author's opinion |
-| ch12 | 168 | best practice | Always catch specific types first and use `catch (...)` only as a safety net. | author's guidance; rationale in the text |
-| ch12 | 171 | best practice | **Tip:** Always catch exceptions by `const` reference (`const std::exception &e`). | added [Core Guidelines E.15](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-exception-ref) |
-| ch12 | 230 | best practice | This automatic cleanup during stack unwinding is why destructors are so important --- and why you should manage resources through objects rather than raw `new`/`delete`. | author's guidance; rationale in the text |
-| ch12 | 234 | best practice | Never throw from a destructor. | added [Core Guidelines E.16](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-never-fail) |
-| ch12 | 251 | empirical | `noexcept` is not just documentation --- the compiler uses it to generate more efficient code. | verifiable against the toolchain/standard |
-| ch12 | 257 | best practice | **Tip:** Mark functions `noexcept` when you are certain they will not throw. | added [Core Guidelines F.6](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-noexcept) |
-| ch12 | 271 | opinion | They are best for truly exceptional situations --- file not found, out of memory, network failure. | author's opinion |
-| ch12 | 272 | empirical | For errors that are a normal part of a function's contract (like parsing invalid user input), the overhead of exception handling can be unnecessary. | verifiable against the toolchain/standard |
-| ch12 | 343 | best practice | A good rule of thumb: if the caller is *likely* to handle the error immediately, use `std::expected`. | author's guidance; rationale in the text |
-| ch12 | 344 | best practice | If the error should propagate up several layers, use exceptions. | author's guidance; rationale in the text |
-| ch12 | 449 | popularity | The standard exception types in `<stdexcept>` cover most common error categories. | folklore; no canonical source |
+| ch12 | 177 | best practice | Always catch specific types first and use `catch (...)` only as a safety net. | author's guidance; rationale in the text |
+| ch12 | 180 | best practice | **Tip:** Always catch exceptions by `const` reference (`const std::exception &e`). | added [Core Guidelines E.15](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-exception-ref) |
+| ch12 | 239 | best practice | This automatic cleanup during stack unwinding is why destructors are so important --- and why you should manage resources through objects rather than raw `new`/`delete`. | author's guidance; rationale in the text |
+| ch12 | 243 | best practice | Never throw from a destructor. | added [Core Guidelines E.16](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-never-fail) |
+| ch12 | 260 | empirical | `noexcept` is not just documentation --- the compiler uses it to generate more efficient code. | verifiable against the toolchain/standard |
+| ch12 | 266 | best practice | **Tip:** Mark functions `noexcept` when you are certain they will not throw. | added [Core Guidelines F.6](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-noexcept) |
+| ch12 | 280 | opinion | They are best for truly exceptional situations --- file not found, out of memory, network failure. | author's opinion |
+| ch12 | 281 | empirical | For errors that are a normal part of a function's contract (like parsing invalid user input), the overhead of exception handling can be unnecessary. | verifiable against the toolchain/standard |
+| ch12 | 352 | best practice | A good rule of thumb: if the caller is *likely* to handle the error immediately, use `std::expected`. | author's guidance; rationale in the text |
+| ch12 | 353 | best practice | If the error should propagate up several layers, use exceptions. | author's guidance; rationale in the text |
+| ch12 | 458 | popularity | The standard exception types in `<stdexcept>` cover most common error categories. | folklore; no canonical source |
 | ch13 | 115 | best practice | Do not use it. | author's guidance; rationale in the text |
 | ch13 | 138 | best practice | **Tip:** Prefer stack allocation whenever possible. | added [Core Guidelines R.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-scoped) |
 | ch13 | 252 | historical | Historically C++ used `NULL` to indicate a pointer to nothing. | well-known history; no single source |
