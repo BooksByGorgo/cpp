@@ -197,17 +197,17 @@ All other rows give the reason the statement stands uncited.
 | ch13 | 339 | popularity | Two of the most common bugs are **memory leaks** and **dangling pointers**. | folklore; no canonical source |
 | ch13 | 369 | best practice | **Trap:** After `delete`, set the pointer to `nullptr` if you plan to keep the pointer variable around. | author's guidance; rationale in the text |
 | ch13 | 373 | popularity | These problems are why modern C++ strongly discourages using raw `new` and `delete`. | added [Core Guidelines R.11](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-newdelete) |
-| ch13 | 425 | best practice | Always prefer `make_unique` over `new`. | added [Core Guidelines R.23](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_unique) |
-| ch13 | 460 | best practice | **Tip:** `std::unique_ptr` should be your default choice for heap allocation. | added [Core Guidelines R.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-unique) |
-| ch13 | 461 | empirical | It has essentially zero overhead compared to a raw pointer --- the compiler generates nearly identical code, but with automatic cleanup. | verifiable by inspecting codegen |
-| ch13 | 518 | best practice | `std::make_shared` is the preferred way to create a `shared_ptr`, just as `make_unique` is for `unique_ptr`. | added [Core Guidelines R.22](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_shared) |
-| ch13 | 521 | best practice | **Tip:** Use `shared_ptr` only when you truly need shared ownership. | backed by R.21, cited at ch13:442 |
-| ch13 | 600 | opinion | That check-then-use pattern is the only safe way to access whatever a `weak_ptr` points at. | author's opinion |
-| ch13 | 629 | best practice | **Trap:** Never `delete` a pointer obtained from `.get()`. | author's guidance; rationale in the text |
-| ch13 | 697 | empirical | A `std::string` typically contains a pointer to a heap-allocated character buffer, a length, and a capacity --- all stored on the stack: | implementation detail; hedged with "typically" (SSO varies) |
-| ch13 | 846 | best practice | **Tip:** Prefer `std::move` when passing a `shared_ptr` that the caller no longer needs. | author's guidance; rationale in the text |
-| ch13 | 853 | empirical | In practice, the compiler applies **copy elision** (also called **return value optimization**, or RVO) to avoid copies entirely. | verifiable: C++17 guarantees elision for prvalues |
-| ch13 | 866 | best practice | **Tip:** Do not write `return std::move(local);` from a function. | added [Core Guidelines F.48](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-return-move-local) |
+| ch13 | 426 | best practice | Always prefer `make_unique` over `new`. | added [Core Guidelines R.23](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_unique) |
+| ch13 | 461 | best practice | **Tip:** `std::unique_ptr` should be your default choice for heap allocation. | added [Core Guidelines R.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-unique) |
+| ch13 | 462 | empirical | It has essentially zero overhead compared to a raw pointer --- the compiler generates nearly identical code, but with automatic cleanup. | verifiable by inspecting codegen |
+| ch13 | 519 | best practice | `std::make_shared` is the preferred way to create a `shared_ptr`, just as `make_unique` is for `unique_ptr`. | added [Core Guidelines R.22](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_shared) |
+| ch13 | 522 | best practice | **Tip:** Use `shared_ptr` only when you truly need shared ownership. | backed by R.21, cited at ch13:442 |
+| ch13 | 601 | opinion | That check-then-use pattern is the only safe way to access whatever a `weak_ptr` points at. | author's opinion |
+| ch13 | 630 | best practice | **Trap:** Never `delete` a pointer obtained from `.get()`. | author's guidance; rationale in the text |
+| ch13 | 698 | empirical | A `std::string` typically contains a pointer to a heap-allocated character buffer, a length, and a capacity --- all stored on the stack: | implementation detail; hedged with "typically" (SSO varies) |
+| ch13 | 847 | best practice | **Tip:** Prefer `std::move` when passing a `shared_ptr` that the caller no longer needs. | author's guidance; rationale in the text |
+| ch13 | 854 | empirical | In practice, the compiler applies **copy elision** (also called **return value optimization**, or RVO) to avoid copies entirely. | verifiable: C++17 guarantees elision for prvalues |
+| ch13 | 867 | best practice | **Tip:** Do not write `return std::move(local);` from a function. | added [Core Guidelines F.48](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-return-move-local) |
 | ch14 | 28 | best practice | If your class manages a resource (like raw heap memory), and you write any one of these five, you almost certainly need to write *all* five. | added [Core Guidelines C.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-five) |
 | ch14 | 30 | historical | (Before C++11 added move semantics there were only three special members to worry about --- destructor, copy constructor, copy assignment --- and the same advice was called the **Rule of Three**.) | added Cline & Lomow, C++ FAQs (1995); see also [cppreference: rule of three/five/zero](https://en.cppreference.com/w/cpp/language/rule_of_three) |
 | ch14 | 116 | popularity | The standard fix is the **copy-and-swap idiom**: build a temporary copy first, then swap it with `*this`. | folklore; no canonical source |
