@@ -4954,10 +4954,9 @@ char 'Z' as int: 90
 #include <iostream>
 
 int main() {
-    using namespace std::chrono;
-
-    auto d = seconds(5) + milliseconds(750);
-    std::cout << duration_cast<seconds>(d).count() << std::endl;
+    auto d = std::chrono::seconds(5) + std::chrono::milliseconds(750);
+    auto s = std::chrono::duration_cast<std::chrono::seconds>(d);
+    std::cout << s.count() << std::endl;
 
     return 0;
 }
@@ -4969,8 +4968,8 @@ It prints:
 5
 ```
 
-`seconds(5) + milliseconds(750)` produces a duration of 5750 milliseconds.
-`duration_cast<seconds>` truncates toward zero, giving 5 seconds (not 6).
+`std::chrono::seconds(5) + std::chrono::milliseconds(750)` produces a duration of 5750 milliseconds.
+`duration_cast` to seconds truncates toward zero, giving 5 seconds (not 6).
 The fractional 750 milliseconds is discarded.
 
 **11. The `<chrono>` library offers two general-purpose clocks:**
