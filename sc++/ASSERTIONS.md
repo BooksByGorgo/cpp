@@ -181,9 +181,9 @@ All other rows give the reason the statement stands uncited.
 | ch12 | 266 | best practice | **Tip:** Mark functions `noexcept` when you are certain they will not throw. | added [Core Guidelines F.6](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-noexcept) |
 | ch12 | 280 | opinion | They are best for truly exceptional situations --- file not found, out of memory, network failure. | author's opinion |
 | ch12 | 281 | empirical | For errors that are a normal part of a function's contract (like parsing invalid user input), the overhead of exception handling can be unnecessary. | verifiable against the toolchain/standard |
-| ch12 | 352 | best practice | A good rule of thumb: if the caller is *likely* to handle the error immediately, use `std::expected`. | author's guidance; rationale in the text |
-| ch12 | 353 | best practice | If the error should propagate up several layers, use exceptions. | author's guidance; rationale in the text |
-| ch12 | 458 | popularity | The standard exception types in `<stdexcept>` cover most common error categories. | folklore; no canonical source |
+| ch12 | 358 | best practice | A good rule of thumb: if the caller is *likely* to handle the error immediately, use `std::expected`. | author's guidance; rationale in the text |
+| ch12 | 359 | best practice | If the error should propagate up several layers, use exceptions. | author's guidance; rationale in the text |
+| ch12 | 464 | popularity | The standard exception types in `<stdexcept>` cover most common error categories. | folklore; no canonical source |
 | ch13 | 116 | best practice | Do not use it. | author's guidance; rationale in the text |
 | ch13 | 139 | best practice | **Tip:** Prefer stack allocation whenever possible. | added [Core Guidelines R.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-scoped) |
 | ch13 | 253 | historical | Historically C++ used `NULL` to indicate a pointer to nothing. | well-known history; no single source |
