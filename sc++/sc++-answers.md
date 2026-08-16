@@ -1759,6 +1759,26 @@ An `int` is the size of a CPU register; copying it is essentially free, and usin
 The rule of thumb is "pass cheap-to-copy types by value, pass everything else by `const &`."
 That cutoff varies by platform, but for this book the practical guidance is: built-in scalar types (`int`, `double`, `bool`, `char`, pointers) by value, and `std::string`, `std::vector`, structs, and other "owns memory" types by `const &`.
 
+**16. What does this print?**
+
+```cpp
+int base = 10;
+auto boost = [base](int v) {
+    return base + v;
+};
+base = 100;
+std::cout << boost(1) << "\n";
+```
+
+```
+11
+```
+
+The capture `[base]` copies `base` at the moment the lambda is *created*, when `base` is `10`.
+The later assignment `base = 100` changes the original variable, not the lambda's private copy.
+So `boost(1)` returns `10 + 1`.
+To print `101` instead, capture by reference with `[&base]`.
+
 # Chapter 7: Numbers
 
 **1. Convert the decimal number `200` to binary, hexadecimal, and octal by hand. Verify your answers by writing a C++ program that prints `200` in each base using `std::println`.**

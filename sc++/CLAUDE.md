@@ -121,7 +121,8 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - const parameters. why they are important
     - structures can be problematic to pass by value
     - recursive functions
-    - function pointers (basics, typedef, callbacks)
+    - intro to lambdas: syntax, value and reference captures (details in the sequel)
+    - function pointers (basics, typedef, callbacks); captureless lambdas as callbacks
 7. Numbers
     - bases: decimal, binary, hex, octal
     - integer literals in other bases (`0b`, `0x`, `0`) and digit separators
