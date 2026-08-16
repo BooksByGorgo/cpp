@@ -77,12 +77,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - I Want It That Way --- Backstreet Boys (exercise; repeat of ch06 entry)
 - Smells Like Teen Spirit --- Nirvana (exercise; repeat of ch01 entry)
 
-## Chapter 11: Exceptions
-- The Freshmen --- The Verve Pipe
-- Save Tonight --- Eagle-Eye Cherry
-- Torn / Vogue / Iris (stack-unwinding exercise; repeats of ch14/ch03 entries)
-
-## Chapter 12: Classes
+## Chapter 11: Classes
 - Enter Sandman --- Metallica
 - Black Hole Sun --- Soundgarden
 - All Star --- Smash Mouth
@@ -91,6 +86,11 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Wonderwall --- Oasis (Playlist `private` exercise; repeat of ch02 entry)
 - Torn --- Natalie Imbruglia (constructor examples; repeat of ch14 entry)
 - Kiss from a Rose --- Seal (constructor examples; repeat of ch14 entry)
+
+## Chapter 12: Exceptions
+- The Freshmen --- The Verve Pipe
+- Save Tonight --- Eagle-Eye Cherry
+- Torn / Vogue / Iris (stack-unwinding exercise; repeats of ch14/ch03 entries)
 
 ## Chapter 13: Memory Management
 - Under the Bridge --- Red Hot Chili Peppers

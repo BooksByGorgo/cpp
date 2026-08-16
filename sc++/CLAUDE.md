@@ -158,7 +158,10 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
         - `width`: minimum field width
         - `prec`: fixed floats: # of digits after . else precision; strings: max len 
         - `type`: `d` (decimal), `x` (hex), `f` (fixed-point), `s` (string), `p` pointer, etc.
-11. Exceptions
+11. Classes
+    - constructors/destructors
+    - member methods
+12. Exceptions
     - try/catch/throw
     - standard exception types (std::exception, std::runtime_error, std::logic_error)
     - throwing and catching exceptions
@@ -166,9 +169,6 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - noexcept
     - std::expected (C++23) as an alternative to exceptions
     - when to use exceptions vs std::expected
-12. Classes
-    - constructors/destructors
-    - member methods
 13. Memory Management
     - new/delete
     - don't use new/delete use std::unique_ptr

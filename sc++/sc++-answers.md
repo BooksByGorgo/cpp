@@ -3042,377 +3042,7 @@ Output:
 
 Notice how a single `std::format` call combines width, alignment, fill, the alternate-form flag, zero padding, and the base specifier all in the same string.
 
-# Chapter 11: Exceptions
-
-**1. What does the following program print?**
-
-```cpp
-#include <iostream>
-#include <stdexcept>
-
-void step3() { throw std::runtime_error("oops"); }
-void step2() { step3(); }
-void step1() { step2(); }
-
-int main() {
-    try {
-        step1();
-        std::cout << "A" << std::endl;
-    } catch (const std::runtime_error &e) {
-        std::cout << "B: " << e.what() << std::endl;
-    }
-    std::cout << "C" << std::endl;
-    return 0;
-}
-```
-
-It prints:
-
-```
-B: oops
-C
-```
-
-`step1()` calls `step2()`, which calls `step3()`, which throws.
-The exception propagates back through `step2` and `step1` to the `catch` block in `main`.
-`"A"` is never printed because the rest of the `try` block is skipped.
-After the `catch` block handles the exception, execution continues normally and `"C"` is printed.
-
-**2. What is wrong with this code?**
-
-```cpp
-try {
-    int n = std::stoi(input);
-} catch (const std::out_of_range &e) {
-    std::cout << "out of range" << std::endl;
-} catch (const std::exception &e) {
-    std::cout << "error" << std::endl;
-} catch (const std::invalid_argument &e) {
-    std::cout << "bad input" << std::endl;
-}
-```
-
-The `catch (const std::invalid_argument &e)` block will never execute.
-`std::invalid_argument` derives from `std::exception`, and `catch` blocks are tried in order.
-The `catch (const std::exception &e)` block matches any `std::exception` (including `std::invalid_argument`), so it catches the exception before the more specific handler gets a chance.
-The fix is to put more specific `catch` blocks before more general ones --- move `std::invalid_argument` above `std::exception`.
-
-**3. Why should you always catch exceptions by `const` reference rather than by value?**
-
-Catching by value makes a copy of the exception object, which can **slice** it.
-If the thrown exception is a derived type (like `std::out_of_range`) and you catch by value as `std::exception`, the copy loses the derived class's data --- you get only the base class portion.
-Catching by `const` reference avoids the copy and preserves the full object, including any derived-class behavior.
-The `const` part signals that you do not intend to modify the exception.
-
-**4. What does the following program print?**
-
-```cpp
-#include <iostream>
-#include <stdexcept>
-#include <string>
-
-struct Amp {
-    std::string name;
-    Amp(const std::string &n) : name(n) {
-        std::cout << name << " on" << std::endl;
-    }
-    ~Amp() {
-        std::cout << name << " off" << std::endl;
-    }
-};
-
-void soundcheck() {
-    Amp a("Marshall");
-    Amp b("Fender");
-    throw std::runtime_error("feedback!");
-}
-
-int main() {
-    try {
-        soundcheck();
-    } catch (...) {
-        std::cout << "handled" << std::endl;
-    }
-    return 0;
-}
-```
-
-It prints:
-
-```
-Marshall on
-Fender on
-Fender off
-Marshall off
-handled
-```
-
-The two `Amp` objects are constructed in order.
-When the exception is thrown, the stack unwinds and destroys them in reverse order --- `Fender` first, then `Marshall`.
-After stack unwinding, the `catch (...)` block runs.
-
-**5. Will this code compile? If so, what happens when `play()` is called?**
-
-```cpp
-#include <stdexcept>
-#include <string>
-
-void load(const std::string &file) {
-    throw std::runtime_error("file not found: " + file);
-}
-
-void play() noexcept {
-    load("track01.wav");
-}
-```
-
-Yes, it compiles.
-The compiler does not check whether a `noexcept` function actually avoids throwing --- `noexcept` is a promise, not a compile-time guarantee.
-When `play()` is called, `load()` throws `std::runtime_error`.
-Because `play()` is marked `noexcept`, the exception cannot escape it, so the program calls `std::terminate()` and crashes immediately --- no chance to catch the exception.
-
-**6. What is the output of this program?**
-
-```cpp
-#include <expected>
-#include <iostream>
-#include <string>
-
-std::expected<int, std::string> divide(int a, int b) {
-    if (b == 0) {
-        return std::unexpected("division by zero");
-    }
-    return a / b;
-}
-
-int main() {
-    auto r1 = divide(10, 3);
-    auto r2 = divide(10, 0);
-
-    if (r1) std::cout << *r1 << std::endl;
-    if (!r2) std::cout << r2.error() << std::endl;
-
-    return 0;
-}
-```
-
-It prints:
-
-```
-3
-division by zero
-```
-
-`divide(10, 3)` returns the expected value `3` (integer division truncates).
-`divide(10, 0)` returns an unexpected error `"division by zero"`.
-The boolean check `if (r1)` is true because `r1` holds a value; `if (!r2)` is true because `r2` holds an error.
-
-**7. When would you use `std::expected` instead of throwing an exception? Give an example scenario for each.**
-
-Use `std::expected` when failure is a *normal, expected outcome* that the caller will handle immediately.
-For example, parsing user input: if you ask the user for a number and they type "abc", that is not exceptional --- it is a routine case.
-Returning `std::expected<int, std::string>` lets the caller inspect the error and try again.
-
-Use exceptions when failure is *rare and should propagate* up several layers.
-For example, opening a configuration file that the program requires: if the file is missing, the error should propagate up to a high-level handler that can report the problem and shut down gracefully.
-Threading error codes through every intermediate function would be tedious and error-prone.
-
-**8. How many destructors run before the `catch` block executes?**
-
-```cpp
-#include <iostream>
-#include <stdexcept>
-#include <string>
-
-struct Song {
-    std::string title;
-    Song(const std::string &t) : title(t) {}
-    ~Song() { std::cout << "destroyed: " << title << std::endl; }
-};
-
-void inner() {
-    Song a("Torn");
-    Song b("Vogue");
-    throw std::runtime_error("oops");
-}
-
-void outer() {
-    Song c("Iris");
-    inner();
-}
-
-int main() {
-    try {
-        outer();
-    } catch (...) {
-        std::cout << "caught" << std::endl;
-    }
-    return 0;
-}
-```
-
-Three destructors run before the `catch` block.
-When `inner()` throws, stack unwinding destroys `b` ("Vogue") and then `a` ("Torn") in reverse order of construction.
-Then `outer()`'s frame unwinds, destroying `c` ("Iris").
-Only after all three destructors complete does the `catch` block execute and print "caught".
-
-**9. Write a function with the following signature:**
-
-```cpp
-std::expected<double, std::string> safe_sqrt(double x);
-```
-
-**If `x` is negative, return an error message.**
-**Otherwise, return the square root.**
-**Test it in `main()` with both a positive and a negative value.**
-
-```cpp
-#include <cmath>
-#include <expected>
-#include <iostream>
-#include <string>
-
-std::expected<double, std::string> safe_sqrt(double x) {
-    if (x < 0) {
-        return std::unexpected("cannot take square root of negative number");
-    }
-    return std::sqrt(x);
-}
-
-int main() {
-    auto r1 = safe_sqrt(25.0);
-    if (r1) {
-        std::cout << "sqrt(25) = " << *r1 << std::endl;
-    }
-
-    auto r2 = safe_sqrt(-4.0);
-    if (!r2) {
-        std::cout << "Error: " << r2.error() << std::endl;
-    }
-
-    return 0;
-}
-```
-
-Output:
-
-```
-sqrt(25) = 5
-Error: cannot take square root of negative number
-```
-
-**10. Where is the bug?**
-
-```cpp
-#include <iostream>
-#include <stdexcept>
-
-int main() {
-    try {
-        throw std::out_of_range("nope");
-    }
-    catch (const std::exception &e) {
-        std::cout << "exception: " << e.what() << "\n";
-    }
-    catch (const std::out_of_range &e) {
-        std::cout << "out_of_range: " << e.what() << "\n";
-    }
-    return 0;
-}
-```
-
-**Catch handlers are tried in source order, top to bottom.**
-**Why is the second `catch` block effectively dead code?**
-**How would you reorder the handlers so that `out_of_range` is caught specifically and `std::exception` only acts as a safety net?**
-
-The program prints `exception: nope`, and the `out_of_range` handler is never reached.
-
-`catch` clauses are matched **in source order**, top to bottom.
-`std::out_of_range` derives from `std::exception`, so the first handler matches every `out_of_range` before the more specific handler gets a chance --- the second `catch` is dead code.
-g++ even warns about it: `exception of type 'std::out_of_range' will be caught by earlier handler [-Wexceptions]`.
-
-The fix is to put the most specific handlers first and the most general ones last as a safety net:
-
-```cpp
-try {
-    throw std::out_of_range("nope");
-}
-catch (const std::out_of_range &e) {
-    std::cout << "out_of_range: " << e.what() << "\n";
-}
-catch (const std::exception &e) {       // any other std exception
-    std::cout << "std::exception: " << e.what() << "\n";
-}
-catch (...) {                            // truly unknown
-    std::cout << "unknown exception\n";
-}
-```
-
-This is the standard layering: type-specific, then `std::exception` for everything from the standard library, then `catch(...)` to make sure no exception escapes the function.
-With this ordering, the program now prints `out_of_range: nope`.
-
-**11. Write a program that defines a function**
-
-```cpp
-int parse_age(const std::string &s);
-```
-
-**that converts `s` to an integer using `std::stoi` and then returns it.**
-**Throw `std::invalid_argument("not a number")` if `std::stoi` itself throws `std::invalid_argument`, and throw `std::out_of_range("age must be 0..150")` if the parsed number is outside the range `[0, 150]`.**
-**In `main`, call `parse_age` on three inputs --- `"42"`, `"abc"`, and `"-1"` --- inside `try`/`catch` blocks that catch each of the two exception types separately and print a different message for each one.**
-
-```cpp
-#include <iostream>
-#include <stdexcept>
-#include <string>
-
-int parse_age(const std::string &s) {
-    int n = 0;
-    try {
-        n = std::stoi(s);
-    }
-    catch (const std::invalid_argument &) {
-        throw std::invalid_argument("not a number");
-    }
-    catch (const std::out_of_range &) {
-        throw std::out_of_range("age must be 0..150");
-    }
-
-    if (n < 0 || n > 150) {
-        throw std::out_of_range("age must be 0..150");
-    }
-    return n;
-}
-
-int main() {
-    for (const std::string s : {"42", "abc", "-1"}) {
-        try {
-            int age = parse_age(s);
-            std::cout << s << " -> " << age << "\n";
-        }
-        catch (const std::invalid_argument &e) {
-            std::cout << s << " -> invalid: " << e.what() << "\n";
-        }
-        catch (const std::out_of_range &e) {
-            std::cout << s << " -> range: " << e.what() << "\n";
-        }
-    }
-    return 0;
-}
-```
-
-Output:
-
-```
-42 -> 42
-abc -> invalid: not a number
--1 -> range: age must be 0..150
-```
-
-The `parse_age` function catches `std::stoi`'s exceptions and re-throws them with our own messages, then does the `[0, 150]` range check itself.
-The caller in `main` distinguishes the two error categories with separate `catch` clauses, so different error types get different messages without using a single generic `catch(...)`.
-
-# Chapter 12: Classes
+# Chapter 11: Classes
 
 **1. What is the difference between a `struct` and a `class` in C++? Why would you choose one over the other?**
 
@@ -3900,6 +3530,376 @@ That avoids the classic "safe bool" footgun where a bool conversion accidentally
 | `(d) int n = v;`                              | **no**    | An `explicit` conversion operator is never a candidate for an implicit conversion, so the compiler cannot get from `Volume` to `int` at all here. |
 
 So `explicit operator bool()` lets you write `if (v)`, `while (v)`, `!v`, and so on, while preventing the conversion from sneaking in where you didn't ask for it.
+
+# Chapter 12: Exceptions
+
+**1. What does the following program print?**
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+void step3() { throw std::runtime_error("oops"); }
+void step2() { step3(); }
+void step1() { step2(); }
+
+int main() {
+    try {
+        step1();
+        std::cout << "A" << std::endl;
+    } catch (const std::runtime_error &e) {
+        std::cout << "B: " << e.what() << std::endl;
+    }
+    std::cout << "C" << std::endl;
+    return 0;
+}
+```
+
+It prints:
+
+```
+B: oops
+C
+```
+
+`step1()` calls `step2()`, which calls `step3()`, which throws.
+The exception propagates back through `step2` and `step1` to the `catch` block in `main`.
+`"A"` is never printed because the rest of the `try` block is skipped.
+After the `catch` block handles the exception, execution continues normally and `"C"` is printed.
+
+**2. What is wrong with this code?**
+
+```cpp
+try {
+    int n = std::stoi(input);
+} catch (const std::out_of_range &e) {
+    std::cout << "out of range" << std::endl;
+} catch (const std::exception &e) {
+    std::cout << "error" << std::endl;
+} catch (const std::invalid_argument &e) {
+    std::cout << "bad input" << std::endl;
+}
+```
+
+The `catch (const std::invalid_argument &e)` block will never execute.
+`std::invalid_argument` derives from `std::exception`, and `catch` blocks are tried in order.
+The `catch (const std::exception &e)` block matches any `std::exception` (including `std::invalid_argument`), so it catches the exception before the more specific handler gets a chance.
+The fix is to put more specific `catch` blocks before more general ones --- move `std::invalid_argument` above `std::exception`.
+
+**3. Why should you always catch exceptions by `const` reference rather than by value?**
+
+Catching by value makes a copy of the exception object, which can **slice** it.
+If the thrown exception is a derived type (like `std::out_of_range`) and you catch by value as `std::exception`, the copy loses the derived class's data --- you get only the base class portion.
+Catching by `const` reference avoids the copy and preserves the full object, including any derived-class behavior.
+The `const` part signals that you do not intend to modify the exception.
+
+**4. What does the following program print?**
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+struct Amp {
+    std::string name;
+    Amp(const std::string &n) : name(n) {
+        std::cout << name << " on" << std::endl;
+    }
+    ~Amp() {
+        std::cout << name << " off" << std::endl;
+    }
+};
+
+void soundcheck() {
+    Amp a("Marshall");
+    Amp b("Fender");
+    throw std::runtime_error("feedback!");
+}
+
+int main() {
+    try {
+        soundcheck();
+    } catch (...) {
+        std::cout << "handled" << std::endl;
+    }
+    return 0;
+}
+```
+
+It prints:
+
+```
+Marshall on
+Fender on
+Fender off
+Marshall off
+handled
+```
+
+The two `Amp` objects are constructed in order.
+When the exception is thrown, the stack unwinds and destroys them in reverse order --- `Fender` first, then `Marshall`.
+After stack unwinding, the `catch (...)` block runs.
+
+**5. Will this code compile? If so, what happens when `play()` is called?**
+
+```cpp
+#include <stdexcept>
+#include <string>
+
+void load(const std::string &file) {
+    throw std::runtime_error("file not found: " + file);
+}
+
+void play() noexcept {
+    load("track01.wav");
+}
+```
+
+Yes, it compiles.
+The compiler does not check whether a `noexcept` function actually avoids throwing --- `noexcept` is a promise, not a compile-time guarantee.
+When `play()` is called, `load()` throws `std::runtime_error`.
+Because `play()` is marked `noexcept`, the exception cannot escape it, so the program calls `std::terminate()` and crashes immediately --- no chance to catch the exception.
+
+**6. What is the output of this program?**
+
+```cpp
+#include <expected>
+#include <iostream>
+#include <string>
+
+std::expected<int, std::string> divide(int a, int b) {
+    if (b == 0) {
+        return std::unexpected("division by zero");
+    }
+    return a / b;
+}
+
+int main() {
+    auto r1 = divide(10, 3);
+    auto r2 = divide(10, 0);
+
+    if (r1) std::cout << *r1 << std::endl;
+    if (!r2) std::cout << r2.error() << std::endl;
+
+    return 0;
+}
+```
+
+It prints:
+
+```
+3
+division by zero
+```
+
+`divide(10, 3)` returns the expected value `3` (integer division truncates).
+`divide(10, 0)` returns an unexpected error `"division by zero"`.
+The boolean check `if (r1)` is true because `r1` holds a value; `if (!r2)` is true because `r2` holds an error.
+
+**7. When would you use `std::expected` instead of throwing an exception? Give an example scenario for each.**
+
+Use `std::expected` when failure is a *normal, expected outcome* that the caller will handle immediately.
+For example, parsing user input: if you ask the user for a number and they type "abc", that is not exceptional --- it is a routine case.
+Returning `std::expected<int, std::string>` lets the caller inspect the error and try again.
+
+Use exceptions when failure is *rare and should propagate* up several layers.
+For example, opening a configuration file that the program requires: if the file is missing, the error should propagate up to a high-level handler that can report the problem and shut down gracefully.
+Threading error codes through every intermediate function would be tedious and error-prone.
+
+**8. How many destructors run before the `catch` block executes?**
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+struct Song {
+    std::string title;
+    Song(const std::string &t) : title(t) {}
+    ~Song() { std::cout << "destroyed: " << title << std::endl; }
+};
+
+void inner() {
+    Song a("Torn");
+    Song b("Vogue");
+    throw std::runtime_error("oops");
+}
+
+void outer() {
+    Song c("Iris");
+    inner();
+}
+
+int main() {
+    try {
+        outer();
+    } catch (...) {
+        std::cout << "caught" << std::endl;
+    }
+    return 0;
+}
+```
+
+Three destructors run before the `catch` block.
+When `inner()` throws, stack unwinding destroys `b` ("Vogue") and then `a` ("Torn") in reverse order of construction.
+Then `outer()`'s frame unwinds, destroying `c` ("Iris").
+Only after all three destructors complete does the `catch` block execute and print "caught".
+
+**9. Write a function with the following signature:**
+
+```cpp
+std::expected<double, std::string> safe_sqrt(double x);
+```
+
+**If `x` is negative, return an error message.**
+**Otherwise, return the square root.**
+**Test it in `main()` with both a positive and a negative value.**
+
+```cpp
+#include <cmath>
+#include <expected>
+#include <iostream>
+#include <string>
+
+std::expected<double, std::string> safe_sqrt(double x) {
+    if (x < 0) {
+        return std::unexpected("cannot take square root of negative number");
+    }
+    return std::sqrt(x);
+}
+
+int main() {
+    auto r1 = safe_sqrt(25.0);
+    if (r1) {
+        std::cout << "sqrt(25) = " << *r1 << std::endl;
+    }
+
+    auto r2 = safe_sqrt(-4.0);
+    if (!r2) {
+        std::cout << "Error: " << r2.error() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+Output:
+
+```
+sqrt(25) = 5
+Error: cannot take square root of negative number
+```
+
+**10. Where is the bug?**
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+int main() {
+    try {
+        throw std::out_of_range("nope");
+    }
+    catch (const std::exception &e) {
+        std::cout << "exception: " << e.what() << "\n";
+    }
+    catch (const std::out_of_range &e) {
+        std::cout << "out_of_range: " << e.what() << "\n";
+    }
+    return 0;
+}
+```
+
+**Catch handlers are tried in source order, top to bottom.**
+**Why is the second `catch` block effectively dead code?**
+**How would you reorder the handlers so that `out_of_range` is caught specifically and `std::exception` only acts as a safety net?**
+
+The program prints `exception: nope`, and the `out_of_range` handler is never reached.
+
+`catch` clauses are matched **in source order**, top to bottom.
+`std::out_of_range` derives from `std::exception`, so the first handler matches every `out_of_range` before the more specific handler gets a chance --- the second `catch` is dead code.
+g++ even warns about it: `exception of type 'std::out_of_range' will be caught by earlier handler [-Wexceptions]`.
+
+The fix is to put the most specific handlers first and the most general ones last as a safety net:
+
+```cpp
+try {
+    throw std::out_of_range("nope");
+}
+catch (const std::out_of_range &e) {
+    std::cout << "out_of_range: " << e.what() << "\n";
+}
+catch (const std::exception &e) {       // any other std exception
+    std::cout << "std::exception: " << e.what() << "\n";
+}
+catch (...) {                            // truly unknown
+    std::cout << "unknown exception\n";
+}
+```
+
+This is the standard layering: type-specific, then `std::exception` for everything from the standard library, then `catch(...)` to make sure no exception escapes the function.
+With this ordering, the program now prints `out_of_range: nope`.
+
+**11. Write a program that defines a function**
+
+```cpp
+int parse_age(const std::string &s);
+```
+
+**that converts `s` to an integer using `std::stoi` and then returns it.**
+**Throw `std::invalid_argument("not a number")` if `std::stoi` itself throws `std::invalid_argument`, and throw `std::out_of_range("age must be 0..150")` if the parsed number is outside the range `[0, 150]`.**
+**In `main`, call `parse_age` on three inputs --- `"42"`, `"abc"`, and `"-1"` --- inside `try`/`catch` blocks that catch each of the two exception types separately and print a different message for each one.**
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+int parse_age(const std::string &s) {
+    int n = 0;
+    try {
+        n = std::stoi(s);
+    }
+    catch (const std::invalid_argument &) {
+        throw std::invalid_argument("not a number");
+    }
+    catch (const std::out_of_range &) {
+        throw std::out_of_range("age must be 0..150");
+    }
+
+    if (n < 0 || n > 150) {
+        throw std::out_of_range("age must be 0..150");
+    }
+    return n;
+}
+
+int main() {
+    for (const std::string s : {"42", "abc", "-1"}) {
+        try {
+            int age = parse_age(s);
+            std::cout << s << " -> " << age << "\n";
+        }
+        catch (const std::invalid_argument &e) {
+            std::cout << s << " -> invalid: " << e.what() << "\n";
+        }
+        catch (const std::out_of_range &e) {
+            std::cout << s << " -> range: " << e.what() << "\n";
+        }
+    }
+    return 0;
+}
+```
+
+Output:
+
+```
+42 -> 42
+abc -> invalid: not a number
+-1 -> range: age must be 0..150
+```
+
+The `parse_age` function catches `std::stoi`'s exceptions and re-throws them with our own messages, then does the `[0, 150]` range check itself.
+The caller in `main` distinguishes the two error categories with separate `catch` clauses, so different error types get different messages without using a single generic `catch(...)`.
 
 # Chapter 13: Memory Management
 

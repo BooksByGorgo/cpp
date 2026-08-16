@@ -152,38 +152,38 @@ All other rows give the reason the statement stands uncited.
 | ch10 | 223 | best practice | If your compiler supports C++20 or later, prefer `std::format` for any non-trivial formatting. | author's guidance; rationale in the text |
 | ch10 | 265 | opinion | These are the modern replacements for `std::cout <<`. | author's opinion |
 | ch10 | 270 | empirical | Not all compilers support them yet. | verifiable against [cppreference compiler support](https://en.cppreference.com/w/cpp/compiler_support) |
-| ch11 | 8 | opinion | You would have to thread error codes back through every function in the chain, and every caller would have to check the return value --- tedious and easy to get wrong. | author's opinion |
-| ch11 | 168 | best practice | Always catch specific types first and use `catch (...)` only as a safety net. | author's guidance; rationale in the text |
-| ch11 | 171 | best practice | **Tip:** Always catch exceptions by `const` reference (`const std::exception &e`). | added [Core Guidelines E.15](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-exception-ref) |
-| ch11 | 230 | best practice | This automatic cleanup during stack unwinding is why destructors are so important --- and why you should manage resources through objects rather than raw `new`/`delete`. | author's guidance; rationale in the text |
-| ch11 | 234 | best practice | Never throw from a destructor. | added [Core Guidelines E.16](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-never-fail) |
-| ch11 | 251 | empirical | `noexcept` is not just documentation --- the compiler uses it to generate more efficient code. | verifiable against the toolchain/standard |
-| ch11 | 257 | best practice | **Tip:** Mark functions `noexcept` when you are certain they will not throw. | added [Core Guidelines F.6](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-noexcept) |
-| ch11 | 271 | opinion | They are best for truly exceptional situations --- file not found, out of memory, network failure. | author's opinion |
-| ch11 | 272 | empirical | For errors that are a normal part of a function's contract (like parsing invalid user input), the overhead of exception handling can be unnecessary. | verifiable against the toolchain/standard |
-| ch11 | 343 | best practice | A good rule of thumb: if the caller is *likely* to handle the error immediately, use `std::expected`. | author's guidance; rationale in the text |
-| ch11 | 344 | best practice | If the error should propagate up several layers, use exceptions. | author's guidance; rationale in the text |
-| ch11 | 449 | popularity | The standard exception types in `<stdexcept>` cover most common error categories. | folklore; no canonical source |
-| ch12 | 76 | popularity | You could use either one, but by convention `class` is used when you want to bundle data with behavior. | folklore; no canonical source |
-| ch12 | 107 | best practice | **Tip:** Not every private member needs a getter and setter. | author's guidance; rationale in the text |
-| ch12 | 183 | best practice | This is a **member initializer list**, and it is the preferred way to initialize members in C++. | added [Core Guidelines C.49](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-initialize) |
-| ch12 | 187 | empirical | For complex types like `std::string`, the initializer list is more efficient because it avoids default-constructing the member only to immediately overwrite it. | verifiable against the toolchain/standard |
-| ch12 | 260 | best practice | **Tip:** Delegate from the simplest constructors *to* the most complete one. | author's guidance; rationale in the text |
-| ch12 | 304 | best practice | As a rule of thumb, mark single-argument constructors `explicit` unless you specifically want implicit conversion. | added [Core Guidelines C.46](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-explicit) |
-| ch12 | 307 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so `explicit` matters most on single-argument constructors. | folklore; no canonical source |
-| ch12 | 411 | best practice | You should mark every member function that does not change the object as `const`. | added [Core Guidelines Con.2](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rconst-fct) |
-| ch12 | 561 | opinion | Overloading keeps your interface clean: one verb for one concept, regardless of how many ways you can call it. | author's opinion |
-| ch12 | 585 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
-| ch12 | 587 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
-| ch12 | 827 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
-| ch12 | 922 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
-| ch12 | 957 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
-| ch12 | 973 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
-| ch12 | 977 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
-| ch12 | 987 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
-| ch12 | 988 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
-| ch12 | 1159 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
-| ch12 | 1184 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
+| ch11 | 76 | popularity | You could use either one, but by convention `class` is used when you want to bundle data with behavior. | folklore; no canonical source |
+| ch11 | 107 | best practice | **Tip:** Not every private member needs a getter and setter. | author's guidance; rationale in the text |
+| ch11 | 183 | best practice | This is a **member initializer list**, and it is the preferred way to initialize members in C++. | added [Core Guidelines C.49](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-initialize) |
+| ch11 | 187 | empirical | For complex types like `std::string`, the initializer list is more efficient because it avoids default-constructing the member only to immediately overwrite it. | verifiable against the toolchain/standard |
+| ch11 | 260 | best practice | **Tip:** Delegate from the simplest constructors *to* the most complete one. | author's guidance; rationale in the text |
+| ch11 | 304 | best practice | As a rule of thumb, mark single-argument constructors `explicit` unless you specifically want implicit conversion. | added [Core Guidelines C.46](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-explicit) |
+| ch11 | 307 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so `explicit` matters most on single-argument constructors. | folklore; no canonical source |
+| ch11 | 411 | best practice | You should mark every member function that does not change the object as `const`. | added [Core Guidelines Con.2](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rconst-fct) |
+| ch11 | 561 | opinion | Overloading keeps your interface clean: one verb for one concept, regardless of how many ways you can call it. | author's opinion |
+| ch11 | 585 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
+| ch11 | 587 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
+| ch11 | 827 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
+| ch11 | 922 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
+| ch11 | 957 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
+| ch11 | 973 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
+| ch11 | 977 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
+| ch11 | 987 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
+| ch11 | 988 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
+| ch11 | 1159 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
+| ch11 | 1184 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
+| ch12 | 8 | opinion | You would have to thread error codes back through every function in the chain, and every caller would have to check the return value --- tedious and easy to get wrong. | author's opinion |
+| ch12 | 168 | best practice | Always catch specific types first and use `catch (...)` only as a safety net. | author's guidance; rationale in the text |
+| ch12 | 171 | best practice | **Tip:** Always catch exceptions by `const` reference (`const std::exception &e`). | added [Core Guidelines E.15](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-exception-ref) |
+| ch12 | 230 | best practice | This automatic cleanup during stack unwinding is why destructors are so important --- and why you should manage resources through objects rather than raw `new`/`delete`. | author's guidance; rationale in the text |
+| ch12 | 234 | best practice | Never throw from a destructor. | added [Core Guidelines E.16](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-never-fail) |
+| ch12 | 251 | empirical | `noexcept` is not just documentation --- the compiler uses it to generate more efficient code. | verifiable against the toolchain/standard |
+| ch12 | 257 | best practice | **Tip:** Mark functions `noexcept` when you are certain they will not throw. | added [Core Guidelines F.6](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-noexcept) |
+| ch12 | 271 | opinion | They are best for truly exceptional situations --- file not found, out of memory, network failure. | author's opinion |
+| ch12 | 272 | empirical | For errors that are a normal part of a function's contract (like parsing invalid user input), the overhead of exception handling can be unnecessary. | verifiable against the toolchain/standard |
+| ch12 | 343 | best practice | A good rule of thumb: if the caller is *likely* to handle the error immediately, use `std::expected`. | author's guidance; rationale in the text |
+| ch12 | 344 | best practice | If the error should propagate up several layers, use exceptions. | author's guidance; rationale in the text |
+| ch12 | 449 | popularity | The standard exception types in `<stdexcept>` cover most common error categories. | folklore; no canonical source |
 | ch13 | 115 | best practice | Do not use it. | author's guidance; rationale in the text |
 | ch13 | 138 | best practice | **Tip:** Prefer stack allocation whenever possible. | added [Core Guidelines R.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-scoped) |
 | ch13 | 252 | historical | Historically C++ used `NULL` to indicate a pointer to nothing. | well-known history; no single source |
