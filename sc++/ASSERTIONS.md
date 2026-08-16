@@ -152,26 +152,27 @@ All other rows give the reason the statement stands uncited.
 | ch10 | 223 | best practice | If your compiler supports C++20 or later, prefer `std::format` for any non-trivial formatting. | author's guidance; rationale in the text |
 | ch10 | 265 | opinion | These are the modern replacements for `std::cout <<`. | author's opinion |
 | ch10 | 270 | empirical | Not all compilers support them yet. | verifiable against [cppreference compiler support](https://en.cppreference.com/w/cpp/compiler_support) |
-| ch11 | 76 | popularity | You could use either one, but by convention `class` is used when you want to bundle data with behavior. | folklore; no canonical source |
-| ch11 | 107 | best practice | **Tip:** Not every private member needs a getter and setter. | author's guidance; rationale in the text |
-| ch11 | 183 | best practice | This is a **member initializer list**, and it is the preferred way to initialize members in C++. | added [Core Guidelines C.49](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-initialize) |
-| ch11 | 187 | empirical | For complex types like `std::string`, the initializer list is more efficient because it avoids default-constructing the member only to immediately overwrite it. | verifiable against the toolchain/standard |
-| ch11 | 260 | best practice | **Tip:** Delegate from the simplest constructors *to* the most complete one. | author's guidance; rationale in the text |
-| ch11 | 304 | best practice | As a rule of thumb, mark single-argument constructors `explicit` unless you specifically want implicit conversion. | added [Core Guidelines C.46](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-explicit) |
-| ch11 | 307 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so `explicit` matters most on single-argument constructors. | folklore; no canonical source |
-| ch11 | 411 | best practice | You should mark every member function that does not change the object as `const`. | added [Core Guidelines Con.2](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rconst-fct) |
-| ch11 | 561 | opinion | Overloading keeps your interface clean: one verb for one concept, regardless of how many ways you can call it. | author's opinion |
-| ch11 | 585 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
-| ch11 | 587 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
-| ch11 | 827 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
-| ch11 | 922 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
-| ch11 | 957 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
-| ch11 | 973 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
-| ch11 | 977 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
-| ch11 | 987 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
-| ch11 | 988 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
-| ch11 | 1159 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
-| ch11 | 1184 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
+| ch11 | 8 | popularity | A struct like that --- data members only, no functions --- is a **plain struct**, usually called a **Plain Old Data (POD)** struct. | added [cppreference: PODType](https://en.cppreference.com/w/cpp/named_req/PODType) |
+| ch11 | 79 | popularity | You could use either one, but by convention `class` is used when you want to bundle data with behavior. | folklore; no canonical source |
+| ch11 | 110 | best practice | **Tip:** Not every private member needs a getter and setter. | author's guidance; rationale in the text |
+| ch11 | 186 | best practice | This is a **member initializer list**, and it is the preferred way to initialize members in C++. | added [Core Guidelines C.49](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-initialize) |
+| ch11 | 190 | empirical | For complex types like `std::string`, the initializer list is more efficient because it avoids default-constructing the member only to immediately overwrite it. | verifiable against the toolchain/standard |
+| ch11 | 263 | best practice | **Tip:** Delegate from the simplest constructors *to* the most complete one. | author's guidance; rationale in the text |
+| ch11 | 307 | best practice | As a rule of thumb, mark single-argument constructors `explicit` unless you specifically want implicit conversion. | added [Core Guidelines C.46](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-explicit) |
+| ch11 | 310 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so `explicit` matters most on single-argument constructors. | folklore; no canonical source |
+| ch11 | 414 | best practice | You should mark every member function that does not change the object as `const`. | added [Core Guidelines Con.2](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rconst-fct) |
+| ch11 | 564 | opinion | Overloading keeps your interface clean: one verb for one concept, regardless of how many ways you can call it. | author's opinion |
+| ch11 | 588 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
+| ch11 | 590 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
+| ch11 | 830 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
+| ch11 | 925 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
+| ch11 | 960 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
+| ch11 | 976 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
+| ch11 | 980 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
+| ch11 | 990 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
+| ch11 | 991 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
+| ch11 | 1162 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
+| ch11 | 1187 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
 | ch12 | 8 | opinion | You would have to thread error codes back through every function in the chain, and every caller would have to check the return value --- tedious and easy to get wrong. | author's opinion |
 | ch12 | 177 | best practice | Always catch specific types first and use `catch (...)` only as a safety net. | author's guidance; rationale in the text |
 | ch12 | 180 | best practice | **Tip:** Always catch exceptions by `const` reference (`const std::exception &e`). | added [Core Guidelines E.15](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-exception-ref) |
