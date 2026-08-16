@@ -101,13 +101,13 @@ All other rows give the reason the statement stands uncited.
 | ch06 | 530 | popularity | This trips up nearly everyone the first time they encounter it. | folklore; no canonical source |
 | ch06 | 663 | best practice | When the winner is not obvious to you, it will not be obvious to the next reader either --- convert the argument explicitly to the type you mean, like `display(static_cast<double>(n))`. | author's guidance; rationale in the text |
 | ch06 | 700 | popularity | **Trap:** Forgetting the base case is the most common recursion mistake. | folklore; no canonical source |
-| ch06 | 793 | opinion | The function pointer syntax is admittedly ugly. | author's opinion |
-| ch06 | 861 | popularity | **Tip:** Modern C++ callbacks are usually lambdas, with `std::function` (a *Gorgo Continuing C++* topic) to store capturing ones. | folklore; no canonical source |
-| ch06 | 902 | historical | `std::ignore` says the same thing as an assignment; C++26 officially blessed it for exactly this job, and the major compilers already handle it today. | added [WG21 P2968R2](https://wg21.link/p2968r2) |
-| ch06 | 916 | opinion | To some they are an abomination, but to others, especially those writing core C++ APIs, they are fun ways to expand the semantics of language operators in new and unimagined ways. | author's opinion |
-| ch06 | 920 | historical | But visually they look like they are pushing data in a direction --- and the iostream library used that intuition to overload them for stream I/O. | added [Stroustrup, The Design and Evolution of C++](https://www.stroustrup.com/dne.html) |
-| ch06 | 1018 | best practice | **Tip:** Make your operators behave the way people expect. | author's guidance; rationale in the text |
-| ch06 | 1024 | best practice | **Trap:** Do not overload `&&`, `\|\|`, or `,`. | added [Meyers, More Effective C++, Item 7](https://www.aristeia.com/books.html) |
+| ch06 | 803 | opinion | The function pointer syntax is admittedly ugly. | author's opinion |
+| ch06 | 871 | popularity | **Tip:** Modern C++ callbacks are usually lambdas, with `std::function` (a *Gorgo Continuing C++* topic) to store capturing ones. | folklore; no canonical source |
+| ch06 | 912 | historical | `std::ignore` says the same thing as an assignment; C++26 officially blessed it for exactly this job, and the major compilers already handle it today. | added [WG21 P2968R2](https://wg21.link/p2968r2) |
+| ch06 | 926 | opinion | To some they are an abomination, but to others, especially those writing core C++ APIs, they are fun ways to expand the semantics of language operators in new and unimagined ways. | author's opinion |
+| ch06 | 930 | historical | But visually they look like they are pushing data in a direction --- and the iostream library used that intuition to overload them for stream I/O. | added [Stroustrup, The Design and Evolution of C++](https://www.stroustrup.com/dne.html) |
+| ch06 | 1028 | best practice | **Tip:** Make your operators behave the way people expect. | author's guidance; rationale in the text |
+| ch06 | 1034 | best practice | **Trap:** Do not overload `&&`, `\|\|`, or `,`. | added [Meyers, More Effective C++, Item 7](https://www.aristeia.com/books.html) |
 | ch07 | 59 | popularity | It is often said that computers think in 1s and 0s. | folklore; no canonical source |
 | ch07 | 110 | popularity | You will see hex used frequently for colors, memory addresses, and bit masks. | folklore; no canonical source |
 | ch07 | 124 | popularity | Octal is less common than hex in modern code, but you will encounter it when working with Unix file permissions (like `0755`). | folklore; no canonical source |
@@ -184,27 +184,27 @@ All other rows give the reason the statement stands uncited.
 | ch12 | 352 | best practice | A good rule of thumb: if the caller is *likely* to handle the error immediately, use `std::expected`. | author's guidance; rationale in the text |
 | ch12 | 353 | best practice | If the error should propagate up several layers, use exceptions. | author's guidance; rationale in the text |
 | ch12 | 458 | popularity | The standard exception types in `<stdexcept>` cover most common error categories. | folklore; no canonical source |
-| ch13 | 115 | best practice | Do not use it. | author's guidance; rationale in the text |
-| ch13 | 138 | best practice | **Tip:** Prefer stack allocation whenever possible. | added [Core Guidelines R.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-scoped) |
-| ch13 | 252 | historical | Historically C++ used `NULL` to indicate a pointer to nothing. | well-known history; no single source |
-| ch13 | 254 | popularity | C still uses `NULL`, and many older C++ code bases do too, but `nullptr` is preferred in modern C++ because it can be distinguished from an `int`. | folklore; no canonical source |
-| ch13 | 265 | empirical | Dereferencing a null pointer is undefined behavior --- your program will almost certainly crash. | hedged in text; UB per the standard |
-| ch13 | 275 | popularity | **Tip:** Modern C++ reduces the need for raw pointers significantly. | folklore; no canonical source |
-| ch13 | 337 | popularity | Manual memory management with `new` and `delete` is notoriously error-prone. | folklore; no canonical source |
-| ch13 | 338 | popularity | Two of the most common bugs are **memory leaks** and **dangling pointers**. | folklore; no canonical source |
-| ch13 | 368 | best practice | **Trap:** After `delete`, set the pointer to `nullptr` if you plan to keep the pointer variable around. | author's guidance; rationale in the text |
-| ch13 | 372 | popularity | These problems are why modern C++ strongly discourages using raw `new` and `delete`. | added [Core Guidelines R.11](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-newdelete) |
-| ch13 | 424 | best practice | Always prefer `make_unique` over `new`. | added [Core Guidelines R.23](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_unique) |
-| ch13 | 442 | best practice | **Tip:** `std::unique_ptr` should be your default choice for heap allocation. | added [Core Guidelines R.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-unique) |
-| ch13 | 443 | empirical | It has essentially zero overhead compared to a raw pointer --- the compiler generates nearly identical code, but with automatic cleanup. | verifiable by inspecting codegen |
-| ch13 | 500 | best practice | `std::make_shared` is the preferred way to create a `shared_ptr`, just as `make_unique` is for `unique_ptr`. | added [Core Guidelines R.22](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_shared) |
-| ch13 | 503 | best practice | **Tip:** Use `shared_ptr` only when you truly need shared ownership. | backed by R.21, cited at ch13:442 |
-| ch13 | 582 | opinion | That check-then-use pattern is the only safe way to access whatever a `weak_ptr` points at. | author's opinion |
-| ch13 | 611 | best practice | **Trap:** Never `delete` a pointer obtained from `.get()`. | author's guidance; rationale in the text |
-| ch13 | 679 | empirical | A `std::string` typically contains a pointer to a heap-allocated character buffer, a length, and a capacity --- all stored on the stack: | implementation detail; hedged with "typically" (SSO varies) |
-| ch13 | 828 | best practice | **Tip:** Prefer `std::move` when passing a `shared_ptr` that the caller no longer needs. | author's guidance; rationale in the text |
-| ch13 | 835 | empirical | In practice, the compiler applies **copy elision** (also called **return value optimization**, or RVO) to avoid copies entirely. | verifiable: C++17 guarantees elision for prvalues |
-| ch13 | 848 | best practice | **Tip:** Do not write `return std::move(local);` from a function. | added [Core Guidelines F.48](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-return-move-local) |
+| ch13 | 116 | best practice | Do not use it. | author's guidance; rationale in the text |
+| ch13 | 139 | best practice | **Tip:** Prefer stack allocation whenever possible. | added [Core Guidelines R.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-scoped) |
+| ch13 | 253 | historical | Historically C++ used `NULL` to indicate a pointer to nothing. | well-known history; no single source |
+| ch13 | 255 | popularity | C still uses `NULL`, and many older C++ code bases do too, but `nullptr` is preferred in modern C++ because it can be distinguished from an `int`. | folklore; no canonical source |
+| ch13 | 266 | empirical | Dereferencing a null pointer is undefined behavior --- your program will almost certainly crash. | hedged in text; UB per the standard |
+| ch13 | 276 | popularity | **Tip:** Modern C++ reduces the need for raw pointers significantly. | folklore; no canonical source |
+| ch13 | 338 | popularity | Manual memory management with `new` and `delete` is notoriously error-prone. | folklore; no canonical source |
+| ch13 | 339 | popularity | Two of the most common bugs are **memory leaks** and **dangling pointers**. | folklore; no canonical source |
+| ch13 | 369 | best practice | **Trap:** After `delete`, set the pointer to `nullptr` if you plan to keep the pointer variable around. | author's guidance; rationale in the text |
+| ch13 | 373 | popularity | These problems are why modern C++ strongly discourages using raw `new` and `delete`. | added [Core Guidelines R.11](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-newdelete) |
+| ch13 | 425 | best practice | Always prefer `make_unique` over `new`. | added [Core Guidelines R.23](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_unique) |
+| ch13 | 443 | best practice | **Tip:** `std::unique_ptr` should be your default choice for heap allocation. | added [Core Guidelines R.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-unique) |
+| ch13 | 444 | empirical | It has essentially zero overhead compared to a raw pointer --- the compiler generates nearly identical code, but with automatic cleanup. | verifiable by inspecting codegen |
+| ch13 | 501 | best practice | `std::make_shared` is the preferred way to create a `shared_ptr`, just as `make_unique` is for `unique_ptr`. | added [Core Guidelines R.22](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_shared) |
+| ch13 | 504 | best practice | **Tip:** Use `shared_ptr` only when you truly need shared ownership. | backed by R.21, cited at ch13:442 |
+| ch13 | 583 | opinion | That check-then-use pattern is the only safe way to access whatever a `weak_ptr` points at. | author's opinion |
+| ch13 | 612 | best practice | **Trap:** Never `delete` a pointer obtained from `.get()`. | author's guidance; rationale in the text |
+| ch13 | 680 | empirical | A `std::string` typically contains a pointer to a heap-allocated character buffer, a length, and a capacity --- all stored on the stack: | implementation detail; hedged with "typically" (SSO varies) |
+| ch13 | 829 | best practice | **Tip:** Prefer `std::move` when passing a `shared_ptr` that the caller no longer needs. | author's guidance; rationale in the text |
+| ch13 | 836 | empirical | In practice, the compiler applies **copy elision** (also called **return value optimization**, or RVO) to avoid copies entirely. | verifiable: C++17 guarantees elision for prvalues |
+| ch13 | 849 | best practice | **Tip:** Do not write `return std::move(local);` from a function. | added [Core Guidelines F.48](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-return-move-local) |
 | ch14 | 28 | best practice | If your class manages a resource (like raw heap memory), and you write any one of these five, you almost certainly need to write *all* five. | added [Core Guidelines C.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-five) |
 | ch14 | 30 | historical | (Before C++11 added move semantics there were only three special members to worry about --- destructor, copy constructor, copy assignment --- and the same advice was called the **Rule of Three**.) | added Cline & Lomow, C++ FAQs (1995); see also [cppreference: rule of three/five/zero](https://en.cppreference.com/w/cpp/language/rule_of_three) |
 | ch14 | 116 | popularity | The standard fix is the **copy-and-swap idiom**: build a temporary copy first, then swap it with `*this`. | folklore; no canonical source |
