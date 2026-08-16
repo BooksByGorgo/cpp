@@ -164,17 +164,17 @@ All other rows give the reason the statement stands uncited.
 | ch11 | 319 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so `explicit` matters most on single-argument constructors. | folklore; no canonical source |
 | ch11 | 423 | best practice | You should mark every member function that does not change the object as `const`. | added [Core Guidelines Con.2](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rconst-fct) |
 | ch11 | 573 | opinion | Overloading keeps your interface clean: one verb for one concept, regardless of how many ways you can call it. | author's opinion |
-| ch11 | 597 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
-| ch11 | 599 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
-| ch11 | 839 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
-| ch11 | 934 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
-| ch11 | 969 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
-| ch11 | 985 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
-| ch11 | 989 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
-| ch11 | 999 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
-| ch11 | 1000 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
-| ch11 | 1171 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
-| ch11 | 1196 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
+| ch11 | 592 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
+| ch11 | 594 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
+| ch11 | 834 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
+| ch11 | 929 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
+| ch11 | 964 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
+| ch11 | 980 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
+| ch11 | 984 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
+| ch11 | 994 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
+| ch11 | 995 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
+| ch11 | 1166 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
+| ch11 | 1191 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
 | ch12 | 8 | opinion | You would have to thread error codes back through every function in the chain, and every caller would have to check the return value --- tedious and easy to get wrong. | author's opinion |
 | ch12 | 177 | best practice | Always catch specific types first and use `catch (...)` only as a safety net. | author's guidance; rationale in the text |
 | ch12 | 180 | best practice | **Tip:** Always catch exceptions by `const` reference (`const std::exception &e`). | added [Core Guidelines E.15](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-exception-ref) |
