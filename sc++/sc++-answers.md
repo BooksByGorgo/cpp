@@ -2772,6 +2772,26 @@ Second, on the command line `std::cout` and `std::cerr` are independently redire
 If the program had written errors to `std::cout` instead, they would have ended up silently in `out.txt`.
 Sending data to `std::cout` and errors to `std::cerr` is the convention every Unix tool follows for exactly this reason.
 
+**13. What does this print?**
+
+```cpp
+std::istringstream in("3 2 one");
+int n, total = 0;
+while (in >> n) {
+    total += n;
+}
+std::cout << total << " " << in.eof() << " " << in.fail() << "\n";
+```
+
+```
+5 0 1
+```
+
+The loop reads `3` and `2` (so `total` is `5`), then fails trying to parse `"one"` as an `int`.
+That failure sets the fail flag but not the eof flag --- the stream stopped on bad input, not because it ran out.
+So `eof()` prints `0` and `fail()` prints `1`.
+If the input had been `"3 2"` instead, the output would be `5 1 1`: the final read attempt fails because the input ran out, which sets *both* the eof flag and the fail flag.
+
 # Chapter 10: std::format and std::print
 
 **1. What does `std::format("{:>8.2f}", 3.1)` produce? How many characters wide is the result?**
