@@ -153,27 +153,27 @@ All other rows give the reason the statement stands uncited.
 | ch10 | 265 | opinion | These are the modern replacements for `std::cout <<`. | author's opinion |
 | ch10 | 270 | empirical | Not all compilers support them yet. | verifiable against [cppreference compiler support](https://en.cppreference.com/w/cpp/compiler_support) |
 | ch11 | 8 | popularity | A struct like that --- data members only, no functions --- is a **plain struct**, usually called a **Plain Old Data (POD)** struct. | added [cppreference: PODType](https://en.cppreference.com/w/cpp/named_req/PODType) |
-| ch11 | 15 | popularity | By the formal definition `Song` is not a POD --- but in conversation, "POD struct" usually just means "data only, no behavior," and that is how you will hear the term used. | usage half is folklore; the formal half is covered by the PODType citation at ch11:8 |
-| ch11 | 89 | popularity | You could use either one, but by convention `class` is used when you want to bundle data with behavior. | folklore; no canonical source |
-| ch11 | 120 | best practice | **Tip:** Not every private member needs a getter and setter. | author's guidance; rationale in the text |
-| ch11 | 196 | best practice | This is a **member initializer list**, and it is the preferred way to initialize members in C++. | added [Core Guidelines C.49](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-initialize) |
-| ch11 | 200 | empirical | For complex types like `std::string`, the initializer list is more efficient because it avoids default-constructing the member only to immediately overwrite it. | verifiable against the toolchain/standard |
-| ch11 | 273 | best practice | **Tip:** Delegate from the simplest constructors *to* the most complete one. | author's guidance; rationale in the text |
-| ch11 | 317 | best practice | As a rule of thumb, mark single-argument constructors `explicit` unless you specifically want implicit conversion. | added [Core Guidelines C.46](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-explicit) |
-| ch11 | 320 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so `explicit` matters most on single-argument constructors. | folklore; no canonical source |
-| ch11 | 424 | best practice | You should mark every member function that does not change the object as `const`. | added [Core Guidelines Con.2](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rconst-fct) |
-| ch11 | 574 | opinion | Overloading keeps your interface clean: one verb for one concept, regardless of how many ways you can call it. | author's opinion |
-| ch11 | 598 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
-| ch11 | 600 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
-| ch11 | 840 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
-| ch11 | 935 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
-| ch11 | 970 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
-| ch11 | 986 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
-| ch11 | 990 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
-| ch11 | 1000 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
-| ch11 | 1001 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
-| ch11 | 1172 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
-| ch11 | 1197 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
+| ch11 | 52 | popularity | By the formal definition `Song` is not a POD --- but in conversation, "POD struct" usually just means "data only, no behavior," and that is how you will hear the term used. | usage half is folklore; the formal half is covered by the PODType citation at ch11:8 |
+| ch11 | 88 | popularity | You could use either one, but by convention `class` is used when you want to bundle data with behavior. | folklore; no canonical source |
+| ch11 | 119 | best practice | **Tip:** Not every private member needs a getter and setter. | author's guidance; rationale in the text |
+| ch11 | 195 | best practice | This is a **member initializer list**, and it is the preferred way to initialize members in C++. | added [Core Guidelines C.49](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-initialize) |
+| ch11 | 199 | empirical | For complex types like `std::string`, the initializer list is more efficient because it avoids default-constructing the member only to immediately overwrite it. | verifiable against the toolchain/standard |
+| ch11 | 272 | best practice | **Tip:** Delegate from the simplest constructors *to* the most complete one. | author's guidance; rationale in the text |
+| ch11 | 316 | best practice | As a rule of thumb, mark single-argument constructors `explicit` unless you specifically want implicit conversion. | added [Core Guidelines C.46](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-explicit) |
+| ch11 | 319 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so `explicit` matters most on single-argument constructors. | folklore; no canonical source |
+| ch11 | 423 | best practice | You should mark every member function that does not change the object as `const`. | added [Core Guidelines Con.2](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rconst-fct) |
+| ch11 | 573 | opinion | Overloading keeps your interface clean: one verb for one concept, regardless of how many ways you can call it. | author's opinion |
+| ch11 | 597 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
+| ch11 | 599 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
+| ch11 | 839 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
+| ch11 | 934 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
+| ch11 | 969 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
+| ch11 | 985 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
+| ch11 | 989 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
+| ch11 | 999 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
+| ch11 | 1000 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
+| ch11 | 1171 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
+| ch11 | 1196 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
 | ch12 | 8 | opinion | You would have to thread error codes back through every function in the chain, and every caller would have to check the return value --- tedious and easy to get wrong. | author's opinion |
 | ch12 | 177 | best practice | Always catch specific types first and use `catch (...)` only as a safety net. | author's guidance; rationale in the text |
 | ch12 | 180 | best practice | **Tip:** Always catch exceptions by `const` reference (`const std::exception &e`). | added [Core Guidelines E.15](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-exception-ref) |
