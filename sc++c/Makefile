@@ -47,9 +47,13 @@ LULU_FMT := --top-level-division=chapter \
             -V geometry:"outer=0.7in" \
             -V fontsize=11pt
 
+# both bibliographies: the sc++ part cites from sc++/references.bib, the
+# c4c++ part from c4c++/references.bib (KernighanRitchie1988 appears in
+# both; pandoc keeps the first definition)
 PANDOC_OPTS := $(FILTER) \
                --pdf-engine=latexmk --pdf-engine-opt=-lualatex \
-               --citeproc --bibliography=../c4c++/references.bib --csl=../c4c++/ieee.csl \
+               --citeproc --bibliography=../sc++/references.bib \
+               --bibliography=../c4c++/references.bib --csl=../c4c++/ieee.csl \
                --resource-path=.:../sc++:../c4c++ \
                $(LULU_FMT)
 
@@ -104,7 +108,7 @@ all: lulu-sc++c.pdf lulu-cover.pdf
 .lulu-c4-bib.md: ../c4c++/bibliography.md
 	sed '/\\printindex/d' $< > $@
 
-lulu-sc++c.pdf: $(SRCS) ../callout.lua ../c4c++/references.bib ../c4c++/ieee.csl Makefile
+lulu-sc++c.pdf: $(SRCS) ../callout.lua ../sc++/references.bib ../c4c++/references.bib ../c4c++/ieee.csl Makefile
 	pandoc $(SRCS) -o $@ $(PANDOC_OPTS)
 
 sc++-lulu.pdf: $(SC_LULU_SRCS) ../callout.lua ../sc++/references.bib ../sc++/ieee.csl Makefile
