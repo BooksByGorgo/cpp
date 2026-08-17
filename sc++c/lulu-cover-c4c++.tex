@@ -1,16 +1,17 @@
-% lulu-cover.tex --- Lulu Executive wraparound cover for "Gorgo C++ and C".
+% lulu-cover-c4c++.tex --- Lulu Executive wraparound cover for the
+% standalone "Gorgo C for C++ Programmers" book (c4c++-lulu.pdf, 154 pages).
 %
-% Total trim (with bleed): 15.356in x 10.25in (390.04mm x 260.35mm)
+% Total trim (with bleed): 14.654in x 10.25in
 % Book trim: 7in x 10in
 % Bleed: 0.125in
-% Spine width: 1.106in (28.09mm) --- 468 pages: 0.06 + 468 * 0.002236
+% Spine width: 0.404in (154 pages: 0.06 + 154 * 0.002236)
 %
 % Horizontal layout (left to right, in inches):
 %   left bleed : [0.000, 0.125]
 %   back trim  : [0.125, 7.125]
-%   spine      : [7.125, 8.231]
-%   front trim : [8.231, 15.231]
-%   right bleed: [15.231, 15.356]
+%   spine      : [7.125, 7.529]
+%   front trim : [7.529, 14.529]
+%   right bleed: [14.529, 14.654]
 %
 % Vertical:
 %   bottom bleed: [0.000, 0.125]
@@ -21,7 +22,7 @@
 
 \documentclass[11pt]{article}
 
-\usepackage[paperwidth=15.356in,paperheight=10.25in,margin=0pt]{geometry}
+\usepackage[paperwidth=14.654in,paperheight=10.25in,margin=0pt]{geometry}
 \usepackage{fontspec}
 \usepackage{graphicx}
 \usepackage{xcolor}
@@ -67,43 +68,47 @@
 % ============================================================
 % FULL-BLEED BACKGROUND
 % ============================================================
-\fill[bgcolor] (O) rectangle ($(O)+(15.356,10.25)$);
+\fill[bgcolor] (O) rectangle ($(O)+(14.654,10.25)$);
 
 % ============================================================
 % FRONT COVER  (right side)
-% x in [8.231, 15.231], center x = 11.731
+% x in [7.529, 14.529], center x = 11.029
 % ============================================================
 
-% Gorgo image, centered, 4.5in wide
-\node[anchor=center] at ($(O)+(11.731,6.85)$)
-  {\includegraphics[width=4.5in]{c++c-gorgo-cover.png}};
+% Gorgo image, centered, 4.5in wide (pre-flattened onto the navy background
+% by the Makefile so the PDF stays transparency-free)
+\node[anchor=center] at ($(O)+(11.029,6.85)$)
+  {\includegraphics[width=4.5in]{c-gorgo-c4-cover.png}};
 
 % Title
-\node[anchor=center, text=textcolor, align=center] at ($(O)+(11.731,3.55)$)
-  {\fontsize{34}{40}\selectfont\bfseries Gorgo Starting C++ and C};
+\node[anchor=center, text=textcolor, align=center] at ($(O)+(11.029,3.55)$)
+  {\fontsize{28}{34}\selectfont\bfseries Gorgo C for C++ Programmers};
 
 % Rule under title
-\draw[accent, line width=1.2pt] ($(O)+(9.431,3.1)$) -- ($(O)+(14.031,3.1)$);
+\draw[accent, line width=1.2pt] ($(O)+(8.729,3.1)$) -- ($(O)+(13.329,3.1)$);
 
 % Subtitle: commit date
-\node[anchor=center, text=accent] at ($(O)+(11.731,2.75)$)
+\node[anchor=center, text=accent] at ($(O)+(11.029,2.75)$)
   {\fontsize{18}{22}\selectfont\itshape \CommitDate};
 
 
 % ============================================================
 % SPINE  (middle)
-% x in [7.125, 8.231], center = 7.678
+% x in [7.125, 7.529], center = 7.327
 % Title centered along spine, "Gorgo Books" at the base
 % ============================================================
 
 % Main spine title (centered vertically along the 10in spine)
-\node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.678,5.125)$)
-  {\fontsize{13}{15}\selectfont\bfseries Gorgo Starting C++ and C};
+\node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.327,5.125)$)
+  {\fontsize{13}{15}\selectfont\bfseries Gorgo C for C++ Programmers};
 
 % "Gorgo Books" at the base of the spine, horizontal so it reads
-% normally when the book is upright on a shelf
+% normally when the book is upright on a shelf. font= (not inline
+% \fontsize) so both lines get the size and small caps --- \\ in an
+% align node resets inline font changes. 6.5pt: at 10pt the text is
+% as wide as the 0.404in spine and touches the fold lines.
 \node[anchor=center, text=accent, align=center,
-      font=\fontsize{10}{12}\selectfont\scshape] at ($(O)+(7.678,1.25)$)
+      font=\fontsize{6.5}{8}\selectfont\scshape] at ($(O)+(7.327,1.25)$)
   {Gorgo\\Books};
 
 % ============================================================
@@ -116,12 +121,12 @@
 \node[anchor=center, text=accent] at ($(O)+(3.625,9.15)$)
   {\fontsize{28}{34}\selectfont\bfseries Cheetsheet};
 \node[anchor=center, text=muted] at ($(O)+(3.625,8.70)$)
-  {\fontsize{11}{13}\selectfont\itshape a quick reference for C and C++};
+  {\fontsize{11}{13}\selectfont\itshape a quick reference for C};
 
 % Accent rule under heading
 \draw[accent, line width=0.8pt] ($(O)+(1.3,8.45)$) -- ($(O)+(5.95,8.45)$);
 
-% ---- Left column: Printf, Bitwise, Compound Assignment ----
+% ---- Left column: Printf, Bitwise, string.h ----
 % Stacked above the barcode exclusion zone.
 \node[anchor=north west, text=textcolor] at ($(O)+(0.70,8.20)$) {%
   \begin{minipage}{2.80in}
@@ -130,7 +135,7 @@
   \renewcommand{\arraystretch}{1.05}
 
   {\color{accent}\fontsize{12}{14}\selectfont\bfseries printf Format Specifiers}\\[1pt]
-  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ programmers, Ch.~1}\\[2pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ Programmers, Ch.~1}\\[2pt]
   \begin{tabular}{@{}l l l@{}}
   \toprule
   \textbf{Spec} & \textbf{Type} & \textbf{Example output} \\
@@ -150,7 +155,7 @@
   \vspace{0.22in}
 
   {\color{accent}\fontsize{12}{14}\selectfont\bfseries Bitwise Operators}\\[1pt]
-  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ programmers, Ch.~4}\\[2pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ Programmers, Ch.~4}\\[2pt]
   \begin{tabular}{@{}c l l l@{}}
   \toprule
   \textbf{Op} & \textbf{Meaning} & \textbf{Example} & \textbf{Result} \\
@@ -166,27 +171,28 @@
 
   \vspace{0.22in}
 
-  {\color{accent}\fontsize{12}{14}\selectfont\bfseries std::format Specifiers}\\[1pt]
-  {\color{muted}\fontsize{7.5}{9}\selectfont from Starting C++, Ch.~10}\\[2pt]
-  \begin{tabular}{@{}>{\ttfamily}l l l@{}}
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries string.h Functions}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ Programmers, Ch.~3}\\[2pt]
+  \begin{tabular}{@{}l l@{}}
   \toprule
-  \textbf{\rmfamily Spec} & \textbf{Meaning} & \textbf{Example output} \\
+  \textbf{Function} & \textbf{Meaning} \\
   \midrule
-  \{:d\}   & decimal integer    & \op{42}         \\
-  \{:x\}   & hex (lowercase)    & \op{ff}         \\
-  \{:o\}   & octal              & \op{10}         \\
-  \{:b\}   & binary             & \op{1010}       \\
-  \{:f\}   & fixed-point        & \op{3.140000}   \\
-  \{:.2f\} & precision          & \op{3.14}       \\
-  \{:e\}   & scientific         & \op{3.14e+00}   \\
-  \{:>10\} & right align, w=10  & \op{\ \ \ \ \ \ hola} \\
-  \{:\#x\} & alt form (0x)      & \op{0xff}       \\
+  \op{strlen(s)}       & length, not counting \op{\textbackslash 0} \\
+  \op{strcpy(d, s)}    & copy \op{s} into \op{d}          \\
+  \op{strncpy(d, s, n)} & copy at most \op{n} chars       \\
+  \op{strcat(d, s)}    & append \op{s} onto \op{d}        \\
+  \op{strcmp(a, b)}    & compare; \op{0} means equal      \\
+  \op{strncmp(a, b, n)} & compare first \op{n} chars      \\
+  \op{strchr(s, c)}    & find first \op{c}, or \op{NULL}  \\
+  \op{strstr(s, sub)}  & find substring, or \op{NULL}     \\
+  \op{strdup(s)}       & \op{malloc}'d copy; you \op{free} \\
+  \op{strtok(s, seps)} & split into tokens                \\
   \bottomrule
   \end{tabular}
   \end{minipage}
 };
 
-% ---- Right column: Operator Precedence ----
+% ---- Right column: Operator Precedence, fopen Modes ----
 \node[anchor=north west, text=textcolor] at ($(O)+(3.80,8.20)$) {%
   \begin{minipage}{2.80in}
   \color{textcolor}
@@ -194,7 +200,7 @@
   \renewcommand{\arraystretch}{1.15}
 
   {\color{accent}\fontsize{12}{14}\selectfont\bfseries Operator Precedence}\\[1pt]
-  {\color{muted}\fontsize{7.5}{9}\selectfont highest to lowest --- C for C++ programmers, Ch.~4}\\[2pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont highest to lowest --- C for C++ Programmers, Ch.~4}\\[2pt]
   \setlength{\tabcolsep}{3pt}
   \begin{tabular}{@{}c >{\raggedright\arraybackslash}p{1.48in} l@{}}
   \toprule
@@ -220,22 +226,19 @@
 
   \vspace{0.25in}
 
-  {\color{accent}\fontsize{12}{14}\selectfont\bfseries Common Container Methods}\\[1pt]
-  {\color{muted}\fontsize{7.5}{9}\selectfont from Starting C++, Ch.~3 \& Ch.~8}\\[2pt]
+  {\color{accent}\fontsize{12}{14}\selectfont\bfseries fopen Modes}\\[1pt]
+  {\color{muted}\fontsize{7.5}{9}\selectfont from C for C++ Programmers, Ch.~10}\\[2pt]
   \setlength{\tabcolsep}{3pt}
-  \begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{1.55in}@{}}
+  \begin{tabular}{@{}l l@{}}
   \toprule
-  \textbf{Container} & \textbf{Include} & \textbf{Key Methods} \\
+  \textbf{Mode} & \textbf{Meaning} \\
   \midrule
-  \op{string}
-    & \op{<string>}
-    & \op{.size()} \op{.empty()} \op{.find()} \op{.substr()} \op{.replace()} \op{.at()} \op{[]} \op{+} \op{+=} \\
-  \op{vector<T>}
-    & \op{<vector>}
-    & \op{.push\_back()} \op{.pop\_back()} \op{.insert()} \op{.erase()} \op{.size()} \op{.empty()} \op{.clear()} \op{.at()} \op{[]} \op{.front()} \op{.back()} \op{.reserve()} \\
-  \op{array<T,N>}
-    & \op{<array>}
-    & \op{.size()} \op{.at()} \op{[]} \op{.front()} \op{.back()} \op{.fill()} \\
+  \op{"r"}  & read (file must exist)          \\
+  \op{"w"}  & write (creates or truncates)    \\
+  \op{"a"}  & append (creates or appends)     \\
+  \op{"r+"} & read and write (must exist)     \\
+  \op{"w+"} & read and write (creates/truncs) \\
+  \op{"a+"} & read and append                 \\
   \bottomrule
   \end{tabular}
   \end{minipage}

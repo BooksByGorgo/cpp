@@ -240,7 +240,8 @@ This is commonly used to wrap `printf`-style functions with extra decoration lik
 GNU C provides `##__VA_ARGS__`, which swallows the comma when the argument list is empty:
 
 ```c
-#define LOG(fmt, ...) fprintf(stderr, "[LOG] " fmt "\n", ##__VA_ARGS__)
+#define LOG(fmt, ...) \
+    fprintf(stderr, "[LOG] " fmt "\n", ##__VA_ARGS__)
 LOG("started");  /* No extra args — comma is removed */
 ```
 
@@ -358,7 +359,8 @@ The key advantage: a single source of truth for a list of items.
 } while (0)
 
 // Variadic macro
-#define LOG(fmt, ...) fprintf(stderr, "[LOG] " fmt "\n", ##__VA_ARGS__)
+#define LOG(fmt, ...) \
+    fprintf(stderr, "[LOG] " fmt "\n", ##__VA_ARGS__)
 
 int main(void) {
     // Object-like

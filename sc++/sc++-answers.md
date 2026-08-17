@@ -4958,7 +4958,8 @@ char 'Z' as int: 90
 #include <iostream>
 
 int main() {
-    auto d = std::chrono::seconds(5) + std::chrono::milliseconds(750);
+    auto d = std::chrono::seconds(5)
+           + std::chrono::milliseconds(750);
     auto s = std::chrono::duration_cast<std::chrono::seconds>(d);
     std::cout << s.count() << std::endl;
 

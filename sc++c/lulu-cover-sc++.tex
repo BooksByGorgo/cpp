@@ -1,17 +1,17 @@
 % lulu-cover-sc++.tex --- Lulu Executive wraparound cover for the
-% standalone "Gorgo Starting C++" book (sc++-lulu.pdf, 307 pages).
+% standalone "Gorgo Starting C++" book (sc++-lulu.pdf, 318 pages).
 %
-% Total trim (with bleed): 14.996in x 10.25in
+% Total trim (with bleed): 15.021in x 10.25in
 % Book trim: 7in x 10in
 % Bleed: 0.125in
-% Spine width: 0.746in (307 pages: 0.06 + 307 * 0.002236)
+% Spine width: 0.771in (318 pages: 0.06 + 318 * 0.002236)
 %
 % Horizontal layout (left to right, in inches):
 %   left bleed : [0.000, 0.125]
 %   back trim  : [0.125, 7.125]
-%   spine      : [7.125, 7.871]
-%   front trim : [7.871, 14.871]
-%   right bleed: [14.871, 14.996]
+%   spine      : [7.125, 7.896]
+%   front trim : [7.896, 14.896]
+%   right bleed: [14.896, 15.021]
 %
 % Vertical:
 %   bottom bleed: [0.000, 0.125]
@@ -22,7 +22,7 @@
 
 \documentclass[11pt]{article}
 
-\usepackage[paperwidth=14.996in,paperheight=10.25in,margin=0pt]{geometry}
+\usepackage[paperwidth=15.021in,paperheight=10.25in,margin=0pt]{geometry}
 \usepackage{fontspec}
 \usepackage{graphicx}
 \usepackage{xcolor}
@@ -68,49 +68,50 @@
 % ============================================================
 % FULL-BLEED BACKGROUND
 % ============================================================
-\fill[bgcolor] (O) rectangle ($(O)+(14.996,10.25)$);
+\fill[bgcolor] (O) rectangle ($(O)+(15.021,10.25)$);
 
 % ============================================================
 % FRONT COVER  (right side)
-% x in [7.871, 14.871], center x = 11.371
+% x in [7.896, 14.896], center x = 11.396
 % ============================================================
 
 % Gorgo image, centered, 4.5in wide (pre-flattened onto the navy background
 % by the Makefile so the PDF stays transparency-free)
-\node[anchor=center] at ($(O)+(11.371,6.85)$)
+\node[anchor=center] at ($(O)+(11.396,6.85)$)
   {\includegraphics[width=4.5in]{c++-gorgo-sc-cover.png}};
 
 % Title
-\node[anchor=center, text=textcolor, align=center] at ($(O)+(11.371,3.55)$)
+\node[anchor=center, text=textcolor, align=center] at ($(O)+(11.396,3.55)$)
   {\fontsize{34}{40}\selectfont\bfseries Gorgo Starting C++};
 
 % Rule under title
-\draw[accent, line width=1.2pt] ($(O)+(9.571,3.1)$) -- ($(O)+(13.171,3.1)$);
+\draw[accent, line width=1.2pt] ($(O)+(9.596,3.1)$) -- ($(O)+(13.196,3.1)$);
 
 % Subtitle: commit date
-\node[anchor=center, text=accent] at ($(O)+(11.371,2.75)$)
+\node[anchor=center, text=accent] at ($(O)+(11.396,2.75)$)
   {\fontsize{18}{22}\selectfont\itshape \CommitDate};
 
 
 % ============================================================
 % SPINE  (middle)
-% x in [7.125, 7.871], center = 7.498
+% x in [7.125, 7.896], center = 7.511
 % Title centered along spine, "Gorgo Books" at the base
 % ============================================================
 
 % Main spine title (centered vertically along the 10in spine)
-\node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.498,5.125)$)
+\node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.511,5.125)$)
   {\fontsize{13}{15}\selectfont\bfseries Gorgo Starting C++};
 
 % "Gorgo Books" at the base of the spine, horizontal so it reads
 % normally when the book is upright on a shelf
-\node[anchor=center, text=accent, align=center] at ($(O)+(7.498,1.25)$)
-  {\fontsize{10}{12}\selectfont\scshape Gorgo\\Books};
+\node[anchor=center, text=accent, align=center,
+      font=\fontsize{10}{12}\selectfont\scshape] at ($(O)+(7.511,1.25)$)
+  {Gorgo\\Books};
 
 % ============================================================
 % BACK COVER  (left side)
 % x in [0.125, 7.125], safe x in [0.625, 6.625], safe y in [0.625, 9.625]
-% Barcode exclusion: x in ~[0.5, 4.25], y in ~[0.5, 1.9]  --- leave empty.
+% ISBN barcode zone: bottom-right corner, x in ~[4.5, 6.625], y in ~[0.5, 1.9] --- leave empty.
 % ============================================================
 
 % Heading
@@ -244,9 +245,9 @@
   \end{minipage}
 };
 
-% ---- URL at the bottom of the back cover, right of the barcode zone ----
-\node[anchor=south west, text=muted] at ($(O)+(4.50,0.75)$)
-  {\fontsize{10}{12}\selectfont\ttfamily https://gorgo.dev/c++};
+% ---- URL at the bottom left of the back cover, clear of the ISBN barcode zone ----
+\node[anchor=south west, text=muted] at ($(O)+(0.70,0.75)$)
+  {\fontsize{10}{12}\selectfont\ttfamily https://gorgo.dev/cpp};
 
 \end{tikzpicture}
 \end{document}
