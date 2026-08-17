@@ -353,7 +353,11 @@ int main() {
 }
 ```
 
-**9. What does `std::numeric_limits<std::uint8_t>::max()` return? Is `std::numeric_limits<double>::min()` a large negative number?**
+**9. What does this expression return? Is `std::numeric_limits<double>::min()` a large negative number?**
+
+```cpp
+std::numeric_limits<std::uint8_t>::max()
+```
 
 `std::numeric_limits<std::uint8_t>::max()` returns `255` --- the largest value an 8-bit unsigned integer can hold.
 
@@ -424,8 +428,8 @@ int main() {
 It prints `4`.
 
 `x` is an 8-bit `unsigned char`, so it can hold values from 0 to 255.
-The arithmetic `x + 10` would be 260, which does not fit in 8 bits.
-For unsigned types this is **wraparound**: the value goes off the top end and reappears at 0, so 260 becomes 260 - 256 = 4.
+The arithmetic `x + 10` actually happens in `int` (both operands are promoted first), so it computes 260 exactly --- but 260 does not fit in 8 bits.
+Storing it back into the `unsigned char` is where the **wraparound** happens: the value is reduced modulo 256, so 260 becomes 260 - 256 = 4.
 This is well-defined behavior for unsigned types --- the standard guarantees the result is taken modulo 2^N.
 (Signed integer overflow is **undefined** behavior, which you will learn more about in Chapter 7.)
 
@@ -453,7 +457,7 @@ When `static_cast<int>(b)` is sent, it is displayed as the number `101`.
 
 Same byte, two different displays --- the type controls which one you see.
 
-**14. Why might you reach for `std::int32_t` instead of `int` when reading bytes from a file? What does each of these declarations cost you in safety: `int x = 3.7;`, `int x(3.7);`, `int x{3.7};`?**
+**14. Why might you use `std::int32_t` instead of `int` when reading bytes from a file? What does each of these declarations cost you in safety: `int x = 3.7;`, `int x(3.7);`, `int x{3.7};`?**
 
 `int` is only required to be at least 16 bits wide; on most desktop platforms it happens to be 32 bits, but the standard does not promise that.
 When you read raw bytes from a file --- where the file format says "this field is exactly 4 bytes" --- you want a type that is *guaranteed* to be 32 bits everywhere your code runs.
@@ -791,7 +795,7 @@ auto a = "Genie "  + "in a bottle";
 auto b = "Genie "s + "in a bottle";
 ```
 
-Line `a` does not compile: both operands are `const char*` (the type of a plain string literal), and there is no `operator+` for two raw character pointers.
+Line `a` does not compile: both operands are plain string literals (character arrays that decay to `const char*`), and there is no `operator+` for two raw character pointers.
 You cannot concatenate two C-style strings with `+`.
 
 Line `b` compiles.
@@ -2582,7 +2586,7 @@ int main() {
 
 The `std::ofstream` is declared but never given a filename.
 The stream is not connected to any file, so writing to it does nothing.
-The fix is to pass a filename to the constructor or call `.open()`:
+The fix is to pass a filename to the constructor:
 
 ```cpp
 std::ofstream out("output.txt");
@@ -2716,7 +2720,7 @@ The first `ss >> word` reads up to the next whitespace, so `word` becomes `"year
 The second `ss >> year` skips the leading whitespace and parses `1999` into the `int year`.
 A `std::stringstream` is just a `std::ios::in | std::ios::out` stream backed by a string, so the same object can both produce text (via `<<`) and consume text (via `>>`).
 
-**11. Calculation: What does each of these `std::ios::openmode` combinations do when you open a file with it?**
+**11. Think about it: What does each of these `std::ios::openmode` combinations do when you open a file with it?**
 
 ```cpp
 std::ios::out
@@ -3046,7 +3050,7 @@ Notice how a single `std::format` call combines width, alignment, fill, the alte
 
 **1. What is the difference between a `struct` and a `class` in C++? Why would you choose one over the other?**
 
-The only technical difference is the default access level.
+The main technical difference is the default access level.
 Members of a `struct` are `public` by default, while members of a `class` are `private` by default.
 
 By convention, `struct` is used for simple data holders with public members (plain old data).
@@ -4675,7 +4679,7 @@ Write the copy constructor first.)
 
 Either form makes `b = b;` a safe no-op instead of silent data loss.
 
-**12. Think about it: Why does `std::vector` insist that the move constructor and move assignment operator be marked `noexcept` before it will use them? What does the vector do *instead* if your move operations are not `noexcept`, and what is the performance cost?**
+**12. Think about it: Why does `std::vector` insist that the move constructor be marked `noexcept` before it will use it during reallocation? What does the vector do *instead* if your move constructor is not `noexcept`, and what is the performance cost?**
 
 When `std::vector` runs out of capacity and has to grow, it allocates a new (larger) buffer and has to relocate every existing element from the old buffer into the new one.
 Vector wants this relocation to be **strongly exception safe**: if anything goes wrong partway through, the vector should be left exactly as it was before the `push_back` --- the old buffer still intact, no elements lost, no half-moved state.
@@ -4851,8 +4855,8 @@ x = x + 10;
 `x` is **4**.
 
 `uint8_t` can hold values from 0 to 255.
-250 + 10 = 260, which overflows.
-For unsigned types, overflow wraps around: 260 % 256 = 4.
+250 + 10 is computed in `int` (integer promotion), giving 260 --- which does not fit in 8 bits.
+Storing it back into the `uint8_t` wraps it around: 260 % 256 = 4.
 
 **5. What does the following program print?**
 
@@ -5261,7 +5265,7 @@ int main() {
 }
 ```
 
-`std::random_device` is a hardware-backed source of entropy where available; on systems without one, the standard library still provides a `std::random_device` that returns *some* unpredictable bits at startup.
+`std::random_device` is a hardware-backed source of entropy where available; on systems without one, `std::random_device` may fall back to a deterministic pseudo-random generator --- the chapter's caveat.
 Either way, on a typical desktop system two runs of this program produce **different** sequences of numbers, because each run reads a fresh seed from `random_device` (recall the chapter's caveat that `random_device` may be deterministic on some platforms).
 
 If you replace the seeding line with a fixed constant:
@@ -5385,9 +5389,9 @@ A pseudo-gdb session:
 
 ```
 $ gdb ./off
-(gdb) break 9              # the second for-loop header
+(gdb) break 10             # inside the second loop's body
 (gdb) run
-...stops at line 9...
+...stops at line 10...
 (gdb) print v.size()
 $1 = 5
 (gdb) print i
@@ -5407,7 +5411,7 @@ $M = <garbage or zero or anything>
 
 When `i` reaches `5`, the loop body still runs because the condition is `i <= v.size()` instead of `<`.
 At that point `v[5]` reads past the last valid element, which is undefined behavior.
-The debugger session catches it because you can see `i == 5` while `v.size() == 5` --- the indices that came out of `v[i]` for `i = 0..4` are valid, and the `i = 5` access is the off-by-one bug.
+The debugger session catches it because you can see `i == 5` while `v.size() == 5` --- the accesses `v[i]` for `i = 0..4` are valid, and the `i = 5` access is the off-by-one bug.
 Fix is to write `i < v.size()` (or, better, switch the loop to `for (int n : v)`).
 
 In lldb, the equivalent commands are `b 9`, `run`, `p v.size()`, `p i`, `n`, `c`.

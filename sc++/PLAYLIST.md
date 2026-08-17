@@ -6,7 +6,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Come As You Are --- Nirvana
 - Smells Like Teen Spirit --- Nirvana
 - Nevermind --- Nirvana (album, line-comment example)
-- Los Del Rio (band name in std::cin word-splitting example)
+- Macarena --- Los Del Rio (band name in std::cin word-splitting example; "Dale a tu cuerpo alegria" lyric in the number-reading example)
 
 ## Chapter 2: Variables
 - Waterfalls --- TLC
@@ -26,6 +26,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Genie in a Bottle --- Christina Aguilera (string-suffix exercise)
 - Wannabe --- Spice Girls (substr exercise; repeat of ch08 entry)
 - Wonderwall --- Oasis (case-sensitivity exercise; repeat of ch02 entry)
+- Mambo No. 5 --- Lou Bega ("A little bit of Monica in my life" lyric in the `s` suffix examples)
 
 ## Chapter 4: Expressions
 - Jump Around --- House of Pain
@@ -94,7 +95,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 
 ## Chapter 13: Memory Management
 - Under the Bridge --- Red Hot Chili Peppers
-- Nothing Compares 2 U --- Sinead O'Connor
+- Nothing Compares 2 U --- Sinead O'Connor ("Nada se compara contigo" Spanish lyric in the move examples)
 - Don't Speak --- No Doubt
 - Popular --- Nada Surf
 - Glycerine --- Bush (unique_ptr move example)
@@ -104,7 +105,6 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 - Black --- Pearl Jam (weak_ptr cycle example)
 - Karma Police --- Radiohead (weak_ptr lock example)
 - Doll Parts --- Hole (weak_ptr exercise)
-- Wonderwall --- Oasis (raw `new` leak exercise; repeat of ch02 entry)
 - Wannabe --- Spice Girls (unique_ptr answer-key example; repeat of ch08 entry)
 
 ## Chapter 14: Special Members and Friends

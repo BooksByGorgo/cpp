@@ -36,9 +36,9 @@ All other rows give the reason the statement stands uncited.
 | ch01 | 239 | best practice | **Tip:** Always compile with warnings enabled and pin a language version. | author's guidance; rationale in the text |
 | ch01 | 244 | empirical | `-O2` enables optimization, which often surfaces additional warnings the unoptimized build hides. | verifiable against the toolchain/standard |
 | ch01 | 284 | popularity | It is fine for small programs while you are learning, but be aware that many professional C++ programmers avoid it. | folklore; no canonical source |
-| ch01 | 420 | popularity | The others are rare in modern code --- `\a` rings the terminal bell, `\b` and `\f` come from the days of teletype printers, and `\?` exists only to defeat an obscure C feature called **trigraphs** that you will probably never see. | folklore; no canonical source |
-| ch01 | 519 | empirical | `argv[0]` is always the program name | inaccurate as stated --- `argv[0]` is implementation-defined and may be empty; candidate for a text fix, not a citation |
-| ch01 | 541 | best practice | **Tip:** Always validate command-line arguments before using them. | author's guidance; rationale in the text |
+| ch01 | 419 | popularity | The others are rare in modern code --- `\a` rings the terminal bell, `\b` and `\f` come from the days of teletype printers, and `\?` exists only to defeat an obscure C feature called **trigraphs** that you will probably never see. | folklore; no canonical source |
+| ch01 | 518 | empirical | `argv[0]` is always the program name | inaccurate as stated --- `argv[0]` is implementation-defined and may be empty; candidate for a text fix, not a citation |
+| ch01 | 540 | best practice | **Tip:** Always validate command-line arguments before using them. | author's guidance; rationale in the text |
 | ch02 | 37 | empirical | On most modern systems: | platform generality; verifiable against mainstream ABIs |
 | ch02 | 87 | empirical | These types are guaranteed to be exactly the named width on every platform that provides them (all mainstream ones do), so the same code reads the same bytes everywhere. | platform generality; verifiable against mainstream ABIs |
 | ch02 | 91 | best practice | For everyday counters and indices, plain `int` and `std::size_t` are still the right defaults --- they are usually the most efficient size for the CPU you are running on. | author's guidance; rationale in the text |
@@ -60,7 +60,7 @@ All other rows give the reason the statement stands uncited.
 | ch03 | 160 | popularity | `auto greeting = "Hola";` deduces `const char*` --- not what you want most of the time. | folklore; no canonical source |
 | ch03 | 209 | best practice | For most code, prefer adjacent literals --- they let you indent the continuation without polluting the string. | author's guidance; rationale in the text |
 | ch03 | 247 | opinion | Raw literals are ideal for regular expressions, embedded SQL or JSON, Windows file paths, and any other text where you would otherwise be drowning in `\\` escapes. | author's opinion |
-| ch03 | 251 | opinion | Reach for `\`-continuation only when those two will not do --- the indentation pitfall makes it the most error-prone of the three. | author's opinion |
+| ch03 | 251 | opinion | Use `\`-continuation only when those two will not do --- the indentation pitfall makes it the most error-prone of the three. | author's opinion |
 | ch03 | 309 | opinion | The small performance cost is worth the safety. | author's opinion |
 | ch03 | 347 | best practice | **Tip:** Use `std::size_t` (or `std::string::size_type`) for the loop variable when comparing against `.size()`. | author's guidance; rationale in the text |
 | ch03 | 471 | empirical | Unicode reserves room for over 1.1 million code points, of which roughly 160,000 are currently assigned. | added [Unicode 17.0](https://www.unicode.org/versions/Unicode17.0.0/) |
@@ -97,23 +97,23 @@ All other rows give the reason the statement stands uncited.
 | ch06 | 269 | historical | Everything compiles cleanly, but at link time you get a duplicate definition error (on older toolchains that defaulted to `-fcommon`, the program would even link, with every file silently operating on its own private copy of what was supposed to be a shared global). | well-known history; no single source |
 | ch06 | 388 | best practice | Use pass-by-reference for larger types like `std::string` and structures to avoid the cost of copying. | added [Core Guidelines F.16](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-in) |
 | ch06 | 408 | best practice | **Tip:** A good rule of thumb: if a function does not need to modify a parameter, make it `const`. | related to F.16, cited at ch06:388 |
-| ch06 | 520 | best practice | **Tip:** Pass-by-rvalue-reference is most useful when you are writing functions that *consume* or *store* their argument. | author's guidance; rationale in the text |
-| ch06 | 530 | popularity | This trips up nearly everyone the first time they encounter it. | folklore; no canonical source |
-| ch06 | 663 | best practice | When the winner is not obvious to you, it will not be obvious to the next reader either --- convert the argument explicitly to the type you mean, like `display(static_cast<double>(n))`. | author's guidance; rationale in the text |
-| ch06 | 700 | popularity | **Trap:** Forgetting the base case is the most common recursion mistake. | folklore; no canonical source |
-| ch06 | 803 | opinion | The function pointer syntax is admittedly ugly. | author's opinion |
-| ch06 | 871 | popularity | **Tip:** Modern C++ callbacks are usually lambdas, with `std::function` (a *Gorgo Continuing C++* topic) to store capturing ones. | folklore; no canonical source |
-| ch06 | 912 | historical | `std::ignore` says the same thing as an assignment; C++26 officially blessed it for exactly this job, and the major compilers already handle it today. | added [WG21 P2968R2](https://wg21.link/p2968r2) |
-| ch06 | 926 | opinion | To some they are an abomination, but to others, especially those writing core C++ APIs, they are fun ways to expand the semantics of language operators in new and unimagined ways. | author's opinion |
-| ch06 | 930 | historical | But visually they look like they are pushing data in a direction --- and the iostream library used that intuition to overload them for stream I/O. | added [Stroustrup, The Design and Evolution of C++](https://www.stroustrup.com/dne.html) |
-| ch06 | 1028 | best practice | **Tip:** Make your operators behave the way people expect. | author's guidance; rationale in the text |
-| ch06 | 1034 | best practice | **Trap:** Do not overload `&&`, `\|\|`, or `,`. | added [Meyers, More Effective C++, Item 7](https://www.aristeia.com/books.html) |
+| ch06 | 521 | best practice | **Tip:** Pass-by-rvalue-reference is most useful when you are writing functions that *consume* or *store* their argument. | author's guidance; rationale in the text |
+| ch06 | 531 | popularity | This trips up nearly everyone the first time they encounter it. | folklore; no canonical source |
+| ch06 | 664 | best practice | When the winner is not obvious to you, it will not be obvious to the next reader either --- convert the argument explicitly to the type you mean, like `display(static_cast<double>(n))`. | author's guidance; rationale in the text |
+| ch06 | 701 | popularity | **Trap:** Forgetting the base case is the most common recursion mistake. | folklore; no canonical source |
+| ch06 | 804 | opinion | The function pointer syntax is admittedly ugly. | author's opinion |
+| ch06 | 872 | popularity | **Tip:** Modern C++ callbacks are usually lambdas, with `std::function` (a *Gorgo Continuing C++* topic) to store capturing ones. | folklore; no canonical source |
+| ch06 | 913 | historical | `std::ignore` says the same thing as an assignment; C++26 officially blessed it for exactly this job, and the major compilers already handle it today. | added [WG21 P2968R2](https://wg21.link/p2968r2) |
+| ch06 | 927 | opinion | To some they are an abomination, but to others, especially those writing core C++ APIs, they are fun ways to expand the semantics of language operators in new and unimagined ways. | author's opinion |
+| ch06 | 931 | historical | But visually they look like they are pushing data in a direction --- and the iostream library used that intuition to overload them for stream I/O. | added [Stroustrup, The Design and Evolution of C++](https://www.stroustrup.com/dne.html) |
+| ch06 | 1029 | best practice | **Tip:** Make your operators behave the way people expect. | author's guidance; rationale in the text |
+| ch06 | 1035 | best practice | **Trap:** Do not overload `&&`, `\|\|`, or `,`. | added [Meyers, More Effective C++, Item 7](https://www.aristeia.com/books.html) |
 | ch07 | 59 | popularity | It is often said that computers think in 1s and 0s. | folklore; no canonical source |
 | ch07 | 110 | popularity | You will see hex used frequently for colors, memory addresses, and bit masks. | folklore; no canonical source |
 | ch07 | 124 | popularity | Octal is less common than hex in modern code, but you will encounter it when working with Unix file permissions (like `0755`). | folklore; no canonical source |
 | ch07 | 258 | best practice | **Tip:** Prefer uppercase `L`. | author's guidance; rationale in the text |
 | ch07 | 470 | historical | The auto-detect rules are inherited from C's `strtol`, which historically did *not* recognize the `0b` prefix that C++14 added for binary literals. | verifiable standard history; the C23 half is cited at ch07:471 |
-| ch07 | 471 | empirical | C23 (and matching updates in some C++ standard library implementations) added `0b` to the auto-detect set, so `std::stoi("0b101010", nullptr, 0)` may produce `42` on glibc and may produce `0` (parsed up to the leading zero) elsewhere. | added [ISO/IEC 9899:2024 (C23)](https://www.iso.org/standard/82075.html) |
+| ch07 | 471 | empirical | C23 (and matching updates in some C++ standard library implementations) added `0b` to the auto-detect set, so `std::stoi("0b101010", nullptr, 0)` may produce `42` on glibc and may produce `0` elsewhere (parsing just the leading zero and stopping at the `b`). | added [ISO/IEC 9899:2024 (C23)](https://www.iso.org/standard/82075.html) |
 | ch07 | 541 | empirical | This is essentially what `std::stoi` does internally. | verifiable against the toolchain/standard |
 | ch07 | 619 | historical | Engineers needed a better solution. | well-known history; no single source |
 | ch07 | 655 | empirical | **Tip:** Nearly every modern computer uses two's complement for signed integers. | verifiable: C++20 mandates two's complement for signed integers |
@@ -137,7 +137,7 @@ All other rows give the reason the statement stands uncited.
 | ch08 | 522 | opinion | This is one of the best uses of `auto`. | author's opinion |
 | ch08 | 569 | empirical | **Better performance**: the standard library implementations are usually faster than what most of us would write by hand, and they take advantage of optimizations the compiler can apply because the operation is named. | widely accepted; hard to source rigorously |
 | ch08 | 571 | popularity | Here are the most common ones you will see in everyday code. | folklore; no canonical source |
-| ch08 | 655 | popularity | There is almost always a named operation that does what you want, and using it makes your intent obvious to the next reader. | folklore; no canonical source |
+| ch08 | 663 | popularity | There is almost always a named operation that does what you want, and using it makes your intent obvious to the next reader. | folklore; no canonical source |
 | ch09 | 37 | opinion | Once you learn one, you know them all. | author's opinion |
 | ch09 | 113 | best practice | **Tip:** Prefer `std::format` (Chapter 10) for new code. | author's guidance; rationale in the text |
 | ch09 | 250 | opinion | **Tip:** String streams are great for converting between strings and numbers. | author's opinion |
@@ -147,8 +147,8 @@ All other rows give the reason the statement stands uncited.
 | ch09 | 404 | best practice | **Tip:** While files close automatically when the stream goes out of scope, calling `.close()` explicitly makes your intent clear and ensures data is flushed immediately. | author's guidance; rationale in the text |
 | ch09 | 488 | popularity | The most common recoverable failure is a type mismatch during extraction: asking `>>` for an `int` when the next token is not a number. | folklore; no canonical source |
 | ch09 | 533 | best practice | **Trap:** Do not loop on `while (!file.eof())`. | author's guidance; rationale in the text |
-| ch09 | 538 | popularity | Streams can be configured to throw exceptions on failure instead of setting flags --- every stream has an `exceptions()` member that selects which flags should throw --- but checking states is the idiomatic default for I/O. | folklore; no canonical source |
-| ch10 | 15 | opinion | Mixing text and values with lots of `<<` operators gets hard to read quickly. | author's opinion |
+| ch09 | 538 | popularity | Streams can be configured to throw exceptions on failure in addition to setting flags --- every stream has an `exceptions()` member that selects which flags should throw --- but checking states is the idiomatic default for I/O. | folklore; no canonical source |
+| ch10 | 15 | opinion | Mixing text and values with lots of `<<` operators quickly gets hard to read. | author's opinion |
 | ch10 | 223 | best practice | If your compiler supports C++20 or later, prefer `std::format` for any non-trivial formatting. | author's guidance; rationale in the text |
 | ch10 | 265 | opinion | These are the modern replacements for `std::cout <<`. | author's opinion |
 | ch10 | 270 | empirical | Not all compilers support them yet. | verifiable against [cppreference compiler support](https://en.cppreference.com/w/cpp/compiler_support) |
@@ -161,25 +161,25 @@ All other rows give the reason the statement stands uncited.
 | ch11 | 269 | empirical | The compiler rejects a constructor that delegates directly to itself, but an indirect cycle like `Song()` calling `Song(int)` calling `Song()` may compile and then recurse forever at runtime --- the standard calls it ill-formed but does not require the compiler to detect the error. | added [ISO C++, class.base.init](https://eel.is/c++draft/class.base.init) |
 | ch11 | 272 | best practice | **Tip:** Delegate from the simplest constructors *to* the most complete one. | author's guidance; rationale in the text |
 | ch11 | 316 | best practice | As a rule of thumb, mark single-argument constructors `explicit` unless you specifically want implicit conversion. | added [Core Guidelines C.46](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-explicit) |
-| ch11 | 319 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so `explicit` matters most on single-argument constructors. | folklore; no canonical source |
+| ch11 | 319 | popularity | Surprise conversions almost always come from single-argument constructors (a multi-parameter constructor can still be invoked implicitly from a braced list like `{"Torn", 1997}`, but that is much harder to do by accident), so that is where `explicit` matters most. | folklore; no canonical source |
 | ch11 | 423 | best practice | You should mark every member function that does not change the object as `const`. | added [Core Guidelines Con.2](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rconst-fct) |
 | ch11 | 573 | opinion | Overloading keeps your interface clean: one verb for one concept, regardless of how many ways you can call it. | author's opinion |
 | ch11 | 592 | historical | Before C++11, raw **pointers** were used constantly in C++. | well-known history; no single source |
 | ch11 | 594 | popularity | Modern C++ has largely moved away from raw pointers in favor of references and smart pointers (Chapter 13), which is why we have made it this far without discussing them. | folklore; no canonical source |
-| ch11 | 834 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
-| ch11 | 929 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
-| ch11 | 964 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
-| ch11 | 980 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
-| ch11 | 984 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
-| ch11 | 994 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
-| ch11 | 995 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
-| ch11 | 1166 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
-| ch11 | 1191 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
+| ch11 | 836 | popularity | **Tip:** Most compilers support `#pragma once` as a simpler alternative to include guards. | folklore; no canonical source |
+| ch11 | 931 | best practice | This is the preferred style for class-wide constants. | author's guidance; rationale in the text |
+| ch11 | 966 | best practice | Prefer `static constexpr` when the value is known at compile time. | author's guidance; rationale in the text |
+| ch11 | 982 | opinion | Static members get tempting as a way to bolt loose functions or global variables onto an existing class, and that temptation usually leads to bad design. | author's opinion |
+| ch11 | 986 | opinion | A "utility class" that is never instantiated is almost always a namespace wearing a costume. | author's opinion |
+| ch11 | 996 | opinion | It is a reasonable design and not really a bug, but it also reads like the kind of function that ends up as a static member more by association than by necessity. | author's opinion |
+| ch11 | 997 | best practice | When choosing between "static member function on `X`" and "free function in a namespace near `X`," lean toward the free function unless the operation is genuinely tied to the class. | author's guidance; rationale in the text |
+| ch11 | 1168 | popularity | The most common use of `explicit` conversion operators is `explicit operator bool()`. | folklore; no canonical source |
+| ch11 | 1193 | best practice | **Tip:** Prefer `explicit` on conversion operators. | added [Core Guidelines C.164](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#ro-conversion) |
 | ch12 | 8 | opinion | You would have to thread error codes back through every function in the chain, and every caller would have to check the return value --- tedious and easy to get wrong. | author's opinion |
 | ch12 | 177 | best practice | Always catch specific types first and use `catch (...)` only as a safety net. | author's guidance; rationale in the text |
 | ch12 | 180 | best practice | **Tip:** Always catch exceptions by `const` reference (`const std::exception &e`). | added [Core Guidelines E.15](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-exception-ref) |
 | ch12 | 239 | best practice | This automatic cleanup during stack unwinding is why destructors are so important --- and why you should manage resources through objects rather than raw `new`/`delete`. | author's guidance; rationale in the text |
-| ch12 | 243 | best practice | Never throw from a destructor. | added [Core Guidelines E.16](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-never-fail) |
+| ch12 | 467 | best practice | Never throw from a destructor. | added [Core Guidelines E.16](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#re-never-fail) |
 | ch12 | 260 | empirical | `noexcept` is not just documentation --- the compiler uses it to generate more efficient code. | verifiable against the toolchain/standard |
 | ch12 | 266 | best practice | **Tip:** Mark functions `noexcept` when you are certain they will not throw. | added [Core Guidelines F.6](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-noexcept) |
 | ch12 | 280 | opinion | They are best for truly exceptional situations --- file not found, out of memory, network failure. | author's opinion |
@@ -198,47 +198,47 @@ All other rows give the reason the statement stands uncited.
 | ch13 | 369 | best practice | **Trap:** After `delete`, set the pointer to `nullptr` if you plan to keep the pointer variable around. | author's guidance; rationale in the text |
 | ch13 | 373 | popularity | These problems are why modern C++ strongly discourages using raw `new` and `delete`. | added [Core Guidelines R.11](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-newdelete) |
 | ch13 | 426 | best practice | Always prefer `make_unique` over `new`. | added [Core Guidelines R.23](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_unique) |
-| ch13 | 461 | best practice | **Tip:** `std::unique_ptr` should be your default choice for heap allocation. | added [Core Guidelines R.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-unique) |
-| ch13 | 462 | empirical | It has essentially zero overhead compared to a raw pointer --- the compiler generates nearly identical code, but with automatic cleanup. | verifiable by inspecting codegen |
-| ch13 | 519 | best practice | `std::make_shared` is the preferred way to create a `shared_ptr`, just as `make_unique` is for `unique_ptr`. | added [Core Guidelines R.22](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_shared) |
-| ch13 | 522 | best practice | **Tip:** Use `shared_ptr` only when you truly need shared ownership. | backed by R.21, cited at ch13:442 |
-| ch13 | 603 | opinion | That check-then-use pattern is the only safe way to access whatever a `weak_ptr` points at. | author's opinion |
-| ch13 | 632 | best practice | **Trap:** Never `delete` a pointer obtained from `.get()`. | author's guidance; rationale in the text |
-| ch13 | 701 | empirical | A `std::string` typically contains a pointer to a heap-allocated character buffer, a length, and a capacity --- all stored on the stack: | implementation detail; hedged with "typically" (SSO varies) |
-| ch13 | 850 | best practice | **Tip:** Prefer `std::move` when passing a `shared_ptr` that the caller no longer needs. | author's guidance; rationale in the text |
-| ch13 | 857 | empirical | In practice, the compiler applies **copy elision** (also called **return value optimization**, or RVO) to avoid copies entirely. | verifiable: C++17 guarantees elision for prvalues |
-| ch13 | 870 | best practice | **Tip:** Do not write `return std::move(local);` from a function. | added [Core Guidelines F.48](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-return-move-local) |
+| ch13 | 462 | best practice | **Tip:** `std::unique_ptr` should be your default choice for heap allocation. | added [Core Guidelines R.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-unique) |
+| ch13 | 463 | empirical | It has essentially zero overhead compared to a raw pointer --- the compiler generates nearly identical code, but with automatic cleanup. | verifiable by inspecting codegen |
+| ch13 | 520 | best practice | `std::make_shared` is the preferred way to create a `shared_ptr`, just as `make_unique` is for `unique_ptr`. | added [Core Guidelines R.22](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rr-make_shared) |
+| ch13 | 523 | best practice | **Tip:** Use `shared_ptr` only when you truly need shared ownership. | backed by R.21, cited at ch13:442 |
+| ch13 | 604 | opinion | That check-then-use pattern is the only safe way to access whatever a `weak_ptr` points at. | author's opinion |
+| ch13 | 633 | best practice | **Trap:** Never `delete` a pointer obtained from `.get()`. | author's guidance; rationale in the text |
+| ch13 | 702 | empirical | A `std::string` typically contains a pointer to a heap-allocated character buffer, a length, and a capacity --- all stored on the stack: | implementation detail; hedged with "typically" (SSO varies) |
+| ch13 | 851 | best practice | **Tip:** Prefer `std::move` when passing a `shared_ptr` that the caller no longer needs. | author's guidance; rationale in the text |
+| ch13 | 858 | empirical | In practice, the compiler applies **copy elision** (also called **return value optimization**, or RVO) to avoid copies entirely. | verifiable: C++17 guarantees elision for prvalues |
+| ch13 | 871 | best practice | **Tip:** Do not write `return std::move(local);` from a function. | added [Core Guidelines F.48](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rf-return-move-local) |
 | ch14 | 29 | best practice | If your class manages a resource (like raw heap memory), and you write any one of these five, you almost certainly need to write *all* five. | added [Core Guidelines C.21](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-five) |
 | ch14 | 31 | historical | (Before C++11 added move semantics there were only three special members to worry about --- destructor, copy constructor, copy assignment --- and the same advice was called the **Rule of Three**.) | added Cline & Lomow, C++ FAQs (1995); see also [cppreference: rule of three/five/zero](https://en.cppreference.com/w/cpp/language/rule_of_three) |
 | ch14 | 117 | popularity | The standard fix is the **copy-and-swap idiom**: build a temporary copy first, then swap it with `*this`. | folklore; no canonical source |
 | ch14 | 181 | historical | Before C++11, the workaround for the second problem was to declare the unwanted function `private` and never define it. | well-known history; no single source |
-| ch14 | 265 | opinion | This is much better than making a function private and leaving it undefined, which was the pre-C++11 workaround and produced cryptic linker errors instead. | author's opinion |
-| ch14 | 275 | popularity | This is closely related to **RAII** (Resource Acquisition Is Initialization), a fundamental C++ pattern where you acquire resources in the constructor and release them in the destructor. | folklore; no canonical source |
-| ch14 | 302 | best practice | **Tip:** Follow the Rule of Zero whenever you can. | added [Core Guidelines C.20](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-zero); the coining source [Fernandes, Rule of Zero](https://isocpp.org/blog/2012/11/rule-of-zero) is cited at the definition (ch14:271) |
-| ch14 | 469 | best practice | **Tip:** Use `friend` sparingly. | author's guidance; rationale in the text |
-| ch14 | 472 | best practice | Prefer member functions or public interfaces when possible, and reserve `friend` for cases like `operator<<` where there is no alternative. | author's guidance; rationale in the text |
+| ch14 | 267 | opinion | This is much better than making a function private and leaving it undefined, which was the pre-C++11 workaround and produced cryptic linker errors instead. | author's opinion |
+| ch14 | 277 | popularity | This is closely related to **RAII** (Resource Acquisition Is Initialization), a fundamental C++ pattern where you acquire resources in the constructor and release them in the destructor. | folklore; no canonical source |
+| ch14 | 304 | best practice | **Tip:** Follow the Rule of Zero whenever you can. | added [Core Guidelines C.20](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rc-zero); the coining source [Fernandes, Rule of Zero](https://isocpp.org/blog/2012/11/rule-of-zero) is cited at the definition (ch14:271) |
+| ch14 | 471 | best practice | **Tip:** Use `friend` sparingly. | author's guidance; rationale in the text |
+| ch14 | 474 | best practice | Prefer member functions or public interfaces when possible, and reserve `friend` for cases like `operator<<` where there is no alternative. | author's guidance; rationale in the text |
 | ch15 | 73 | best practice | **Tip:** Prefer `return` from `main()` when possible. | author's guidance; rationale in the text |
 | ch15 | 151 | popularity | **Tip:** In practice, you rarely need to write `extern "C"` declarations yourself. | folklore; no canonical source |
-| ch15 | 261 | popularity | `static_cast` is the most common cast. | folklore; no canonical source |
-| ch15 | 341 | opinion | This is rarely needed and usually a sign that something in the design should be reconsidered. | author's opinion |
-| ch15 | 359 | popularity | The main legitimate use is interfacing with old C APIs that take non-const pointers but promise not to modify the data. | folklore; no canonical source |
-| ch15 | 377 | opinion | This is the most dangerous cast and should be used rarely. | author's opinion |
-| ch15 | 423 | best practice | The C++ named casts are preferred because: | backed by ES.49, cited at ch15:433 |
-| ch15 | 433 | best practice | Never use C-style casts in new C++ code. | added [Core Guidelines ES.49](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#res-casts-named) |
-| ch15 | 447 | popularity | The most common use of `<chrono>` is measuring how long a piece of code takes to run. | folklore; no canonical source |
-| ch15 | 448 | best practice | For this, `std::chrono::steady_clock` is the right clock because it never jumps forward or backward. | author's guidance; rationale in the text |
-| ch15 | 582 | popularity | The trig functions take **radians**, not degrees --- this is a constant source of beginner bugs. | folklore; no canonical source |
-| ch15 | 635 | best practice | **Tip:** Reach for `std::numbers::pi` instead of `3.14159...` typed by hand --- the constant is precise to the full width of the type, and a future reader does not have to count the digits to confirm you didn't typo one. | author's guidance; rationale in the text |
-| ch15 | 649 | opinion | It is worth pausing and treating UB as a topic in its own right, because it is the single biggest difference between C++ and most other languages. | author's opinion |
-| ch15 | 669 | historical | The short answer is performance: when the compiler can assume that programs do not exhibit UB, it gets to skip a lot of runtime checks --- bounds, signedness, alignment --- that would otherwise slow every program down. | added [Lattner, What Every C Programmer Should Know About UB](https://blog.llvm.org/2011/05/what-every-c-programmer-should-know.html) |
-| ch15 | 691 | popularity | The two debuggers you will run into most often are **gdb** (GNU Debugger; commonly installed alongside GCC) and **lldb** (the LLVM debugger; Clang's counterpart). | folklore; no canonical source |
-| ch15 | 721 | empirical | **Reproduce, then break.** Set a breakpoint *just before* the line you suspect, run the program, then use `next`/`step` and `print` to walk the failure live. This is faster than scattering print statements and recompiling. | author's experience |
-| ch15 | 725 | empirical | **Tip:** Most IDEs (VS Code, CLion, Qt Creator) drive gdb or lldb under a graphical interface; Visual Studio ships its own debugger with the same mental model. | verifiable against IDE documentation |
-| ch15 | 727 | opinion | Learn the command-line basics first; the GUI is just a thin layer on top. | author's opinion |
-| ch15 | 770 | empirical | `rand()` produces low-quality random numbers on many systems. | added [Lavavej, rand() Considered Harmful](https://learn.microsoft.com/en-us/events/goingnative-2013/rand-considered-harmful) |
-| ch15 | 775 | best practice | **Trap:** Avoid `rand()` and `srand()` in new C++ code. | backed by the rand() citation at ch15:766 |
-| ch15 | 834 | empirical | **`std::random_device rd`** provides a seed from your operating system's entropy source --- truly unpredictable. | hedged by the text at ch15:841-843 |
-| ch15 | 835 | empirical | **`std::mt19937 gen(rd())`** creates a Mersenne Twister engine seeded with that random value. This engine produces high-quality pseudo-random numbers. | verifiable against the toolchain/standard |
-| ch15 | 840 | best practice | **Tip:** Create the engine once and reuse it. | author's guidance; rationale in the text |
-| ch15 | 847 | empirical | In practice, on Linux, macOS, and Windows, it reads from the OS entropy pool and is fine for seeding. | verifiable against implementation documentation |
-| ch15 | 886 | popularity | The `<random>` header provides many other distributions (Bernoulli, Poisson, etc.), but uniform and normal cover most practical needs. | folklore; no canonical source |
+| ch15 | 262 | popularity | `static_cast` is the most common cast. | folklore; no canonical source |
+| ch15 | 342 | opinion | This is rarely needed and usually a sign that something in the design should be reconsidered. | author's opinion |
+| ch15 | 360 | popularity | The main legitimate use is interfacing with old C APIs that take non-const pointers but promise not to modify the data. | folklore; no canonical source |
+| ch15 | 378 | opinion | This is the most dangerous cast and should be used rarely. | author's opinion |
+| ch15 | 424 | best practice | The C++ named casts are preferred because: | backed by ES.49, cited at ch15:433 |
+| ch15 | 434 | best practice | Never use C-style casts in new C++ code. | added [Core Guidelines ES.49](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#res-casts-named) |
+| ch15 | 448 | popularity | The most common use of `<chrono>` is measuring how long a piece of code takes to run. | folklore; no canonical source |
+| ch15 | 449 | best practice | For this, `std::chrono::steady_clock` is the right clock because it never jumps forward or backward. | author's guidance; rationale in the text |
+| ch15 | 583 | popularity | The trig functions take **radians**, not degrees --- this is a constant source of beginner bugs. | folklore; no canonical source |
+| ch15 | 636 | best practice | **Tip:** Use `std::numbers::pi` instead of `3.14159...` typed by hand --- the constant is precise to the full width of the type, and a future reader does not have to count the digits to confirm you didn't typo one. | author's guidance; rationale in the text |
+| ch15 | 650 | opinion | It is worth pausing and treating UB as a topic in its own right, because it is the single biggest difference between C++ and most other languages. | author's opinion |
+| ch15 | 670 | historical | The short answer is performance: when the compiler can assume that programs do not exhibit UB, it gets to skip a lot of runtime checks --- bounds, signedness, alignment --- that would otherwise slow every program down. | added [Lattner, What Every C Programmer Should Know About UB](https://blog.llvm.org/2011/05/what-every-c-programmer-should-know.html) |
+| ch15 | 692 | popularity | The two debuggers you will run into most often are **gdb** (GNU Debugger; commonly installed alongside GCC) and **lldb** (the LLVM debugger; Clang's counterpart). | folklore; no canonical source |
+| ch15 | 722 | empirical | **Reproduce, then break.** Set a breakpoint *just before* the line you suspect, run the program, then use `next`/`step` and `print` to walk the failure live. This is faster than scattering print statements and recompiling. | author's experience |
+| ch15 | 726 | empirical | **Tip:** Most IDEs (VS Code, CLion, Qt Creator) drive gdb or lldb under a graphical interface; Visual Studio ships its own debugger with the same mental model. | verifiable against IDE documentation |
+| ch15 | 728 | opinion | Learn the command-line basics first; the GUI is just a thin layer on top. | author's opinion |
+| ch15 | 771 | empirical | `rand()` produces low-quality random numbers on many systems. | added [Lavavej, rand() Considered Harmful](https://learn.microsoft.com/en-us/events/goingnative-2013/rand-considered-harmful) |
+| ch15 | 776 | best practice | **Trap:** Avoid `rand()` and `srand()` in new C++ code. | backed by the rand() citation at ch15:766 |
+| ch15 | 835 | empirical | **`std::random_device rd`** normally provides a seed from your operating system's entropy source (see the Wut below for the caveat). | hedged by the text at ch15:841-843 |
+| ch15 | 836 | empirical | **`std::mt19937 gen(rd())`** creates a Mersenne Twister engine seeded with that random value. This engine produces high-quality pseudo-random numbers. | verifiable against the toolchain/standard |
+| ch15 | 841 | best practice | **Tip:** Create the engine once and reuse it. | author's guidance; rationale in the text |
+| ch15 | 848 | empirical | In practice, on Linux, macOS, and Windows, it reads from the OS entropy pool and is fine for seeding. | verifiable against implementation documentation |
+| ch15 | 887 | popularity | The `<random>` header provides many other distributions (Bernoulli, Poisson, etc.), but uniform and normal cover most practical needs. | folklore; no canonical source |
