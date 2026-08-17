@@ -95,21 +95,13 @@
 % ============================================================
 % SPINE  (middle)
 % x in [7.125, 7.529], center = 7.327
-% Title centered along spine, "Gorgo Books" at the base
+% Title centered along spine; no "Gorgo Books" mark --- the 0.404in
+% spine is too narrow for it to read well
 % ============================================================
 
 % Main spine title (centered vertically along the 10in spine)
 \node[anchor=center, rotate=-90, text=textcolor] at ($(O)+(7.327,5.125)$)
   {\fontsize{13}{15}\selectfont\bfseries Gorgo C for C++ Programmers};
-
-% "Gorgo Books" at the base of the spine, horizontal so it reads
-% normally when the book is upright on a shelf. font= (not inline
-% \fontsize) so both lines get the size and small caps --- \\ in an
-% align node resets inline font changes. 6.5pt: at 10pt the text is
-% as wide as the 0.404in spine and touches the fold lines.
-\node[anchor=center, text=accent, align=center,
-      font=\fontsize{6.5}{8}\selectfont\scshape] at ($(O)+(7.327,1.25)$)
-  {Gorgo\\Books};
 
 % ============================================================
 % BACK COVER  (left side)

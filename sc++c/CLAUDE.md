@@ -78,7 +78,7 @@ the template PDF is `lulu-cover-template.pdf`. descriptions of the parts and mea
 
 ## standalone c4c++ cover (`lulu-cover-c4c++.pdf`)
 
-- wraparound cover for `c4c++-lulu.pdf` built from `lulu-cover-c4c++.tex`, same design language as the other covers
+- wraparound cover for `c4c++-lulu.pdf` built from `lulu-cover-c4c++.tex`, same design language as the other covers, except no `Gorgo Books` mark on the spine (the 0.404in spine is too narrow for it)
 - spine width 0.404in for the 154-page interior (lulu formula: 0.06 + pages x 0.002236); total trim with bleed: 14.654in x 10.25in --- if the interior page count changes, recompute the spine width and the layout offsets in the tex header
 - front: `c-gorgo.png` art (single C book), title `Gorgo C for C++ Programmers`, commit-date subtitle, no author name
 - `c-gorgo-c4-cover.png` is a make target --- `c-gorgo.png` pre-flattened onto `#0d1b2a` with the alpha channel removed, same reason as the sc++ cover
