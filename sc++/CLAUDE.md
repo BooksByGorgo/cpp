@@ -26,6 +26,7 @@ No previous programming experience is assumed.
 - Compile examples with `g++ -std=c++23 -Wall -Wextra -pedantic` to verify correctness
 - Always include the headers needed by every example (e.g., `#include <string>` when using `std::string`)
 - Create short example programs to illustrate the concepts covered
+- Do not use `using namespace` in examples --- fully qualify `std::` names, adding intermediate variables if a qualified expression would exceed the line limit. The one exception is `using namespace std::string_literals;`, required for the `s` suffix
 
 ## Format and Style
 
@@ -43,13 +44,23 @@ No previous programming experience is assumed.
 - do not wrap sentences in the markdown. every sentence gets its own line
 - the first time a fuction or operator is mentioned show it's signature
     -if it is overloaded and the overloaded variants aren't mentioned later, mention at the end of the subsection concisely. show signatures but not examples
+- GB means 2^30^ bytes in this book --- do not switch to GiB or powers of ten
+
+## Citations and ASSERTIONS.md
+
+- assertions of external fact, history, or named best practice carry pandoc citations: `[@key]` markers backed by `references.bib`, rendered via `ieee.csl`
+- Core Guidelines citations use a rule locator: `[@CppCoreGuidelines, rule C.21]`
+- `ASSERTIONS.md` catalogs assertion sentences (Chapter | Line | Type | Statement | Citation); cited rows say `added [source](link)`, uncited rows record why no citation is needed
+- the Line column points into the chapter files: after any chapter edit that adds or removes lines, renumber that chapter's rows by the net delta (watch for adjacent-number cascades; verify rows with `sed -n NNNp chXX.md`)
+- when a new claim gets a citation, add a matching row
 
 ## Build
 
 - Build with: `make` (or `make all` for both PDFs)
 - Uses `pandoc` with `--lua-filter=../callout.lua` and `--pdf-engine=latexmk --pdf-engine-opt=-lualatex`
 - `latexmk` handles the multi-pass build needed for the index; `-lualatex` routes it through lualatex so non-ASCII Unicode (CJK, polytonic Greek, emoji) renders correctly
-- Requires `header-includes` for `\usepackage[most]{tcolorbox}` and `\usepackage{makeidx}` (already in frontmatter)
+- Requires `header-includes` for `\usepackage[most]{tcolorbox}` and `\usepackage{imakeidx}` + `\makeindex[intoc]` (already in frontmatter)
+- the `Input index file input.idx not found` / makeindex usage lines during builds are harmless: imakeidx's automatic shell-escape run fails because pandoc invokes latexmk with `-outdir` in /tmp while the cwd stays here; latexmk's own makeindex rule builds the real index. The verified (but not yet applied) silencer is `\makeindex[intoc, noautomatic]`
 - Font stack in `frontmatter.yaml`: `mainfont: TeX Gyre Pagella` (Palatino clone) for body text, `monofont: JetBrains Mono` for code with `-calt,-liga,-dlig` to disable code ligatures. luaotfload fallback chains in a raw `{=latex}` header block cover what the primary fonts do not: `main_fallback` adds `NotoSerifCJKJP` (CJK), `DejaVuSerif` (polytonic Greek), and `NotoColorEmoji:mode=harf` (color emoji); `mono_fallback` adds `NotoSansMonoCJKJP`, `DejaVuSansMono`, and `NotoColorEmoji`
 
 ## Table of Contents and Index
@@ -121,6 +132,7 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - const parameters. why they are important
     - structures can be problematic to pass by value
     - recursive functions
+    - the call stack and stack frames (introduced with the recursion trace)
     - intro to lambdas: syntax, value and reference captures (details in the sequel)
     - function pointers (basics, typedef, callbacks); captureless lambdas as callbacks
 7. Numbers
@@ -159,8 +171,13 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
         - `prec`: fixed floats: # of digits after . else precision; strings: max len 
         - `type`: `d` (decimal), `x` (hex), `f` (fixed-point), `s` (string), `p` pointer, etc.
 11. Classes
-    - constructors/destructors
-    - member methods
+    - plain structs (usually called POD structs) vs classes
+    - access specifiers
+    - constructors/destructors: member initializer lists, delegating constructors, explicit
+    - member methods, const member functions, the this pointer
+    - splitting a class into header and source files
+    - static members
+    - operator overloading for classes, conversion operators
 12. Exceptions
     - try/catch/throw
     - standard exception types (std::exception, std::runtime_error, std::logic_error)
@@ -170,9 +187,12 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - std::expected (C++23) as an alternative to exceptions
     - when to use exceptions vs std::expected
 13. Memory Management
+    - scope, lifetime, storage duration
+    - stack vs heap; pointer basics (&, *, ->, nullptr)
     - new/delete
     - don't use new/delete use std::unique_ptr
-    - std::shared_ptr
+    - std::shared_ptr, std::weak_ptr and .lock()
+    - accessing the managed object: *, ->, .get()
     - move
 14. Special Members and Friends
     - special member functions and the Rule of Five
