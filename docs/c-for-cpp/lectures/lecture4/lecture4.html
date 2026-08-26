@@ -37,19 +37,17 @@ Functions
 ---
 # Review: What does this print?
 
-Inside `main`:
-
 ```c
-int a[] = {10, 20, 30, 40, 50};
-int *p = a + 2;
-printf("%d %d %d\n",
-       *p, *(p - 1), p[1]);
+int x = 10;
+int *p = &x;
+*p = 20;
+printf("%d\n", x);
 ```
 
-1. `30 20 40`
-1. `20 10 30`
-1. `3 1 4`
-1. `30 40 20`
+1. `10`
+1. `20`
+1. An address
+1. Undefined behavior
 1. Ben got this wrong
 
 ---

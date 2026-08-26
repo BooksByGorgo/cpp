@@ -36,30 +36,15 @@ class: center, middle
 Pointers, new/delete, and unique_ptr
 
 ---
-# What does this print?
-.lc[
-```cpp
-class Counter {
-    int n = 0;
-public:
-    Counter &add() {
-        ++n;
-        return *this;
-    }
-    int get() const { return n; }
-};
-Counter c;
-c.add().add().add();
-std::cout << c.get();
-```
-]
-.rc[
+# How many copies of count exist?
+
+A class declares `static int count;` and `main` creates three objects.
+
 1. 0
 1. 1
 1. 3
-1. compile error
+1. One per translation unit
 1. Ben got this wrong
-]
 
 ---
 # Learning Objectives

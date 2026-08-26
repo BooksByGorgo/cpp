@@ -35,12 +35,12 @@ class: center, middle
 Numbers and Casting
 
 ---
-# Review: Why pick calloc over malloc + memset?
+# Review: Which one is safe when src and dst overlap?
 
-1. calloc is always faster
-1. Clearer intent; the library can often skip the memset for fresh pages
-1. malloc cannot allocate arrays
-1. memset only works on chars
+1. `memcpy`
+1. `memset`
+1. `strcpy`
+1. `memmove`
 1. Ben got this wrong
 
 ---

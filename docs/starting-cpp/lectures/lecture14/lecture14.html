@@ -36,21 +36,13 @@ class: center, middle
 std::format and std::print
 
 ---
-# What is wrong with this file-writing code?
-.lc[
-```cpp
-std::ofstream out;
-out << "Yo me la paso bien\n";
-out.close();
-```
-]
-.rc[
-1. Missing `#include <fstream>`
-1. No filename passed to the constructor
-1. `\n` should be `std::endl`
-1. Cannot `<<` to an `ofstream`
+# Which open mode appends to an existing log file?
+
+1. `std::ios::trunc`
+1. `std::ios::binary`
+1. `std::ios::app`
+1. `std::ios::in`
 1. Ben got this wrong
-]
 
 ---
 # Learning Objectives

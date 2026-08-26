@@ -36,16 +36,12 @@ class: center, middle
 Expressions
 
 ---
-# Where is the bug?
+# What does s.at(99) do for std::string s = "hola"?
 
-```cpp
-std::string greeting = "Hello, " + "world!";
-```
-
-1. Missing `#include <string>`
-1. `std::string` does not allow `+`
-1. Both operands are literals; one side must be `std::string`
-1. `+` should be `+=`
+1. Returns `'\0'`
+1. Undefined behavior
+1. Returns the last character
+1. Throws `std::out_of_range`
 1. Ben got this wrong
 
 ---

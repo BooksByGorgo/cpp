@@ -36,12 +36,12 @@ class: center, middle
 Exceptions
 
 ---
-# What does std::format("{:*^20}", "Hola") produce?
+# What does std::format("{0} {0}!", "Mony") produce?
 
-1. `"****Hola************"`
-1. `"********Hola********"`
-1. `"Hola****************"`
-1. `"********Hola"`
+1. `"Mony!"`
+1. `"Mony {0}!"`
+1. `"Mony Mony!"`
+1. It throws --- an index cannot repeat
 1. Ben got this wrong
 
 ---

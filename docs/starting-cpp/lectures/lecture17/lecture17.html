@@ -36,23 +36,26 @@ class: center, middle
 Behavior and Operators
 
 ---
-# Where is the bug?
+# What does this print?
 .lc[
 ```cpp
-class Volume {
+class Amp {
 public:
-    Volume(int l) : level(l) {}
-    int level;
+    Amp()  { std::cout << "on "; }
+    ~Amp() { std::cout << "off "; }
 };
-void play(Volume v) { }
-play(11);
+
+int main() {
+    Amp a;
+    std::cout << "play ";
+}
 ```
 ]
 .rc[
-1. Missing semicolon
-1. `Volume(int)` is not `explicit`
-1. `play` cannot take `Volume`
-1. `Volume` has no destructor
+1. `on play off`
+1. `on off play`
+1. `play on off`
+1. `on play`
 1. Ben got this wrong
 ]
 

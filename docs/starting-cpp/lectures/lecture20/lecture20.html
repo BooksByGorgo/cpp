@@ -36,14 +36,12 @@ class: center, middle
 Special Members and Friends
 
 ---
-# After std::move(a), what is the state of a?
+# Two objects hold shared_ptrs to each other. The last outside pointer dies. What happens?
 
-Where `a` is a `std::unique_ptr<int>`:
-
-1. Contains the same value
-1. Contains garbage
-1. Empty (`nullptr`)
-1. Has been deleted
+1. Both objects are destroyed
+1. One object is destroyed
+1. The program crashes
+1. Neither is destroyed --- the cycle keeps both alive
 1. Ben got this wrong
 
 ---

@@ -36,24 +36,13 @@ class: center, middle
 I/O Streams
 
 ---
-# What does this print?
-.lc[
-```cpp
-std::vector<int> v =
-    {10, 20, 30, 40, 50};
-v.insert(v.begin() + 2, 25);
-v.erase(v.begin());
-for (const auto& n : v)
-    std::cout << n << " ";
-```
-]
-.rc[
-1. `10 20 25 30 40 50`
-1. `20 25 30 40 50`
-1. `20 25 30 40`
-1. `10 25 30 40 50`
+# What does std::find(v.begin(), v.end(), 7) return if 7 is not in v?
+
+1. `nullptr`
+1. `v.end()`
+1. `v.begin()`
+1. It throws `std::out_of_range`
 1. Ben got this wrong
-]
 
 ---
 # Learning Objectives

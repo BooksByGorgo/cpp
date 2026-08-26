@@ -39,20 +39,18 @@ Function Basics
 # What does this print?
 .lc[
 ```cpp
-int x = 2;
-switch (x) {
-case 1: std::cout << "uno ";
-case 2: std::cout << "dos ";
-case 3: std::cout << "tres "; break;
-default: std::cout << "other ";
+for (int i = 1; i <= 5; i++) {
+    if (i == 3) continue;
+    if (i == 5) break;
+    std::cout << i << " ";
 }
 ```
 ]
 .rc[
-1. `uno`
-1. `dos`
-1. `dos tres`
-1. `uno dos tres`
+1. `1 2 4`
+1. `1 2 4 5`
+1. `1 2 3 4`
+1. `1 2`
 1. Ben got this wrong
 ]
 

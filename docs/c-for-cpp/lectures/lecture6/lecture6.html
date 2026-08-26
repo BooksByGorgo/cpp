@@ -38,17 +38,16 @@ calloc, realloc, and Raw Memory
 # Review: Where is the bug?
 
 ```c
-int *p = malloc(10 * sizeof(int));
-for (int i = 0; i < 10; i++)
-    p[i] = i;
-free(p);
-printf("%d\n", p[0]);
+int *make_id(void) {
+    int id = 42;
+    return &id;
+}
 ```
 
-1. `malloc` missing a cast
-1. Use-after-free on `p`
-1. `p[0]` should be `*p`
-1. `printf` should use `%zu`
+1. `id` is uninitialized
+1. `&id` should be `id`
+1. An `int *` function must return `NULL`
+1. Returns the address of a local that dies at return
 1. Ben got this wrong
 
 ---

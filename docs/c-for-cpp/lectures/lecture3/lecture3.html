@@ -35,18 +35,17 @@ class: center, middle
 Pointers
 
 ---
-# Review: What does this print?
+# Review: Where is the bug?
 
 ```c
-char s[] = "Ghostbusters";
-printf("%zu %zu\n",
-       strlen(s), sizeof(s));
+char dest[5];
+strcpy(dest, "Ghostbusters");
 ```
 
-1. `12 12`
-1. `12 13`
-1. `13 12`
-1. `13 13`
+1. The `strcpy` arguments are reversed
+1. `dest` is too small --- buffer overflow
+1. `dest` must be a `char *`
+1. Missing `&` on `dest`
 1. Ben got this wrong
 
 ---

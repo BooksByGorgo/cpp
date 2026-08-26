@@ -36,24 +36,13 @@ class: center, middle
 From Struct to Class
 
 ---
-# Will this compile, and what happens at runtime?
-.lc[
-```cpp
-void load(const std::string &f) {
-    throw std::runtime_error(f + " not found");
-}
-void play() noexcept {
-    load("track01.wav");
-}
-```
-]
-.rc[
-1. Compile error
-1. Throws normally
-1. Calls `std::terminate()`
-1. Exception is silently ignored
+# Which handler catches any exception type?
+
+1. `catch (std::exception e)`
+1. `catch (...)`
+1. `catch (auto e)`
+1. `catch (void *e)`
 1. Ben got this wrong
-]
 
 ---
 # Learning Objectives

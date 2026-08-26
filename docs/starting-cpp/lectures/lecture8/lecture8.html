@@ -36,28 +36,13 @@ class: center, middle
 Advanced Functions
 
 ---
-# What does this print?
-.lc[
-```cpp
-void mystery(int a, int &b) {
-    a += 10;
-    b += 10;
-}
+# Why pass Song as const Song &s?
 
-int main() {
-    int x = 5, y = 5;
-    mystery(x, y);
-    std::cout << x << " " << y;
-}
-```
-]
-.rc[
-1. `5 5`
-1. `5 15`
-1. `15 5`
-1. `15 15`
+1. So the function can modify the caller's `Song`
+1. It copies the `Song` faster
+1. No copy is made, and the function cannot modify it
+1. References are required for struct parameters
 1. Ben got this wrong
-]
 
 ---
 # Learning Objectives

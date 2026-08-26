@@ -35,19 +35,12 @@ class: center, middle
 Standard I/O
 
 ---
-# Review: Where is the bug?
+# Review: Why prefer strtol over atoi?
 
-Goal: `year` holds the number 1985.
-
-```c
-char *year_str = "1985";
-int year = (int)year_str;
-```
-
-1. Nothing --- the cast parses the string
-1. It converts the *address*, not the text --- use `strtol`
-1. `year_str` must be a `char[]`
-1. `(int)` should be `(long)`
+1. `atoi` is slower
+1. `atoi` gives no way to detect errors
+1. `strtol` handles only base 10
+1. `atoi` was removed from the standard
 1. Ben got this wrong
 
 ---

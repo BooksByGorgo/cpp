@@ -36,20 +36,21 @@ class: center, middle
 Loops, Jumps, and `switch`
 
 ---
-# How many times does this run?
+# Where is n visible?
 .lc[
 ```cpp
-int i = 10;
-while (i > 10) {
-    i++;
+if (int n = next_track(); n > 0) {
+    std::cout << n << "\n";
+} else {
+    std::cout << "none\n";
 }
 ```
 ]
 .rc[
-1. 0
-1. 1
-1. 10
-1. infinite
+1. The whole function
+1. Only the `if` branch
+1. The condition and both branches
+1. Only the condition
 1. Ben got this wrong
 ]
 

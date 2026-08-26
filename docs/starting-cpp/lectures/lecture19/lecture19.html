@@ -36,18 +36,23 @@ class: center, middle
 shared_ptr and Move Semantics
 
 ---
-# What is wrong with this code?
+# Why does this leak?
 .lc[
 ```cpp
-int *volumes = new int[3];
-delete volumes;
+void play() {
+    int *v = new int(11);
+    if (*v > 10) {
+        return;
+    }
+    delete v;
+}
 ```
 ]
 .rc[
-1. Missing `<memory>`
+1. `new int(11)` is invalid syntax
 1. `delete` should be `delete[]`
-1. `volumes` must be `const`
-1. `new int[3]` is invalid
+1. The early `return` skips `delete`
+1. `v` was never checked for `nullptr`
 1. Ben got this wrong
 ]
 
