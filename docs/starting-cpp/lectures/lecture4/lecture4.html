@@ -36,14 +36,36 @@ class: center, middle
 Expressions
 
 ---
-# What does s.at(99) do for std::string s = "hola"?
+# Which lines are incorrect?
+.lc[
+```cpp
+ 1 #include <iostream>
+ 2 #include <string>
 
-1. Returns `'\0'`
-1. Undefined behavior
-1. Returns the last character
-1. Throws `std::out_of_range`
-1. Ben got this wrong
-
+ 3 std::string hi{"hello"};
+ 4 void say_hello() {
+ 5   std::cout << hi << ' ';
+ 6   std::cout << name << std::endl;
+ 7 }
+ 8 int main() {
+ 9    std::string b{"ben"};
+ 10   std::cout << "first name " << b << std::endl;
+ 11   {
+ 12     std::string r{"reed"};
+ 13     std::cout << "last name " << r << std::endl;
+ 14   }
+ 15   auto full_name = b + " " + r;
+ 16   say_hello();
+ 17 }
+```
+]
+.rc[
+1. line 3
+1. line 5
+1. line 6
+1. line 12
+1. there are others
+]
 ---
 # Learning Objectives
 
