@@ -36,13 +36,26 @@ class: center, middle
 Array and Vector Basics
 
 ---
-# Which tests whether bit 0b0100 is set in flags?
+# What is the output?
 
-1. `flags | 0b0100`
-1. `flags && 0b0100`
-1. `flags ^ 0b0100`
-1. `flags & 0b0100`
+.lc[
+```
+auto p = +0.0;
+auto n = -0.0;
+if (n == p) {
+  std::cout << n << " == " << p << std::endl;
+} else {
+  std::cout << n << " != " << p << std::endl;
+}
+```
+]
+.rc[
+1. `0 == 0`
+1. `-0 == 0`
+1. `0 != 0`
+1. `-0 != 0`
 1. Ben got this wrong
+]
 
 ---
 # Learning Objectives
