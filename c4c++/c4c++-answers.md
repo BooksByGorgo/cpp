@@ -1012,7 +1012,22 @@ printf("%s\n", p->title);
 
 ---
 
-**7. Write a program** that declares an array of 5 integers, uses a pointer to iterate through the array, and prints each element along with its memory address.
+**7. Where is the bug?**
+
+```c
+void reset(int *count) {
+    count = 0;
+}
+```
+
+**Answer:** The function assigns to the pointer, not to the value it points to.
+`count = 0;` sets the local copy of the pointer to `NULL`, which the caller never sees, and the caller's variable keeps its old value.
+The function should dereference the pointer: `*count = 0;`.
+This compiles without complaint (at most an "unused" warning), which is why forgetting the `*` is the dangerous mistake when simulating pass by reference.
+
+---
+
+**8. Write a program** that declares an array of 5 integers, uses a pointer to iterate through the array, and prints each element along with its memory address.
 
 **Answer:**
 

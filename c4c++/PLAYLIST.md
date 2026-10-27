@@ -47,6 +47,7 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 ## Chapter 6: Pointers
 - Karma Chameleon --- Culture Club
 - Totally, Radical, Tubular (80s slang)
+- Eye of the Tiger --- Survivor
 
 ## Chapter 7: Functions
 - Iron Man --- Black Sabbath
