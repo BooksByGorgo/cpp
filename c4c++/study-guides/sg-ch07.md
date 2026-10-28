@@ -21,10 +21,21 @@
 
 - Show a C++ prototype with a default argument and rewrite it as valid C.
 
-## Pass by value
+## No pass by reference (and pointers as a workaround)
 
-- All function parameters in C are pass by value --- what does that imply for a function that wants to modify its caller's variables?
-- If C has no reference parameters, how do you get the same effect?
+- In C, how are *all* function arguments passed?
+- If C has no references, how do you write a function that modifies the caller's variable?
+- When `add_bonus(&score, 10)` is called, what exactly does `add_bonus` receive --- a copy of the address or the original?
+- Why does modifying `*score` inside `add_bonus` affect the caller's `score`?
+- What are the three mechanical changes that turn a C++ `int &x` parameter into a C pointer parameter?
+- Which of those three is the dangerous one to forget, and why does the compiler not catch it?
+- A C function can only `return` one value. How do you return two?
+
+### Experiment: swap
+
+- Write a `swap` function that takes two `int *` parameters and swaps the values they point to.
+- Call it on two variables in `main`.
+- Then write a broken version that takes `int` parameters and verify that it does *not* swap the caller's values.
 
 ## `const` parameters
 

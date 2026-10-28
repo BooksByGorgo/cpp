@@ -73,7 +73,7 @@ the next 80s songs to use
 
 - when a concept is introduced in one chapter and used in a later chapter, reference the earlier chapter rather than re-explaining it
 - Ch 2 (Variables) introduces arrays, const with pointers, and structs; Ch 6 (Pointers) should reference Ch 2 for these basics and focus on pointer-specific details (pointer arithmetic, ->, etc.)
-- Ch 6 (Pointers) introduces pass by value with pointer workaround; Ch 7 (Functions) should reference Ch 6 rather than repeating the explanation
+- Ch 7 (Functions) covers pass by value and the pointer workaround in depth; Ch 6 (Pointers) only shows that a pointer parameter can modify the caller's variable and references Ch 7
 - Ch 7 (Functions) introduces function pointers; Ch 12 (Odds and Ends) should reference Ch 7 and focus on qsort as a practical example
 - Ch 5 (Control Flow) briefly introduces goto cleanup with a reference forward to Ch 12; Ch 12 covers it in depth
 
@@ -135,10 +135,9 @@ DO NOT MODIFY THE AUTHOR INTRO section before chapter 0. it is written in lowerc
     - explain that a pointer can point to a single value stored in memory or the first element of an array of elements
     - pointer arithmetic and explain that a[i] is much more convenient to write than *(a+i) --- reference Ch 2 for array decay basics
     - show the -> operator for accessing struct members through pointers --- reference Ch 2 for struct basics
-    - pass by value with pointer workaround
 7. Functions
     - declarations vs definitions, forward declarations, void parameter lists
-    - all function parameters are `pass by value` (no `pass by reference`) --- reference Ch 6 rather than re-explaining
+    - no pass by reference: C has no `int &x` parameters, so show the naive port that silently modifies a copy, the three-step conversion to a pointer parameter, and output parameters for returning more than one value
     - const parameters. why they are important
     - structures can be problematic to pass by value, why const struct type *var is useful
     - recursive functions

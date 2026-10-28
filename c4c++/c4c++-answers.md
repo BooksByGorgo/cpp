@@ -910,15 +910,15 @@ Average: 20.00
 
 # 6. Pointers
 
-**1. Think about it:** In C++, you can pass by reference to modify a caller's variable.
-Why do you think C was designed with only pass by value?
-What does this simplify in the language?
+**1. Think about it:** On a 64-bit system, `int *`, `char *`, and `struct song *` are all 8 bytes and all hold a plain address.
+If the address is all a pointer stores, why does C insist on tracking the pointed-to type?
+Name two things from this chapter that would stop working with untyped addresses.
 
-**Answer:** Having only pass by value simplifies the language and its calling conventions.
-Every function call copies its arguments, so you always know that a function cannot modify your local variables unless you explicitly give it a pointer.
-This makes reasoning about code simpler: if you see `f(x)`, you know `x` cannot change (unless `x` is already a pointer).
-It also simplifies the compiler --- there is no need for reference semantics, no hidden indirection, and no ambiguity about whether an argument is an alias for another variable.
-When you do want a function to modify a variable, you explicitly pass `&x`, making the intent clear at the call site.
+**Answer:** The type tells the compiler how to interpret the memory at that address, and two things in this chapter depend on it.
+Pointer arithmetic: `p + 1` moves `sizeof(*p)` bytes, so `p[i]` only lands on element `i` because the compiler knows the element size.
+Dereferencing: `*p` has to read the right number of bytes and treat them as the right type, and `p->year` has to know the offset and size of `year` inside `struct song`.
+With an untyped address, every read, write, and step would need an explicit size.
+That is exactly the situation with `void *`, which is why you cannot dereference it or do arithmetic on it without first converting it to a typed pointer.
 
 ---
 
@@ -1012,22 +1012,7 @@ printf("%s\n", p->title);
 
 ---
 
-**7. Where is the bug?**
-
-```c
-void reset(int *count) {
-    count = 0;
-}
-```
-
-**Answer:** The function assigns to the pointer, not to the value it points to.
-`count = 0;` sets the local copy of the pointer to `NULL`, which the caller never sees, and the caller's variable keeps its old value.
-The function should dereference the pointer: `*count = 0;`.
-This compiles without complaint (at most an "unused" warning), which is why forgetting the `*` is the dangerous mistake when simulating pass by reference.
-
----
-
-**8. Write a program** that declares an array of 5 integers, uses a pointer to iterate through the array, and prints each element along with its memory address.
+**7. Write a program** that declares an array of 5 integers, uses a pointer to iterate through the array, and prints each element along with its memory address.
 
 **Answer:**
 
@@ -1072,7 +1057,19 @@ The downside is more names to remember, but the upside is that the type being op
 
 ---
 
-**2. What does this print?**
+**2. Think about it:** In C++, you can pass by reference to modify a caller's variable.
+Why do you think C was designed with only pass by value?
+What does this simplify in the language?
+
+**Answer:** Having only pass by value simplifies the language and its calling conventions.
+Every function call copies its arguments, so you always know that a function cannot modify your local variables unless you explicitly give it a pointer.
+This makes reasoning about code simpler: if you see `f(x)`, you know `x` cannot change (unless `x` is already a pointer).
+It also simplifies the compiler --- there is no need for reference semantics, no hidden indirection, and no ambiguity about whether an argument is an alias for another variable.
+When you do want a function to modify a variable, you explicitly pass `&x`, making the intent clear at the call site.
+
+---
+
+**3. What does this print?**
 
 ```c
 void mystery(int x) {
@@ -1102,7 +1099,7 @@ After `mystery` returns, `val` in `main` is still 5.
 
 ---
 
-**3. Where is the bug?**
+**4. Where is the bug?**
 
 ```c
 int count_chars(const char *s) {
@@ -1126,7 +1123,22 @@ int count = 0;
 
 ---
 
-**4. Calculation:** Given the struct below, approximately how many bytes are copied each time `process_data` is called with pass by value?
+**5. Where is the bug?**
+
+```c
+void reset(int *count) {
+    count = 0;
+}
+```
+
+**Answer:** The function assigns to the pointer, not to the value it points to.
+`count = 0;` sets the local copy of the pointer to `NULL`, which the caller never sees, and the caller's variable keeps its old value.
+The function should dereference the pointer: `*count = 0;`.
+This compiles without complaint (at most an "unused" warning), which is why forgetting the `*` is the dangerous mistake when simulating pass by reference.
+
+---
+
+**6. Calculation:** Given the struct below, approximately how many bytes are copied each time `process_data` is called with pass by value?
 Assume `int` is 4 bytes.
 
 ```c
@@ -1147,7 +1159,7 @@ This is why passing large structs by `const` pointer (`const struct data *d`) is
 
 ---
 
-**5. What does this print?**
+**7. What does this print?**
 
 ```c
 int apply(int (*fn)(int, int), int a, int b) {
@@ -1174,7 +1186,7 @@ Since `fn` points to `mul`, this computes `6 * 7 = 42`.
 
 ---
 
-**6. Where is the bug?**
+**8. Where is the bug?**
 
 ```c
 void swap(int a, int b) {
@@ -1213,7 +1225,7 @@ int main(void) {
 
 ---
 
-**7. Write a program** that defines a function `void transform(int *arr, int n, int (*fn)(int))` which applies the function `fn` to each element of `arr`, modifying the array in place.
+**9. Write a program** that defines a function `void transform(int *arr, int n, int (*fn)(int))` which applies the function `fn` to each element of `arr`, modifying the array in place.
 Test it with a function that doubles each element and another that negates each element.
 
 **Answer:**

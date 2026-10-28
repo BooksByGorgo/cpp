@@ -63,19 +63,6 @@
 - What does `p->field` expand to?
 - Which form will you see far more often in real C code, and why?
 
-## Pass by value and pointer workaround
-
-- In C, how are *all* function arguments passed?
-- If C has no references, how do you write a function that modifies the caller's variable?
-- When `increment(&score)` is called, what exactly does `increment` receive --- a copy of the address or the original?
-- Why does modifying `*x` inside `increment` affect the caller's `score`?
-
-### Experiment: swap
-
-- Write a `swap` function that takes two `int *` parameters and swaps the values they point to.
-- Call it on two variables in `main`.
-- Then write a broken version that takes `int` parameters and verify that it does *not* swap the caller's values.
-
 ### Experiment: pointer iteration
 
 - Declare an array of five integers.

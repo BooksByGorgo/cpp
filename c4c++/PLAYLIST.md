@@ -47,9 +47,9 @@ Songs, movies, and cultural references appearing in the text, organized by chapt
 ## Chapter 6: Pointers
 - Karma Chameleon --- Culture Club
 - Totally, Radical, Tubular (80s slang)
-- Eye of the Tiger --- Survivor
 
 ## Chapter 7: Functions
+- Eye of the Tiger --- Survivor
 - Iron Man --- Black Sabbath
 - She-Ra: Princess of Power (1985 cartoon)
 - He-Man and the Masters of the Universe (1983 cartoon)
